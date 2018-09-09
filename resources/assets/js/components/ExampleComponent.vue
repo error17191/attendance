@@ -3,10 +3,14 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card card-default">
-                    <div class="card-header">Example Component</div>
+                    <div class="card-header">Good Morning</div>
 
                     <div class="card-body">
-                        I'm an example component.
+                        <div class="row justify-content-center">
+                            <div class="col-md-8">
+                                <button class="btn btn-lg btn-block btn-success">Check In</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

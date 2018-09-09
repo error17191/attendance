@@ -18,3 +18,8 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+Route::post('sign_in','SignController@signIn')->name('sign_in');
+Route::post('sign_out','SignController@signOut')->name('sign_in');
+Route::post('pause','SignController@pause')->name('pause');
+Route::post('resume','SignController@resume')->name('resume');
