@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 
 class SignController extends Controller
 {
@@ -11,55 +10,38 @@ class SignController extends Controller
         $this->middleware('auth');
     }
 
-    public function signIn()
+    public function startWork()
     {
-        if (auth()->user()->hasSignedInToday()) {
+        if (auth()->user()->isWorking()) {
             abort(400);
         }
 
-        $sign = auth()->user()->signIn();
+        $result = auth()->user()->startWork();
 
         return response()->json([
-            'sign' => $sign
+            'sign' => $result['sign'],
+            'today_time' => [
+                'seconds' => $result['workTime']->seconds,
+                'partitions' => $result['workTime']->partitionSeconds()
+            ]
         ]);
     }
 
-    public function signOut()
+    public function stopWork()
     {
-        if (! auth()->hasSignedInToday() || auth()->user()->hasSignedOutToday()) {
+        if (auth()->user()->isStopped()) {
             abort(400);
         }
 
-        $sign = auth()->user()->signOut();
+        $result = auth()->user()->stopWork();
 
         return response()->json([
-            'sign' => $sign
+            'sign' => $result['sign'],
+            'today_time' => [
+                'seconds' => $result['workTime']->seconds,
+                'partitions' => $result['workTime']->partitionSeconds()
+            ]
         ]);
     }
 
-    public function pause()
-    {
-        if (! auth()->user()->isWorking()) {
-            abort(400);
-        }
-
-        $sign = auth()->user()->pause();
-
-        return response()->json([
-            'sign' => $sign
-        ]);
-    }
-
-    public function resume()
-    {
-        if (! auth()->user()->isPaused()) {
-            abort(400);
-        }
-
-        $sign = auth()->user()->resume();
-
-        return response()->json([
-            'sign' => $sign
-        ]);
-    }
 }

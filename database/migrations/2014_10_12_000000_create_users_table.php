@@ -18,7 +18,7 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->enum('status', ['paused', 'working', 'off'])->default('off');
+            $table->enum('status', ['on', 'off'])->default('off');
             $table->rememberToken();
             $table->timestamps();
         });

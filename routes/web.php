@@ -19,7 +19,6 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-Route::post('sign_in','SignController@signIn')->name('sign_in');
-Route::post('sign_out','SignController@signOut')->name('sign_in');
-Route::post('pause','SignController@pause')->name('pause');
-Route::post('resume','SignController@resume')->name('resume');
+Route::post('start_work','SignController@startWork')->name('start_work');
+Route::post('stop_work','SignController@stopWork')->name('stop_work');
+Route::get('init_state','StateController@init')->name('init_state');

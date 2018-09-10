@@ -16,7 +16,7 @@ class CreateSignsTable extends Migration
         Schema::create('signs', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id');
-            $table->enum('type',['sign_in','sign_out','pause','resume']);
+            $table->enum('type',['start','stop']);
             $table->date('day');
             $table->time('time');
         });

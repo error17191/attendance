@@ -17,7 +17,7 @@ class CreateWorkTimesTable extends Migration
             $table->increments('id');
             $table->integer('user_id');
             $table->date('day');
-            $table->timestamp('started_work_at');
+            $table->timestamp('started_work_at')->nullable();
             $table->integer('seconds')->default(0);
         });
     }
