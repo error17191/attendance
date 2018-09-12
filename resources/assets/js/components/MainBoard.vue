@@ -73,7 +73,7 @@
 <script>
     export default {
         mounted() {
-            axios.get('/init_state&t=' + new Date().getTime() ).then(response => {
+            axios.get('/init_state?t=' + new Date().getTime() ).then(response => {
                 this.status = response.data.status;
                 this.workTime = response.data.today_time;
                 this.signs = response.data.signs;
