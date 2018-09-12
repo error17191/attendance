@@ -1,5 +1,7 @@
 <template>
-    <div v-if="show" class="container">
+    <div class="container">
+        <vue-element-loading :active="!show" spinner="bar-fade-scale" color="#FF6700"/>
+
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card card-default">
@@ -22,7 +24,7 @@
                         </div>
                         <hr>
                         <h5 class="text-center">You worked today</h5>
-                        <h3 class="text-center"> {{timePartitionsFormatted(workTime.partitions)}}</h3>
+                        <h3 class="text-center"> {{workTime ? timePartitionsFormatted(workTime.partitions) : null}}</h3>
                         <div>
                             <b-card no-body class="mb-1">
                                 <b-card-header header-tag="header" class="p-0" role="tab">
@@ -45,18 +47,18 @@
                                     <b-card-body class="text-center">
                                         <p>
                                             By the end of Today you should have been worked
-                                            {{timePartitionsFormatted(monthStats.ideal.partitions)}}
+                                            {{monthStats ? timePartitionsFormatted(monthStats.ideal.partitions) : null}}
                                         </p>
                                         <p>
                                             Until now you worked
-                                            {{timePartitionsFormatted(monthStats.actual.partitions)}}
+                                            {{monthStats ? timePartitionsFormatted(monthStats.actual.partitions) : null}}
                                         </p>
-                                        <p v-if="monthStats.diff.type == 'more'" class="text-success">
+                                        <p v-if="monthStats && monthStats.diff.type == 'more'" class="text-success">
                                             You have worked extra
-                                            {{timePartitionsFormatted(monthStats.diff.partitions)}}
+                                            {{monthStats ? timePartitionsFormatted(monthStats.diff.partitions) : null}}
                                         </p>
                                         <p v-else class="text-danger">
-                                            You have to work {{timePartitionsFormatted(monthStats.diff.partitions)}}
+                                            You have to work {{monthStats ? timePartitionsFormatted(monthStats.diff.partitions): null}}
                                         </p>
                                     </b-card-body>
                                 </b-collapse>

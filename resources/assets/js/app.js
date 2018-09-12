@@ -12,6 +12,11 @@ window.Vue = require('vue');
 
 Vue.use(BootstrapVue);
 
+import VueElementLoading from 'vue-element-loading';
+
+Vue.component('VueElementLoading', VueElementLoading);
+
+
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
