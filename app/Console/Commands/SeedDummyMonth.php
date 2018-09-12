@@ -44,12 +44,15 @@ class SeedDummyMonth extends Command
         $userId = User::first()->id;
 
         $today = today();
-        $firstDay = now()->firstOfMonth();
+        $firstDay = now()->firstOfMonth()->subDays(10);
         $daysCount = $today->diffInDays($firstDay);
         for ($i = 0; $i < $daysCount; $i++) {
             $day = new Carbon($firstDay);
             $day->addDays($i);
-            $hours = rand(5,11);
+            if($day->isWeekend()){
+                continue;
+            }
+            $hours = rand(6,10);
             $minutes = rand(0,59);
             $seconds = rand(0,59);
 

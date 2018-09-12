@@ -23,6 +23,7 @@ define('LARAVEL_START', microtime(true));
 
 require __DIR__.'/../vendor/autoload.php';
 
+
 /*
 |--------------------------------------------------------------------------
 | Turn On The Lights
@@ -36,6 +37,9 @@ require __DIR__.'/../vendor/autoload.php';
 */
 
 $app = require_once __DIR__.'/../bootstrap/app.php';
+
+use Carbon\Carbon;
+Carbon::setTestNow(new Carbon('2018-09-12 19:00'));
 
 /*
 |--------------------------------------------------------------------------

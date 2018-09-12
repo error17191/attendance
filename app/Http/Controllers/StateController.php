@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\WorkTime;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -9,21 +10,59 @@ class StateController extends Controller
 {
     public function init()
     {
-        $todayTime = auth()->user()->todayTime();
-
-        if(today()->isWeekend()){
-
+        // Today numbers
+        $todayWorkTime = auth()->user()->todayTime();
+        if ($todayWorkTime) {
+            $todayWorkSeconds = $todayWorkTime->secondsTillNow();
+            $todayWorkTimePartitions = $todayWorkTime->partitionSecondsTillNow();
+        } else {
+            $todayWorkSeconds = 0;
+            $todayWorkTimePartitions = ['hours' => 0, 'minutes' => 0, 'seconds' => 0];
         }
+
+        $firstOfMonth = today()->firstOfMonth();
+        $daysPassed = today()->diffInDays($firstOfMonth);// Days passed of current month
+
+        $workHoursIdeal = 0;
+        for ($i = 0; $i <= $daysPassed; $i++) {
+            $day = (new Carbon($firstOfMonth))->addDays($i);
+            if (!$day->isWeekend()) {
+                $workHoursIdeal += 8;
+            }
+        }
+        $workSecondsIdeal = 60 * 60 * $workHoursIdeal;
+
+        $workSecondsActual = WorkTime::whereBetween('day', [today()->firstOfMonth(), today()->subDay()])->sum('seconds');
+        $workSecondsActual += $todayWorkSeconds;
+
+        if ($workSecondsActual > $workSecondsIdeal) {
+            $diffType = 'more';
+        } else {
+            $diffType = 'less';
+        }
+        $diffSeconds = abs($workSecondsIdeal - $workSecondsActual);
 
         return response()->json([
             'signs' => auth()->user()->todaySigns,
             'status' => auth()->user()->status,
             'today_time' => [
-                'seconds' => $todayTime ? $todayTime->secondsTillNow() : 0,
-                'partitions' => $todayTime ?  $todayTime->partitionSecondsTillNow(): ['hours' => 0, 'minutes' => 0, 'seconds' => 0]
+                'seconds' => $todayWorkSeconds,
+                'partitions' => $todayWorkTimePartitions
             ],
             'month_report' => [
-
+                'actual' => [
+                    'seconds' => $workSecondsActual,
+                    'partitions' => partition_seconds($workSecondsActual)
+                ],
+                'ideal' => [
+                    'seconds' => $workSecondsIdeal,
+                    'partitions' => partition_seconds($workSecondsIdeal)
+                ],
+                'diff' => [
+                    'type' => $diffType,
+                    'seconds' => $diffSeconds,
+                    'partitions' => partition_seconds($diffSeconds)
+                ]
             ]
         ]);
     }
