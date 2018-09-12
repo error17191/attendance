@@ -14,7 +14,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
-
+    'test_time' => env('TEST_TIME', false),
     /*
     |--------------------------------------------------------------------------
     | Application Environment

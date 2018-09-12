@@ -38,8 +38,9 @@ require __DIR__.'/../vendor/autoload.php';
 
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
-use Carbon\Carbon;
-Carbon::setTestNow(new Carbon('2018-09-12 19:00'));
+if(config('app.test_time')){
+    \Carbon\Carbon::setTestNow(new Carbon('2018-09-12 19:00'));
+}
 
 /*
 |--------------------------------------------------------------------------
