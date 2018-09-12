@@ -14,6 +14,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if(config('app.test_time')){
+            \Carbon\Carbon::setTestNow(new Carbon('2018-09-12 19:00'));
+        }
         Carbon::setWeekendDays([5,6]);
     }
 
