@@ -12,3 +12,11 @@
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
+
+.dropdown .dropdown-menu .dropdown-item:focus {
+    outline: none;
+    background-color: transparent;
+}
+.dropdown .dropdown-menu .dropdown-item:hover {
+    background-color: #eee;
+}
