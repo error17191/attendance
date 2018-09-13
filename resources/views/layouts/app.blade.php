@@ -21,52 +21,47 @@
     <link href="{{ mix('css/app.css') }}" rel="stylesheet">
 </head>
 <body>
+
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light navbar-laravel">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
-                </a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+        <b-navbar toggleable="md" type="light" variant="light">
 
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="navbar-nav mr-auto">
+            <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
 
-                    </ul>
+            <b-navbar-brand href="#">Attendance</b-navbar-brand>
 
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ml-auto">
-                        <!-- Authentication Links -->
-                        @guest
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                            </li>
-                        @else
-                            <li class="nav-item dropdown">
-                                <b-dropdown variant="link" id="navbarDropdown" text="{{ Auth::user()->name }}" toggle-class="nav-link" menu-class="p-1">
-                                    <b-dropdown-item
-                                        href="{{ route('logout') }}"
-                                        onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();"
-                                        >{{ __('Logout') }}
-                                    </b-dropdown-item>
-                                </b-dropdown>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                    @csrf
-                                </form>
+            <b-collapse is-nav id="nav_collapse">
 
-                            </li>
-                        @endguest
-                    </ul>
-                </div>
-            </div>
-        </nav>
+                <b-navbar-nav>
+                    <b-nav-item v-if="isMainBoard()" onclick="router.push('/cpanel')">cPanel</b-nav-item>
+                    <b-nav-item v-if="isCPanel()" onclick="router.push('/home')">Home</b-nav-item>
+                </b-navbar-nav>
+
+                <!-- Right aligned nav items -->
+                <b-navbar-nav class="ml-auto">
+                    @guest
+                    <b-nav-item href="#">cPanel</b-nav-item>
+                    @else
+                        <b-nav-item-dropdown right>
+                            <template slot="button-content">
+                                <em>{{auth()->user()->name}}</em>
+                            </template>
+                            <b-dropdown-item href="{{ route('logout') }}"
+                             onclick="event.preventDefault();
+                                     document.getElementById('logout-form').submit();"
+                            >
+                                Logout
+                            </b-dropdown-item>
+
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                @csrf
+                            </form>
+
+                        </b-nav-item-dropdown>
+                    @endguest
+                </b-navbar-nav>
+
+            </b-collapse>
+        </b-navbar>
 
         <main class="py-4">
             @yield('content')

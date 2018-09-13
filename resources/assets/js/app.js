@@ -23,8 +23,40 @@ Vue.component('VueElementLoading', VueElementLoading);
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-Vue.component('main-board', require('./components/MainBoard.vue'));
+import MainBoard from './components/MainBoard';
+import CPanel from './components/CPanel';
+import Vacations from './components/Vacations';
+
+const routes = [
+    {
+        path: '/home',
+        component: MainBoard,
+        name: 'main_board'
+    },
+    {
+        path: '/cpanel',
+        component : CPanel,
+        name: 'c_panel'
+    },
+];
+
+import VueRouter from 'vue-router';
+Vue.use(VueRouter);
+
+window.router = new VueRouter({
+    mode: 'history',
+    routes
+});
+
 
 const app = new Vue({
-    el: '#app'
-});
+    router,
+    methods: {
+        isCPanel(){
+            return router.currentRoute.name == 'c_panel';
+        },
+        isMainBoard(){
+            return router.currentRoute.name == 'main_board';
+        },
+    }
+}).$mount('#app');

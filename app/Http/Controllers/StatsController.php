@@ -6,7 +6,7 @@ use App\WorkTime;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
-class StateController extends Controller
+class StatsController extends Controller
 {
     public function init()
     {

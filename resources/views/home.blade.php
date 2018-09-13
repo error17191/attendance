@@ -1,5 +1,5 @@
 @extends('layouts.app')
 
 @section('content')
-    <main-board></main-board>
+    <router-view></router-view>
 @endsection

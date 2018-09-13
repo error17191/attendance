@@ -17,8 +17,13 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
-
 Route::post('start_work','SignController@startWork')->name('start_work');
 Route::post('stop_work','SignController@stopWork')->name('stop_work');
-Route::get('init_state','StateController@init')->name('init_state');
+Route::get('init_state','StatsController@init')->name('init_state');
+
+Route::post('update_vacations','VacationController@update')->name('update_vacations');
+
+Route::get('{any}/{path?}', 'HomeController@index')
+    ->name('home')
+    ->where('any', '(.*)')
+    ->where('path', '(.*)');
