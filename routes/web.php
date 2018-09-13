@@ -21,7 +21,8 @@ Route::post('start_work','SignController@startWork')->name('start_work');
 Route::post('stop_work','SignController@stopWork')->name('stop_work');
 Route::get('init_state','StatsController@init')->name('init_state');
 
-Route::post('update_vacations','VacationController@update')->name('update_vacations');
+Route::get('vacations','VacationController@index')->name('get_all_vacations');
+Route::post('vacations','VacationController@update')->name('update_vacations');
 
 Route::get('{any}/{path?}', 'HomeController@index')
     ->name('home')
