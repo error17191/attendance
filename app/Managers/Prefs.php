@@ -25,6 +25,21 @@ class Prefs
         $this->save();
     }
 
+    public function annualVacations($array = null)
+    {
+        if (is_null($array)) {
+            return $this->prefs->annual_vacations;
+        }
+        $this->prefs->annual_vacations = $array;
+        $this->save();
+    }
+
+    public function addAnnualVacation($array)
+    {
+        $this->prefs->annual_vacations[] = $array;
+        $this->save();
+    }
+
     public function save()
     {
         Storage::put('prefs/prefs.json',json_encode($this->prefs, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));

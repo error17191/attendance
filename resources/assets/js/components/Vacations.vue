@@ -1,26 +1,24 @@
 <template>
-    <div class="card">
-        <div class="card-header">
-            Weekends
-        </div>
-        <div class="card-body">
-            <div v-for="weekday in weekdays" class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" :id="`weekday_${weekday.name}`" v-model="weekends"
-                       :value="weekday.index">
-                <label class="form-check-label" :for="`weekday_${weekday.name}`">{{weekday.name}}</label>
-            </div>
-        </div>
-        <div class="card-footer text-right">
-            <button class="btn btn-primary btn-sm" @click="update">Update</button>
-        </div>
-
-
-    </div>
-
+    <b-card no-body>
+        <b-tabs card>
+            <b-tab no-body title="Weekends" active>
+                <weekends></weekends>
+            </b-tab>
+            <b-tab no-body title="Annual Vacations">
+                <annual-vacations></annual-vacations>
+            </b-tab>
+        </b-tabs>
+    </b-card>
 </template>
 
 <script>
+    import Weekends from './Weekends';
+    import AnnualVacations from './AnnualVacations';
     export default {
+        components : {
+            Weekends,
+            AnnualVacations
+        },
         mounted() {
             axios.get('/vacations?t=' + new Date().getTime())
                 .then(response => {
@@ -37,17 +35,12 @@
         },
         methods: {
             update() {
+                this.updating = true;
                 axios.post('/vacations', {weekends: this.weekends}).then(() => {
-
+                    this.updating = false;
+                    this.$snotify.success('Weekends Updated Successfully');
                 });
             }
         }
     }
 </script>
-<style>
-
-    .container-fluid {
-        width: auto;
-    }
-
-</style>

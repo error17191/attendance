@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Managers\Prefs;
+use App\Managers\Settings;
 use Carbon\Carbon;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,10 +18,10 @@ class AppServiceProvider extends ServiceProvider
         if(config('app.test_time')){
             Carbon::setTestNow(new Carbon('2018-09-12 19:00'));
         }
-        $this->app->singleton('prefs',function (){
-            return new Prefs();
+        $this->app->singleton('settings',function (){
+            return new Settings();
         });
-        Carbon::setWeekendDays([5,6]);
+        Carbon::setWeekendDays(app('settings')->getWeekends());
     }
 
     /**

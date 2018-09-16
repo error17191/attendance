@@ -7,11 +7,7 @@
 
 // Bootstrap
 @import '~bootstrap/scss/bootstrap';
-
-.navbar-laravel {
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-}
+//@import './snotify';
 
 .dropdown .dropdown-menu .dropdown-item:focus {
     outline: none;
@@ -20,3 +16,5 @@
 .dropdown .dropdown-menu .dropdown-item:hover {
     background-color: #eee;
 }
+
+

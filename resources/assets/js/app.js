@@ -1,4 +1,3 @@
-
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
@@ -8,6 +7,7 @@
 require('./bootstrap');
 
 import BootstrapVue from 'bootstrap-vue';
+
 window.Vue = require('vue');
 
 Vue.use(BootstrapVue);
@@ -25,7 +25,6 @@ Vue.component('VueElementLoading', VueElementLoading);
 
 import MainBoard from './components/MainBoard';
 import CPanel from './components/CPanel';
-import Vacations from './components/Vacations';
 
 const routes = [
     {
@@ -35,13 +34,24 @@ const routes = [
     },
     {
         path: '/cpanel',
-        component : CPanel,
+        component: CPanel,
         name: 'c_panel'
     },
 ];
 
 import VueRouter from 'vue-router';
+
 Vue.use(VueRouter);
+import Snotify from 'vue-snotify';
+
+Vue.use(Snotify, {
+    toast: {
+        showProgressBar: false,
+        position: 'centerTop'
+    }
+});
+
+import 'vue-snotify/styles/material.css';
 
 window.router = new VueRouter({
     mode: 'history',
@@ -52,10 +62,10 @@ window.router = new VueRouter({
 const app = new Vue({
     router,
     methods: {
-        isCPanel(){
+        isCPanel() {
             return router.currentRoute.name == 'c_panel';
         },
-        isMainBoard(){
+        isMainBoard() {
             return router.currentRoute.name == 'main_board';
         },
     }
