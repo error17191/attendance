@@ -49,7 +49,7 @@ class TestFCM extends Command
                     'title' => 'Sba7 el zeft',
                     'body' => 'Yala bena',
                 ],
-                'to' => 'fgdcY4C3bxM:APA91bFUu-nvdRdb1XO6YtFCtKGgmCUg4CD8YsLzxhqz0wj4u5X1KEcCoN5q5Iuia672LbkWdiMs9wZMJ9lNyg210Y8tJNLJZzIZMjRgBrZbQu7uzjcAaJO7F77YCO6d42TtB7zl5YHN'
+                'to' => 'fYLRRSD191I:APA91bGwXcz9yCQHS4ECyMG5h_im7EDaNMfhXFFlEcTgYSbf8CS2vA2EnzgCWmrDfiGINLIdnfX6PsIvQ5adw7hmRXRNYqdRG0n3Q7z99DTsxSJGxszTBSSjcn57rZsGtNIkmj8DkUxQ'
             ]
         ]);
 
