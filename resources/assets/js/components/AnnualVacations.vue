@@ -1,45 +1,44 @@
 <template>
-    <div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-sm-5">
-                    <select
-                        :class="{'form-control' : true,'is-invalid' : showMonthFeedback}"
-                        v-model="month"
-                    >
-                        <option selected :value="null">Month</option>
-                        <option v-for="month in months" :value="month">{{month.name}}</option>
-                    </select>
-                    <div v-if="showMonthFeedback" class="invalid-feedback">Please select Month</div>
-                </div>
-                <div class="col-sm-5">
-                    <select
-                        :class="{'form-control' : true,'is-invalid' : showDayFeedback}"
-                        v-model="day"
-                        :disabled="month == null"
-                    >
-                        <option selected :value="0">Day</option>
-                        <template v-if="month != null">
-                            <option
-                                v-for="i in month.days"
-                                :disabled="annualVacationsGrouped[month.index] && annualVacationsGrouped[month.index].includes(i)"
-                                :value="i">{{i}}
-                            </option>
-                        </template>
-                    </select>
-                    <div v-if="showDayFeedback" class="invalid-feedback">Please select day</div>
-                </div>
-                <div class="col-sm-2">
-                    <button
-                        :disabled="month == null || day == 0 || adding"
-                        class="btn btn-dark" @click="add">
-                        {{adding ? 'Adding ..' : 'Add'}}
-                    </button>
-                </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-sm-5">
+                <select
+                    :class="{'form-control' : true,'is-invalid' : showMonthFeedback}"
+                    v-model="month"
+                >
+                    <option selected :value="null">Month</option>
+                    <option v-for="month in months" :value="month">{{month.name}}</option>
+                </select>
+                <div v-if="showMonthFeedback" class="invalid-feedback">Please select Month</div>
             </div>
-            <hr>
-            <div v-if="annualVacations.length == 0" class="alert alert-info">No Annual Vacations</div>
-            <h4 v-else>
+            <div class="col-sm-5">
+                <select
+                    :class="{'form-control' : true,'is-invalid' : showDayFeedback}"
+                    v-model="day"
+                    :disabled="month == null"
+                >
+                    <option selected :value="0">Day</option>
+                    <template v-if="month != null">
+                        <option
+                            v-for="i in month.days"
+                            :disabled="annualVacationsGrouped[month.index] && annualVacationsGrouped[month.index].includes(i)"
+                            :value="i">{{i}}
+                        </option>
+                    </template>
+                </select>
+                <div v-if="showDayFeedback" class="invalid-feedback">Please select day</div>
+            </div>
+            <div class="col-sm-2">
+                <button
+                    :disabled="month == null || day == 0 || adding"
+                    class="btn btn-dark" @click="add">
+                    {{adding ? 'Adding ..' : 'Add'}}
+                </button>
+            </div>
+        </div>
+        <hr>
+        <div v-if="annualVacations.length == 0" class="alert alert-info">No Annual Vacations</div>
+        <h4 v-else>
                 <span
                     v-for="annualVacation in annualVacations"
                     class="badge badge-info m-2">{{annualVacation.month.name}} {{annualVacation.day}}
@@ -51,9 +50,7 @@
                       <span aria-hidden="true">&times;</span>
                     </button>
                 </span>
-            </h4>
-        </div>
-    </div>
+        </h4>
     </div>
 </template>
 
@@ -115,7 +112,7 @@
                         let index = this.annualVacationsGrouped[annualVacation.month.index].indexOf(annualVacation.day);
                         this.annualVacationsGrouped[annualVacation.month.index].splice(index, 1);
                         if (this.annualVacationsGrouped[annualVacation.month.index].length == 0) {
-                            Vue.delete(this.annualVacationsGrouped,annualVacation.month.index);
+                            Vue.delete(this.annualVacationsGrouped, annualVacation.month.index);
                         }
 
                         this.deleting = false;

@@ -12,10 +12,10 @@
 
     <!-- Scripts -->
     <script src="{{ mix('js/app.js') }}" defer></script>
-
     <!-- Fonts -->
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css">
+    <link rel="manifest" href="/manifest.json">
 
     <!-- Styles -->
     <link href="{{ mix('css/app.css') }}" rel="stylesheet">
@@ -68,5 +68,49 @@
             @yield('content')
         </main>
     </div>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-app.js"></script>
+
+    <!-- Add additional services that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-messaging.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-functions.js"></script>
+    <script src="./firebase-messaging-sw.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyBEqP7_rgdd23STADNVz8vMafo3e1eKfRM",
+            authDomain: "attendance-16307.firebaseapp.com",
+            databaseURL: "https://attendance-16307.firebaseio.com",
+            projectId: "attendance-16307",
+            storageBucket: "attendance-16307.appspot.com",
+            messagingSenderId: "480654102977"
+        };
+        firebase.initializeApp(config);
+
+        // Retrieve Firebase Messaging object.
+        const messaging = firebase.messaging();
+
+        messaging.usePublicVapidKey("BP-G7rFXqXNDHVsZjYwt_Fc_E5JJVJX-EdelNULHfnMNZpXM300jehcuPaTuWeP3yXmim0n_VxYs7vB3cqqgI3Q");
+
+        messaging.requestPermission().then(function() {
+            console.log('Notification permission granted.');
+            // TODO(developer): Retrieve an Instance ID token for use with FCM.
+            // ...
+            messaging.getToken().then(function(currentToken) {
+                console.log(currentToken)
+                if (currentToken) {
+                    console.log(currentToken);
+                }
+            });
+
+        }).catch(function(err) {
+            console.log('Unable to get permission to notify.', err);
+        });
+
+
+
+    </script>
 </body>
 </html>

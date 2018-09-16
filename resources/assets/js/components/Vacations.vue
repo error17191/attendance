@@ -7,6 +7,9 @@
             <b-tab no-body title="Annual Vacations">
                 <annual-vacations></annual-vacations>
             </b-tab>
+            <b-tab no-body title="Custom">
+                <custom-vacations></custom-vacations>
+            </b-tab>
         </b-tabs>
     </b-card>
 </template>
@@ -14,10 +17,12 @@
 <script>
     import Weekends from './Weekends';
     import AnnualVacations from './AnnualVacations';
+    import CustomVacations from './CustomVacations';
     export default {
         components : {
             Weekends,
-            AnnualVacations
+            AnnualVacations,
+            CustomVacations
         },
         mounted() {
             axios.get('/vacations?t=' + new Date().getTime())
