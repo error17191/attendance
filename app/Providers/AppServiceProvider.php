@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Managers\Settings;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -15,13 +17,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if(config('app.test_time')){
-            Carbon::setTestNow(new Carbon('2018-09-12 19:00'));
+        if(Schema::hasTable('settings')){
+            if(config('app.test_time')){
+                Carbon::setTestNow(new Carbon('2018-09-12 19:00'));
+            }
+            $this->app->singleton('settings',function (){
+                return new Settings();
+            });
+            Carbon::setWeekendDays(app('settings')->getWeekends());
         }
-        $this->app->singleton('settings',function (){
-            return new Settings();
-        });
-        Carbon::setWeekendDays(app('settings')->getWeekends());
     }
 
     /**
