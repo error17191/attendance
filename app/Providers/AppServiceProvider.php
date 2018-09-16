@@ -17,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if(Schema::hasTable('settings')){
+        if(Schema::hasTable('settings') && DB::table('settings')->count()){
             if(config('app.test_time')){
                 Carbon::setTestNow(new Carbon('2018-09-12 19:00'));
             }
