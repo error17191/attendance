@@ -12,7 +12,7 @@ class TestFCM extends Command
      *
      * @var string
      */
-    protected $signature = 'test';
+    protected $signature = 'test {to}';
 
     /**
      * The console command description.
@@ -50,7 +50,7 @@ class TestFCM extends Command
                     'body' => 'Yala bena',
                 ],
 
-                'to' => 'fYLRRSD191I:APA91bGwXcz9yCQHS4ECyMG5h_im7EDaNMfhXFFlEcTgYSbf8CS2vA2EnzgCWmrDfiGINLIdnfX6PsIvQ5adw7hmRXRNYqdRG0n3Q7z99DTsxSJGxszTBSSjcn57rZsGtNIkmj8DkUxQ'
+                'to' => $this->argument('to')
             ]
         ]);
         echo $response->getBody()->getContents();
