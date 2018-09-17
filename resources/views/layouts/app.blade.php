@@ -76,7 +76,6 @@
     <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-messaging.js"></script>
     <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase-functions.js"></script>
-    <script src="./firebase-messaging-sw.js"></script>
     <script>
         // Initialize Firebase
         var config = {
@@ -109,7 +108,9 @@
             console.log('Unable to get permission to notify.', err);
         });
 
-
+        messaging.onMessage(function(payload) {
+            console.log('Message received. ', payload);
+        });
 
     </script>
 </body>
