@@ -35,7 +35,7 @@ class User extends Authenticatable
 
     public function todaySigns()
     {
-        return $this->signs()->where('day',now()->toDateString());
+        return $this->signs()->where('day', now()->toDateString());
     }
 
     public function workTimes()
@@ -53,7 +53,7 @@ class User extends Authenticatable
         $now = now();
 
         $workTime = $this->todayTime();
-        if(! $workTime){
+        if (!$workTime) {
             $workTime = new WorkTime();
             $workTime->user_id = $this->id;
             $workTime->day = $now->toDateString();
@@ -81,7 +81,7 @@ class User extends Authenticatable
         $now = now();
 
         $workTime = $this->todayTime();
-        if(! $workTime){
+        if (!$workTime) {
             return;
         }
         $workTime->updateSeconds();
@@ -112,4 +112,8 @@ class User extends Authenticatable
         return $this->status == 'off';
     }
 
+    public function browsers()
+    {
+        return $this->hasMany(UserBrowser::class);
+    }
 }

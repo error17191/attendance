@@ -57,10 +57,12 @@
 <script>
     export default {
         mounted() {
+
             axios.get('vacations/annual?t=' + new Date().getTime())
                 .then(response => {
                     this.months = response.data.months;
                     this.annualVacations = response.data.annual_vacations;
+                    this.sortVacations();
                     this.annualVacations.forEach((vacation) => {
                         if (!this.annualVacationsGrouped[vacation.month.index]) {
                             this.annualVacationsGrouped[vacation.month.index] = [];
@@ -90,6 +92,7 @@
                         this.$snotify.success('Annual Vacation Added Successfully');
                         this.adding = false;
                         this.annualVacations.push(response.data.annual_vacation);
+                        this.sortVacations();
                         if (!this.annualVacationsGrouped[this.month.index]) {
                             this.annualVacationsGrouped[this.month.index] = [];
                         }
@@ -118,6 +121,23 @@
                         this.deleting = false;
                         this.$snotify.success('Annual Vacation Deleted Successfully');
                     });
+            },
+            sortVacations(){
+                this.annualVacations.sort((a,b) => {
+                    if(a.month.index < b.month.index){
+                        return -1;
+                    }
+                    if(a.month.index > b.month.index){
+                        return 1;
+                    }
+                    if(a.month.index == b.month.index){
+                        if(a.day < b.day){
+                            return -1;
+                        }else{
+                            return 1;
+                        }
+                    }
+                });
             }
         },
         watch: {

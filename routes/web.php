@@ -30,6 +30,9 @@ Route::post('vacations/annual/add', 'AnnualVacationsController@add')->name('add_
 
 Route::get('vacations/custom', 'CustomVacationsController@index')->name('get_all_custom_vacations');
 Route::post('vacations/custom', 'CustomVacationsController@store')->name('store_custom_vacation');
+Route::post('vacations/custom/delete', 'CustomVacationsController@delete')->name('delete_custom_vacation');
+
+Route::post('browser/token','BrowserTokenController@store')->name('store_browser_token');
 
 Route::get('{any}/{path?}', 'HomeController@index')
     ->name('home')

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCustomVacationsTable extends Migration
+class CreateUsersCustomVacationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,9 @@ class CreateCustomVacationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('custom_vacations', function (Blueprint $table) {
-            $table->increments('id');
-            $table->boolean('global')->default(0);
-            $table->date('date');
+        Schema::create('users_custom_vacations', function (Blueprint $table) {
+            $table->integer('user_id')->index();
+            $table->integer('vacation_id')->index();
         });
     }
 
@@ -27,6 +26,6 @@ class CreateCustomVacationsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('custom_vacations');
+        Schema::dropIfExists('users_custom_vacations');
     }
 }
