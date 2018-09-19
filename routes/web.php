@@ -34,10 +34,8 @@ Route::post('vacations/custom/delete', 'CustomVacationsController@delete')->name
 
 Route::post('browser/token','BrowserTokenController@store')->name('store_browser_token');
 
-Route::get('{any}/{path?}', 'HomeController@index')
-    ->name('home')
-    ->where('any', '(.*)')
-    ->where('path', '(.*)');
+Route::get('{any}', 'HomeController@index')
+    ->name('home');
 
 
 //Route::get('test', function () {

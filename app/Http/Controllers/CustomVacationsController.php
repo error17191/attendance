@@ -79,12 +79,21 @@ class CustomVacationsController extends Controller
 
     public function delete(Request $request)
     {
-        DB::table('custom_vacations')
-            ->where('id', $request->id)
+        $v = Validator::make($request->only('ids'),[
+            'ids' => 'array',
+            'ids.*' => 'integer|min:1'
+        ]);
+
+        if($v->fails()){
+            abort(400);
+        }
+
+        $count = DB::table('custom_vacations')
+            ->whereIn('id', $request->ids)
             ->delete();
 
         return response()->json([
-            'success' => true,
+            'count' => $count,
         ]);
     }
 }

@@ -3,6 +3,8 @@
  * includes Vue and other libraries. It is a great starting point when
  * building robust, powerful web applications using Vue and Laravel.
  */
+document.querySelector('#loader-container').style.display = 'none';
+document.querySelector('html').classList.remove('loader');
 
 require('./bootstrap');
 
@@ -40,10 +42,9 @@ const routes = [
 ];
 
 import VueRouter from 'vue-router';
-
 Vue.use(VueRouter);
-import Snotify from 'vue-snotify';
 
+import Snotify from 'vue-snotify';
 Vue.use(Snotify, {
     toast: {
         showProgressBar: false,
@@ -71,7 +72,8 @@ const app = new Vue({
     }
 }).$mount('#app');
 
-
+import moment from 'moment';
+window.moment = moment;
 // import firebase from 'firebase/app';
 //
 // require('firebase/messaging');
