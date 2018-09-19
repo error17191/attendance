@@ -49,8 +49,8 @@
                     <span
                         style="cursor: pointer"
                         v-for="customVacation,index in customVacations"
-                        @click="highlight(index)"
-                        :class="`badge m-2 ${customVacation.highlight ? 'badge-primary' : 'badge-info'}`">{{customVacation.date}}
+                        @click.prevent="highlight($event,index)"
+                        :class="`noselect badge m-2 ${customVacation.highlight ? 'badge-primary' : 'badge-info'}`">{{customVacation.date}}
                         &nbsp;&nbsp;
                         <button type="button" class="close text-light"
                                 :disabled="deleting"
@@ -68,6 +68,7 @@
             </div>
             <div class="text-right" v-if="customVacations.length > 1">
                 <button
+                    @click="deleteVacations"
                     :disabled="highlightedVacations.length == 0"
                     class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
             </div>
@@ -109,22 +110,28 @@
                 customVacations: [],
                 deleting: false,
                 highlightedVacations: [],
+                lastHighlighted: null,
                 selectAll: false,
             }
         },
         methods: {
             addVacation() {
-                if (this.dateType == 'range') {
-                    addRangeVacations();
-                }
                 this.adding = true;
                 let data = {};
-                if (this.target == 'all') {
-                    data.global = 1;
+                switch (this.target){
+                    case 'all':
+                        data.global = 1;
+                        break;
                 }
-                let date = new Date(this.date);
-                let dateFinal = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
-                data.date = dateFinal;
+                switch (this.dateType) {
+                    case 'single':
+                        data.dates =[this.date];
+                        break;
+                    case 'range':
+                        data.dates = this.getRangeVacations();
+                        break;
+                }
+
                 makeRequest({
                     method: 'post',
                     url: '/vacations/custom',
@@ -133,23 +140,21 @@
                     this.adding = false;
                     this.date = null;
                     this.$snotify.success('Vacation Added Successfully');
-                    this.customVacations.push(response.data.custom_vacation);
+                    this.customVacations = response.data.custom_vacations;
+                    this.updateDisabledDates();
                     this.sortVacations();
                 });
             },
-            addRangeVacations() {
+            getRangeVacations() {
                 let [startDate, endDate] = this.date.split(/\s*to\s*/);
-                startDate = moment(startDate);
-                endDate = moment(endDate);
-                let diffDays = endDate.diff(startDate, 'days') - 1;
-                console.log(diffDays);
-                // let dates = [startDate, endDate];
-                // let date = moment(startDate);
-                // for (let i = 1; i < dates.length; i++) {
-                //     dates.push(date.add(1,'days').format('YYYY-MM-DD'));
-                // }
-                // console.log(dates);
-
+                let diffDays = moment(endDate).diff(moment(startDate), 'days');
+                let dates = [startDate];
+                let date = moment(startDate);
+                for (let i = 1; i < diffDays; i++) {
+                    dates.push(date.add(1, 'days').format('YYYY-MM-DD'));
+                }
+                dates.push(endDate);
+                return dates;
             },
             deleteVacation(customVacation, index) {
                 this.deleting = true;
@@ -158,11 +163,28 @@
                     url: '/vacations/custom/delete',
                     data: {ids: [customVacation.id]}
                 }).then(() => {
+                    this.lastHighlighted = null;
                     if (customVacation.highlight) {
                         let toRemoveIndex = this.highlightedVacations.indexOf(customVacation.id);
                         this.highlightedVacations.splice(toRemoveIndex, 1);
                     }
                     this.customVacations.splice(index, 1);
+                    this.updateDisabledDates();
+                    this.deleting = false;
+                    this.$snotify.success('Vacation Deleted Successfully');
+                });
+            },
+            deleteVacations(){
+                this.deleting = true;
+                makeRequest({
+                    method: 'post',
+                    url: '/vacations/custom/delete',
+                    data: {ids: this.highlightedVacations}
+                }).then((response) => {
+                    this.lastHighlighted = null;
+                    this.highlightedVacations = [];
+                    this.customVacations = response.data.custom_vacations;
+                    this.updateDisabledDates();
                     this.deleting = false;
                     this.$snotify.success('Vacation Deleted Successfully');
                 });
@@ -178,17 +200,34 @@
                     return 0;
                 });
             },
-            highlight(index) {
+            highlight($event,index) {
                 if (this.customVacations.length < 2) {
                     return;
                 }
                 let highlighted = this.customVacations[index].highlight = !this.customVacations[index].highlight;
                 if (highlighted) {
-                    this.highlightedVacations.push(this.customVacations[index]);
+                    if(this.lastHighlighted && $event.shiftKey){
+                        let min = Math.min(this.lastHighlighted,index);
+                        let max = Math.max(this.lastHighlighted,index);
+                        for(let i=min+1;i<=max;i++){
+                            this.customVacations[i].highlight = true;
+                            this.highlightedVacations.push(this.customVacations[i].id);
+                        }
+                    }else{
+                        this.highlightedVacations.push(this.customVacations[index].id);
+                    }
+                    this.lastHighlighted = index;
                 } else {
+                    this.lastHighlighted = false;
                     let toRemoveIndex = this.highlightedVacations.indexOf(this.customVacations[index].id);
                     this.highlightedVacations.splice(toRemoveIndex, 1);
                 }
+            },
+            updateDisabledDates(){
+                this.dateConfig.disable = [];
+                this.customVacations.forEach(el => {
+                    this.dateConfig.disable.push(el.date);
+                });
             }
         },
         watch: {
@@ -223,5 +262,14 @@
 <style>
     .bg-white {
         background-color: white;
+    }
+    .noselect {
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
     }
 </style>

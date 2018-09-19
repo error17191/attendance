@@ -42,7 +42,7 @@ window.makeRequest = (params) => {
             .then(resolve)
             .catch((error) => {
                 //error.response.status
-                window.location.reload();
+                // window.location.reload();
             })
     });
 };
