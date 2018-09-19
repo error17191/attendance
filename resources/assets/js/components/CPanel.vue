@@ -5,8 +5,8 @@
                 <b-tab title="Vacations" active>
                     <vacations></vacations>
                 </b-tab>
-                <b-tab title="Tab 2">
-                    Tab Contents 2
+                <b-tab title="Timing">
+                    <timing></timing>
                 </b-tab>
                 <b-tab title="Tab 3">
                     Tab Contents 3
@@ -18,8 +18,12 @@
 
 <script>
     import Vacations from './Vacations';
+    import Timing from './Timing';
 
     export default {
-        components: {Vacations}
+        components: {
+            Vacations,
+            Timing
+        }
     }
 </script>
