@@ -27,11 +27,14 @@ class CustomVacationsController extends Controller
 //            abort(400);
 //        }
 
-        if (!strtotime($request->date)) {
+        $v = Validator::make($request->only('dates'),[
+            'dates' => 'required|array',
+            'dates.*' => 'date|date_format:Y-m-d'
+        ]);
+
+        if($v->fails()){
             abort(400);
         }
-
-        $date = new Carbon($request->date);
 
         if (!$request->global) {
             $v = Validator::make($request->only('users'), [
@@ -47,10 +50,15 @@ class CustomVacationsController extends Controller
                 abort(400);
             }
 
-            $id = DB::table('custom_vacations')->insertGetId([
-                'date' => $date->toDateString(),
-                'global' => 1
-            ]);
+            $customVacations = [];
+
+            foreach ($request->dates as $date){
+                $customVacations[] = [
+                    'date' => $date,
+                    'global' => 0
+                ];
+            }
+            DB::table('custom_vacations')->insert($customVacations);
 
             $records = [];
             foreach ($usersIds as $userId) {
@@ -62,29 +70,38 @@ class CustomVacationsController extends Controller
             DB::table('user_custom_vacations')->insert($records);
 
         } else {
-            $id = DB::table('custom_vacations')->insertGetId([
-                'date' => $date->toDateString(),
-                'global' => 1
-            ]);
+            $customVacations = [];
+            foreach ($request->dates as $date){
+                $customVacations[] = [
+                    'date' => $date,
+                    'global' => 1
+                ];
+            }
+            DB::table('custom_vacations')->insert($customVacations);
         }
 
         return response()->json([
-            'custom_vacation' => [
-                'date' => $date->toDateString(),
-                'global' => $request->global ? 1 : 0,
-                'id' => $id
-            ]
+            'custom_vacations' => DB::table('custom_vacations') ->orderBy('date')->get()
         ]);
     }
 
     public function delete(Request $request)
     {
+        $v = Validator::make($request->only('ids'),[
+            'ids' => 'array',
+            'ids.*' => 'integer|min:1'
+        ]);
+
+        if($v->fails()){
+            abort(400);
+        }
+
         DB::table('custom_vacations')
-            ->where('id', $request->id)
+            ->whereIn('id', $request->ids)
             ->delete();
 
         return response()->json([
-            'success' => true,
+            'custom_vacations' => DB::table('custom_vacations')->orderBy('date')->get(),
         ]);
     }
 }

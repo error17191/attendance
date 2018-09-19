@@ -1,4 +1,3 @@
-
 // window._ = require('lodash');
 // window.Popper = require('popper.js').default;
 
@@ -33,6 +32,21 @@ if (token) {
 } else {
     console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
 }
+
+window.makeRequest = (params) => {
+    if(params.method == 'get' && !params.cache){
+        params.url = params.url + '?t=' + new Date().getTime();
+    }
+    return new Promise((resolve) => {
+        let promise = axios.request(params)
+            .then(resolve)
+            .catch((error) => {
+                //error.response.status
+                // window.location.reload();
+            })
+    });
+};
+
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
