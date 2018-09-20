@@ -52,6 +52,11 @@ Vue.use(Snotify, {
     }
 });
 
+import vSelect from 'vue-select'
+
+Vue.component('v-select', vSelect);
+
+
 import 'vue-snotify/styles/material.css';
 
 window.router = new VueRouter({
