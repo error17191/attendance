@@ -60,4 +60,43 @@ class Settings
             ->where('key', 'annual_vacations')
             ->update(['value' => json_encodei($this->settings['annual_vacations'])]);
     }
+
+    public function getRegularTime()
+    {
+        return $this->settings['regular_time'];
+    }
+
+    public function setRegularTime($regularTime)
+    {
+        $this->settings['regular_time'] = $regularTime;
+        DB::table('settings')
+            ->where('key','regular_time')
+            ->update(['value' => json_encodei($this->settings['regular_time'])]);
+    }
+
+    public function getRegularHours()
+    {
+        return $this->settings['regular_hours'];
+    }
+
+    public function setRegularHours($regularHours)
+    {
+        $this->settings['regular_hours'] = $regularHours;
+        DB::table('settings')
+            ->where('key','regular_hours')
+            ->update(['value' => $this->settings['regular_hours']]);
+    }
+
+    public function getNotifications()
+    {
+        return $this->settings['notifications'];
+    }
+
+    public function setNotifications($notifications)
+    {
+        $this->settings['notifications'] = $notifications;
+        DB::table('settings')
+            ->where('key','notifications')
+            ->update(['value' => json_encode($this->settings['notifications'])]);
+    }
 }
