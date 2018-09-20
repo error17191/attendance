@@ -47,6 +47,26 @@ class SeedSettings extends Command
                 'key' => 'annual_vacations',
                 'value' => json_encode([])
             ],
+            [
+                'key' => 'regular_time',
+                'value' => json_encode([
+                    'from' => 0,
+                    'to' => 1
+                ])
+            ],
+            [
+                'key' => 'regular_hours',
+                'value' => json_encode(8)
+            ],
+            [
+                'key' => 'notifications',
+                'value' => json_encode([
+                    'late_attendance' => false,
+                    'late_attendance_time' => 0,
+                    'early_checkout' => false,
+                    'early_checkout_time' => 1
+                ])
+            ]
         ];
         DB::table('settings')->truncate();
         DB::table('settings')->insert($settings);
