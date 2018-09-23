@@ -59,7 +59,7 @@ class SeedSettings extends Command
                 'key' => 'notifications',
                 'value' => json_encode([
                     'late_attendance' => false,
-                    'late_attendance_time' => 0,
+                    'late_attendance_time' => 0.5,
                     'early_checkout' => false,
                     'early_checkout_time' => 0
                 ])
