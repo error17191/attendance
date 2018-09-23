@@ -85,7 +85,6 @@
             flatPickr
         },
         mounted() {
-            window.aa = this.addRangeVacations;
             makeRequest({
                 method: 'get',
                 url: '/vacations/custom',
@@ -130,6 +129,9 @@
                     case 'range':
                         data.dates = this.getRangeVacations();
                         break;
+                    case 'multiple':
+                        data.dates = this.getMultipleVacations()
+                        break;
                 }
 
                 makeRequest({
@@ -155,6 +157,9 @@
                 }
                 dates.push(endDate);
                 return dates;
+            },
+            getMultipleVacations() {
+                return this.date.split(/\s*,\s*/);
             },
             deleteVacation(customVacation, index) {
                 this.deleting = true;

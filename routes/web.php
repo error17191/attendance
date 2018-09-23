@@ -33,6 +33,7 @@ Route::post('vacations/custom', 'CustomVacationsController@store')->name('store_
 Route::post('vacations/custom/delete', 'CustomVacationsController@delete')->name('delete_custom_vacation');
 
 Route::post('browser/token','BrowserTokenController@store')->name('store_browser_token');
+Route::get('users','UserSearchController@index');
 
 Route::get('/regular/time','RegularTimeController@index')
     ->name('regular.time.index');
