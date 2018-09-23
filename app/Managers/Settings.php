@@ -74,19 +74,6 @@ class Settings
             ->update(['value' => json_encodei($this->settings['regular_time'])]);
     }
 
-    public function getRegularHours()
-    {
-        return $this->settings['regular_hours'];
-    }
-
-    public function setRegularHours($regularHours)
-    {
-        $this->settings['regular_hours'] = $regularHours;
-        DB::table('settings')
-            ->where('key','regular_hours')
-            ->update(['value' => $this->settings['regular_hours']]);
-    }
-
     public function getNotifications()
     {
         return $this->settings['notifications'];

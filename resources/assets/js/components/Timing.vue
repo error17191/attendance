@@ -15,7 +15,7 @@
         <b-form-group label="Regular Hours" horizontal>
             <div class="col-md-3">
                 <b-form-select
-                    v-model="form.regularHours"
+                    v-model="form.regularTime.regularHours"
                     :options="hoursOptions"
                 >
                 </b-form-select>
@@ -66,14 +66,14 @@
                 form: {
                     regularTime: {
                         from: 0,
-                        to: 1
+                        to: 0.5,
+                        regularHours: 8
                     },
-                    regularHours: 8,
                     notifyMe: {
                         late_attendance: false,
-                        late_attendance_time:0,
+                        late_attendance_time: 0,
                         early_checkout: false,
-                        early_checkout_time: 1
+                        early_checkout_time: 0.5
                     }
                 },
                 saving:false
@@ -81,47 +81,31 @@
         },
         computed: {
             fromOptions: function () {
-                return this.generateTimeOptions('regularTime','from');
+                return this.generateTimeOptions(0,24,'regularTime','from');
             },
             toOptions: function () {
-                return this.generateTimeOptions('regularTime','to');
+                let start = this.form.regularTime.from + 0.5;
+                return this.generateTimeOptions(start,24,'regularTime','to');
             },
             lateOptions: function() {
-                return this.generateTimeOptions('notifyMe','late_attendance_time');
+                let start = this.form.regularTime.from + 0.5;
+                return this.generateTimeOptions(start,24,'notifyMe','late_attendance_time');
             },
             earlyOptions: function () {
-                return this.generateTimeOptions('notifyMe','early_checkout_time');
+                let end = this.form.regularTime.from + this.form.regularTime.regularHours;
+                return this.generateTimeOptions(0,end,'notifyMe','early_checkout_time');
             },
             hoursOptions: function () {
-                let hoursOptions = [];
-                for(let number = 0 ; number <= 24; number++){
-                    hoursOptions.push({
-                        text: number,
-                        value: number,
-                        selected: number === this.form.regularHours
-                    });
-                    hoursOptions.push({
-                        text: number + 0.5,
-                        value: number + 0.5,
-                        selected: number + 0.5 === this.form.regularHours
-                    })
-                }
-                return hoursOptions;
+                return this.generateTimeOptions(0,24,'regularTime','regularHours');
             }
         },
         mounted(){
             this.getData();
         },
         methods: {
-            generateTimeOptions(type,field){
-                let number = 0;
+            generateTimeOptions(start,end,type,field){
                 let options = [];
-                if(field === 'to'){
-                    number = this.form.regularTime.from + 1;
-                }else if(field === 'early_checkout_time'){
-                    number = this.form.notifyMe.late_attendance_time + 1;
-                }
-                for(number; number < 48; number++){
+                for(let number = start; number < end; number += 0.5){
                     options.push({
                         text: this.formatTime(number),
                         value: number,
@@ -131,11 +115,8 @@
                 return options;
             },
             formatTime(number) {
-                let hour = Math.floor(number / 2);
-                let minute = number % 2 === 0 ? '00' : '30';
-                if (hour < 10) {
-                    hour = `0${hour}`;
-                }
+                let hour = Math.floor(number) >= 10 ? JSON.stringify(Math.floor(number)) : '0' + JSON.stringify(Math.floor(number));
+                let minute = number - Math.floor(number) > 0 ? '30' : '00';
                 return `${hour}:${minute}`;
             },
             getData(){
@@ -145,7 +126,7 @@
                 }).then((response)=>{
                     this.form.regularTime.from = response.data[0].regularTime.from;
                     this.form.regularTime.to = response.data[0].regularTime.to;
-                    this.form.regularHours = response.data[0].regularHours;
+                    this.form.regularTime.regularHours = response.data[0].regularTime.regularHours;
                     this.form.notifyMe.late_attendance = response.data[0].notifications.late_attendance;
                     this.form.notifyMe.late_attendance_time = response.data[0].notifications.late_attendance_time;
                     this.form.notifyMe.early_checkout = response.data[0].notifications.early_checkout;
@@ -161,7 +142,6 @@
                 }).then((response)=>{
                     this.saving = false;
                     this.$snotify.success('Settings Saved Successfully');
-                    console.log(response.data);
                 });
             }
         },
@@ -169,14 +149,17 @@
             'form.regularTime.from': {
                 handler(number){
                     if(number >= this.form.regularTime.to){
-                        this.form.regularTime.to = number + 1;
+                        this.form.regularTime.to = number + 0.5;
+                    }
+                    if(number >= this.form.notifyMe.late_attendance_time){
+                        this.form.notifyMe.late_attendance_time = number + 0.5;
                     }
                 }
             },
-            'form.notifyMe.late_attendance_time': {
+            'form.regularTime.regularHours': {
                 handler(number){
-                    if(number >= this.form.notifyMe.early_checkout_time){
-                        this.form.notifyMe.early_checkout_time = number + 1;
+                    if(number + this.form.regularTime.from < this.form.notifyMe.early_checkout_time){
+                        this.form.notifyMe.early_checkout_time = number + this.form.regularTime.from;
                     }
                 }
             }

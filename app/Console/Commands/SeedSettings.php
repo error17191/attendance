@@ -50,13 +50,10 @@ class SeedSettings extends Command
             [
                 'key' => 'regular_time',
                 'value' => json_encode([
-                    'from' => 0,
-                    'to' => 1
+                    'from' => 0.0,
+                    'to' => 0.5,
+                    'regularHours' => 8
                 ])
-            ],
-            [
-                'key' => 'regular_hours',
-                'value' => json_encode(8)
             ],
             [
                 'key' => 'notifications',
@@ -64,7 +61,7 @@ class SeedSettings extends Command
                     'late_attendance' => false,
                     'late_attendance_time' => 0,
                     'early_checkout' => false,
-                    'early_checkout_time' => 1
+                    'early_checkout_time' => 0
                 ])
             ]
         ];
