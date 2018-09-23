@@ -154,6 +154,9 @@
                     if(number >= this.form.notifyMe.late_attendance_time){
                         this.form.notifyMe.late_attendance_time = number + 0.5;
                     }
+                    if(number + this.form.regularTime.regularHours < this.form.notifyMe.early_checkout_time){
+                        this.form.notifyMe.early_checkout_time = number + this.form.regularTime.regularHours;
+                    }
                 }
             },
             'form.regularTime.regularHours': {
