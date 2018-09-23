@@ -1,16 +1,20 @@
 <template>
     <div class="container">
         <b-form-group label="Regular Time" horizontal>
-            <b-form-select
-                    v-model="form.regularTime.from"
-                    :options="fromOptions"
-            >
-            </b-form-select>
-            <b-form-select
-                    v-model="form.regularTime.to"
-                    :options="toOptions"
-            >
-            </b-form-select>
+            <div class="col-md-3">
+                <b-form-select
+                        v-model="form.regularTime.from"
+                        :options="fromOptions"
+                >
+                </b-form-select>
+            </div>
+            <div class="col-md-3">
+                <b-form-select
+                        v-model="form.regularTime.to"
+                        :options="toOptions"
+                >
+                </b-form-select>
+            </div>
         </b-form-group>
         <b-form-group label="Regular Hours" horizontal>
             <div class="col-md-3">
@@ -28,11 +32,13 @@
                 <span>Notify me of late attendance</span>
             </b-form-checkbox>
             <b-collapse id="c1" :visible="form.notifyMe.late_attendance">
-                <b-form-select
-                        v-model="form.notifyMe.late_attendance_time"
-                        :options="lateOptions"
-                >
-                </b-form-select>
+                <div class="col-md-3">
+                    <b-form-select
+                            v-model="form.notifyMe.late_attendance_time"
+                            :options="lateOptions"
+                    >
+                    </b-form-select>
+                </div>
             </b-collapse>
         </b-form-group>
         <b-form-group horizontal>
@@ -42,11 +48,13 @@
                 <span>Notify me of early checkout</span>
             </b-form-checkbox>
             <b-collapse id="c2" :visible="form.notifyMe.early_checkout">
-                <b-form-select
-                        v-model="form.notifyMe.early_checkout_time"
-                        :options="earlyOptions"
-                >
-                </b-form-select>
+                <div class="col-md-3">
+                    <b-form-select
+                            v-model="form.notifyMe.early_checkout_time"
+                            :options="earlyOptions"
+                    >
+                    </b-form-select>
+                </div>
             </b-collapse>
         </b-form-group>
         <b-form-group horizontal>
@@ -154,6 +162,9 @@
                     }
                     if(number >= this.form.notifyMe.late_attendance_time){
                         this.form.notifyMe.late_attendance_time = number + 0.5;
+                    }
+                    if(number + this.form.regularTime.regularHours < this.form.notifyMe.early_checkout_time){
+                        this.form.notifyMe.early_checkout_time = number + this.form.regularTime.regularHours;
                     }
                 }
             },
