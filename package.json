@@ -22,6 +22,7 @@
         "moment": "^2.22.2",
         "vue-element-loading": "^1.0.4",
         "vue-flatpickr-component": "^8.0.0",
+        "vue-multiselect": "^2.1.0",
         "vue-router": "^3.0.1",
         "vue-select": "^2.5.1",
         "vue-snotify": "^3.2.1"

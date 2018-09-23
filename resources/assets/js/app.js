@@ -52,9 +52,13 @@ Vue.use(Snotify, {
     }
 });
 
-import vSelect from 'vue-select'
+import vSelect from 'vue-select';
 
 Vue.component('v-select', vSelect);
+
+import Multiselect from 'vue-multiselect';
+
+Vue.component('multiselect', Multiselect)
 
 
 import 'vue-snotify/styles/material.css';

@@ -10,6 +10,33 @@
                        name="target">
                 <label class="form-check-label" for="specific-target">For Specific Employees</label>
             </div>
+            <div v-if="target == 'specific'">
+                <br>
+                <multiselect
+                    placeholder="Search for employees"
+                    @search-change="updateEmployees"
+                    :close-on-select="false"
+                    :searchable="true"
+                    :internal-search="false"
+                    :show-labels="false"
+                    track-by="id"
+                    :hide-selected="true"
+                    label="username"
+                    :multiple="true"
+                    v-model="selectedEmployees"
+                    :options="employees"
+                >
+                    <template slot="option" slot-scope="props">
+                        <div>
+                            <h5>{{props.option.name}}</h5>
+                            <h6>{{props.option.email}}</h6>
+                            <h6>{{props.option.username}}</h6>
+                            <h6>{{props.option.mobile}}</h6>
+                        </div>
+                    </template>
+                </multiselect>
+
+            </div>
             <hr>
             <div class="form-check form-check-inline">
                 <input v-model="dateType" class="form-check-input" type="radio" id="date-type-sinle" value="single"
@@ -111,6 +138,8 @@
                 highlightedVacations: [],
                 lastHighlighted: null,
                 selectAll: false,
+                employees: [],
+                selectedEmployees: null,
             }
         },
         methods: {
@@ -233,6 +262,9 @@
                 this.customVacations.forEach(el => {
                     this.dateConfig.disable.push(el.date);
                 });
+            },
+            updateEmployees(){
+
             }
         },
         watch: {

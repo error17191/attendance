@@ -1,24 +1,5 @@
 <template>
     <div>
-        <v-select
-            lablel="username"
-            :filterable="false" v-model="selected" :options="options" @search="onSearch">
-            <template slot="option" slot-scope="option">
-                <h5>{{option.name}}</h5>
-                <h6>{{option.email}}</h6>
-                <h6>{{option.mobile}}</h6>
-                <h6>{{option.username}}</h6>
-            </template>
-            <template slot="no-options">
-                {{message}}
-            </template>
-            <template slot="selected-option" slot-scope="option">
-                <div class="selected d-center">
-                    {{ option.username}}
-                </div>
-            </template>
-
-        </v-select>
         <b-card no-body>
             <b-tabs card>
                 <b-tab no-body title="Weekends" active>
@@ -47,6 +28,7 @@
             CustomVacations
         },
         mounted() {
+            this.message = this.initialMessage;
             axios.get('/vacations?t=' + new Date().getTime())
                 .then(response => {
                     this.weekdays = response.data.weekdays;
@@ -65,9 +47,6 @@
                 message: ''
             }
         },
-        mounted() {
-            this.message = this.initialMessage;
-        },
         methods: {
             update() {
                 this.updating = true;
@@ -76,19 +55,13 @@
                     this.$snotify.success('Weekends Updated Successfully');
                 });
             },
-            onSearch(param) {
-                if (!param) {
-                    this.options = [];
-                    this.message = this.initialMessage;
-                    return;
-                }
-                axios.get('/users?q=' + param)
-                    .then(response => {
-                        this.options = response.data.users;
-                        if (this.options.length == 0) {
-                            this.message = this.noResultsMessage;
-                        }
-                    });
+            updateOptions(searchQuery) {
+                makeRequest({
+                    method: 'get',
+                    url: '/users?q=' + searchQuery
+                }).then(response => {
+                    this.options = response.data.users;
+                });
             }
         }
     }

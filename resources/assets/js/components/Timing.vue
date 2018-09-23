@@ -34,7 +34,8 @@
                 >
                 </b-form-select>
             </b-collapse>
-            <br>
+        </b-form-group>
+        <b-form-group horizontal>
             <b-form-checkbox
                     v-model="form.notifyMe.early_checkout"
             >
@@ -51,7 +52,7 @@
         <b-form-group horizontal>
             <b-button
                     :disabled="saving"
-                    size="lg" variant="primary" @click.prevent="save">
+                    variant="primary" @click.prevent="save">
                 {{saving ? 'Saving ..' : 'Save Changes'}}
             </b-button>
         </b-form-group>
