@@ -22,6 +22,7 @@
                     track-by="id"
                     :hide-selected="true"
                     label="username"
+                    :loading="loadingSearch"
                     :multiple="true"
                     v-model="selectedEmployees"
                     :options="employees"
@@ -111,19 +112,6 @@
         components: {
             flatPickr
         },
-        mounted() {
-            makeRequest({
-                method: 'get',
-                url: '/vacations/custom',
-            }).then(response => {
-                this.customVacations = [];
-                response.data.custom_vacations.forEach((cv) => {
-                    cv.highlight = false;
-                    this.customVacations.push(cv);
-                });
-                this.sortVacations();
-            });
-        },
         data() {
             return {
                 target: 'all',
@@ -140,7 +128,21 @@
                 selectAll: false,
                 employees: [],
                 selectedEmployees: null,
+                loadingSearch: false
             }
+        },
+        mounted() {
+            makeRequest({
+                method: 'get',
+                url: '/vacations/custom',
+            }).then(response => {
+                this.customVacations = [];
+                response.data.custom_vacations.forEach((cv) => {
+                    cv.highlight = false;
+                    this.customVacations.push(cv);
+                });
+                this.sortVacations();
+            });
         },
         methods: {
             addVacation() {
@@ -263,8 +265,16 @@
                     this.dateConfig.disable.push(el.date);
                 });
             },
-            updateEmployees(){
-
+            updateEmployees(query){
+                let url = '/users?q=' + query;
+                this.loadingSearch = true;
+                makeRequest({
+                    method: 'get',
+                    url: url
+                }).then((response)=>{
+                    this.loadingSearch = false;
+                    this.employees = response.data.users;
+                });
             }
         },
         watch: {
