@@ -64,9 +64,16 @@
                 </div>
                 <div class="col">
                     <button
-                        :disabled="date == null"
+                        :disabled="canAddVacations"
                         @click="addVacation"
                         class="btn btn-dark">Add Vacation
+                    </button>
+                </div>
+                <div class="col">
+                    <button
+                            :disabled="date == ''"
+                            @click="date = ''"
+                            class="btn btn-dark">Clear All
                     </button>
                 </div>
             </div>
@@ -116,7 +123,7 @@
             return {
                 target: 'all',
                 dateType: 'single',
-                date: null,
+                date: '',
                 dateConfig: {
                     mode: 'single'
                 },
@@ -138,6 +145,10 @@
                     ids.push(this.selectedEmployees[i].id);
                 }
                 return ids;
+            },
+            'canAddVacations': function () {
+                return (this.target === 'specific' && (this.selectedEmployees.length <= 0 || this.date == ''))
+                        || (this.target === 'all' && this.date == '');
             }
         },
         mounted() {
@@ -147,6 +158,10 @@
             getCustomVacations(specific){
                 let url = '/vacations/custom';
                 if(specific){
+                    if(!this.selectedEmployees.length){
+                        this.customVacations = [];
+                        return;
+                    }
                     url += '?target=specific&employees=' + JSON.stringify(this.selectedEmployeesIds);
                 }
                 makeRequest({

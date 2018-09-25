@@ -42,11 +42,11 @@ class IbrahimTests extends Command
             ->leftJoin('users_custom_vacations','users.id','users_custom_vacations.user_id')
             ->leftJoin('custom_vacations','users_custom_vacations.vacation_id','custom_vacations.id')
             ->select('custom_vacations.*')
-            ->whereIn('users.id',[1,2,3])
+            ->whereIn('users.id',[2])
             ->where('custom_vacations.global',0)
             ->orderBy('custom_vacations.date')
             ->get();
-//        dd($customVacations);
-        dd(DB::table('custom_vacations')->whereIn('id',[1,2,3])->get());
+           dd($customVacations);
+//        dd(DB::table('custom_vacations')->whereIn('id',[1,2,3])->get());
     }
 }

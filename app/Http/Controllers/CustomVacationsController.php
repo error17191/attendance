@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -28,7 +27,7 @@ class CustomVacationsController extends Controller
                 ->whereIn('users.id',$users['employees'])
                 ->where('custom_vacations.global',0)
                 ->orderBy('custom_vacations.date')
-                ->get();
+                ->get()->unique('date')->values();
         }else{
             $customVacations = DB::table('custom_vacations')
                 ->where('global',1)
@@ -42,11 +41,6 @@ class CustomVacationsController extends Controller
 
     public function store(Request $request)
     {
-//        $date = new Carbon($request->date);
-//
-//        if (!$date->lt(today())) {
-//            abort(400);
-//        }
 
         $v = Validator::make($request->only('dates'),[
             'dates' => 'required|array',
@@ -58,6 +52,14 @@ class CustomVacationsController extends Controller
         }
 
         if (!$request->global) {
+            $dates = [];
+            foreach ($request->dates as $date) {
+                if(DB::table('custom_vacations')->where('date',$date)->get()->count()){
+                    continue;
+                }
+                $dates[] = $date;
+            }
+
             $v = Validator::make($request->only('users'), [
                 'users' => 'array',
                 'users.*' => 'integer|min:1'
@@ -73,7 +75,7 @@ class CustomVacationsController extends Controller
 
             $customVacations = [];
 
-            foreach ($request->dates as $date){
+            foreach ($dates as $date){
                 $customVacations[] = [
                     'date' => $date,
                     'global' => 0
@@ -87,6 +89,7 @@ class CustomVacationsController extends Controller
             $records = [];
             foreach ($usersIds as $userId) {
                 foreach ($vacationsIds as $vacationsId) {
+                    if(DB::table('users_custom_vacations'))
                     $records[] = [
                         'user_id' => $userId,
                         'vacation_id' => $vacationsId
@@ -96,8 +99,21 @@ class CustomVacationsController extends Controller
             DB::table('users_custom_vacations')->insert($records);
 
         } else {
+            $dates = [];
+            foreach ($request->dates as $date) {
+                if(DB::table('custom_vacations')->where('date',$date)->get()->count()){
+                    if(!DB::table('custom_vacations')->where('date',$date)->first()->global){
+                        DB::table('custom_vacations')->where('date',$date)->update(['global' => 1]);
+                        $vacationId = DB::table('custom_vacations')->where('date',$date)->first()->id;
+                        DB::table('users_custom_vacations')->where('vacation_id',$vacationId)->delete();
+                    }
+                    continue;
+                }
+                $dates[] = $date;
+            }
+
             $customVacations = [];
-            foreach ($request->dates as $date){
+            foreach ($dates as $date){
                 $customVacations[] = [
                     'date' => $date,
                     'global' => 1

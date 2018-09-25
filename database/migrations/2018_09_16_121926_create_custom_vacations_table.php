@@ -16,7 +16,7 @@ class CreateCustomVacationsTable extends Migration
         Schema::create('custom_vacations', function (Blueprint $table) {
             $table->increments('id');
             $table->boolean('global')->default(0);
-            $table->date('date');
+            $table->date('date')unique();;
         });
     }
 
