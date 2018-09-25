@@ -10,10 +10,31 @@ use Illuminate\Support\Facades\Validator;
 
 class CustomVacationsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customVacations = DB::table('custom_vacations')
-            ->orderBy('date')->get();
+        if($request->target == 'specific'){
+            $users['employees'] = json_decode($request->employees,true);
+            $v = Validator::make($users,[
+                'employees' => 'array',
+                'employees.*' => 'integer|min:1'
+            ]);
+            if($v->fails()){
+                abort(400);
+            }
+            $customVacations = DB::table('users')
+                ->leftJoin('users_custom_vacations','users.id','users_custom_vacations.user_id')
+                ->leftJoin('custom_vacations','users_custom_vacations.vacation_id','custom_vacations.id')
+                ->select('custom_vacations.*')
+                ->whereIn('users.id',$users['employees'])
+                ->where('custom_vacations.global',0)
+                ->orderBy('custom_vacations.date')
+                ->get();
+        }else{
+            $customVacations = DB::table('custom_vacations')
+                ->where('global',1)
+                ->orderBy('date')
+                ->get();
+        }
         return response()->json([
             'custom_vacations' => $customVacations,
         ]);
@@ -59,15 +80,20 @@ class CustomVacationsController extends Controller
                 ];
             }
             DB::table('custom_vacations')->insert($customVacations);
-
+            $vacationsIds = DB::table('custom_vacations')
+                ->select('id')
+                ->wherein('date',$request->dates)
+                ->get()->pluck('id');
             $records = [];
             foreach ($usersIds as $userId) {
-                $records[] = [
-                    'user_id' => $userId,
-                    'vacation_id' => $id
-                ];
+                foreach ($vacationsIds as $vacationsId) {
+                    $records[] = [
+                        'user_id' => $userId,
+                        'vacation_id' => $vacationsId
+                    ];
+                }
             }
-            DB::table('user_custom_vacations')->insert($records);
+            DB::table('users_custom_vacations')->insert($records);
 
         } else {
             $customVacations = [];

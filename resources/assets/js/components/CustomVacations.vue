@@ -127,24 +127,40 @@
                 lastHighlighted: null,
                 selectAll: false,
                 employees: [],
-                selectedEmployees: null,
+                selectedEmployees: [],
                 loadingSearch: false
             }
         },
+        computed: {
+            'selectedEmployeesIds':function () {
+                let ids = [];
+                for(let i in this.selectedEmployees){
+                    ids.push(this.selectedEmployees[i].id);
+                }
+                return ids;
+            }
+        },
         mounted() {
-            makeRequest({
-                method: 'get',
-                url: '/vacations/custom',
-            }).then(response => {
-                this.customVacations = [];
-                response.data.custom_vacations.forEach((cv) => {
-                    cv.highlight = false;
-                    this.customVacations.push(cv);
-                });
-                this.sortVacations();
-            });
+            this.getCustomVacations(false);
         },
         methods: {
+            getCustomVacations(specific){
+                let url = '/vacations/custom';
+                if(specific){
+                    url += '?target=specific&employees=' + JSON.stringify(this.selectedEmployeesIds);
+                }
+                makeRequest({
+                    method: 'get',
+                    url: url
+                }).then(response => {
+                    this.customVacations = [];
+                    response.data.custom_vacations.forEach((cv) => {
+                        cv.highlight = false;
+                        this.customVacations.push(cv);
+                    });
+                    this.sortVacations();
+                });
+            },
             addVacation() {
                 this.adding = true;
                 let data = {};
@@ -152,6 +168,9 @@
                     case 'all':
                         data.global = 1;
                         break;
+                    case 'specific':
+                        data.global = 0;
+                        data.users = this.selectedEmployeesIds;
                 }
                 switch (this.dateType) {
                     case 'single':
@@ -173,7 +192,8 @@
                     this.adding = false;
                     this.date = null;
                     this.$snotify.success('Vacation Added Successfully');
-                    this.customVacations = response.data.custom_vacations;
+                    let specific = this.target === 'specific';
+                    this.getCustomVacations(specific);
                     this.updateDisabledDates();
                     this.sortVacations();
                 });
@@ -219,7 +239,8 @@
                 }).then((response) => {
                     this.lastHighlighted = null;
                     this.highlightedVacations = [];
-                    this.customVacations = response.data.custom_vacations;
+                    let specific = this.target === 'specific';
+                    this.getCustomVacations(specific);
                     this.updateDisabledDates();
                     this.deleting = false;
                     this.$snotify.success('Vacation Deleted Successfully');
@@ -302,6 +323,19 @@
             },
             dateType() {
                 this.dateConfig.mode = this.dateType;
+            },
+            target(){
+               switch (this.target){
+                   case 'all':
+                       this.getCustomVacations(false);
+                       break;
+                   case 'specific':
+                       this.getCustomVacations(true);
+                       break;
+               }
+            },
+            selectedEmployees(){
+                this.getCustomVacations(true);
             }
         }
     }
