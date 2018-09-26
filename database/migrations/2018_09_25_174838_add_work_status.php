@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCustomVacationsTable extends Migration
+class AddWorkStatus extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,8 @@ class CreateCustomVacationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('custom_vacations', function (Blueprint $table) {
-            $table->increments('id');
-            $table->boolean('global')->default(0);
-            $table->date('date')->unique();;
+        Schema::table('work_times',function (Blueprint $table){
+            $table->string('status');
         });
     }
 
@@ -27,6 +25,8 @@ class CreateCustomVacationsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('custom_vacations');
+        Schema::table('work_times',function (Blueprint $table){
+            $table->dropColumn('status');
+        });
     }
 }

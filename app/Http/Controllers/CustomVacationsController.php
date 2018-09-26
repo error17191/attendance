@@ -41,16 +41,13 @@ class CustomVacationsController extends Controller
 
     public function store(Request $request)
     {
-
         $v = Validator::make($request->only('dates'),[
             'dates' => 'required|array',
             'dates.*' => 'date|date_format:Y-m-d'
         ]);
-
         if($v->fails()){
             abort(400);
         }
-
         if (!$request->global) {
             $dates = [];
             foreach ($request->dates as $date) {
@@ -59,12 +56,10 @@ class CustomVacationsController extends Controller
                 }
                 $dates[] = $date;
             }
-
             $v = Validator::make($request->only('users'), [
                 'users' => 'array',
                 'users.*' => 'integer|min:1'
             ]);
-
             if ($v->fails()) {
                 abort(400);
             }
@@ -72,9 +67,7 @@ class CustomVacationsController extends Controller
             if (array_diff($request->users, $usersIds) != []) {
                 abort(400);
             }
-
             $customVacations = [];
-
             foreach ($dates as $date){
                 $customVacations[] = [
                     'date' => $date,
@@ -97,7 +90,6 @@ class CustomVacationsController extends Controller
                 }
             }
             DB::table('users_custom_vacations')->insert($records);
-
         } else {
             $dates = [];
             foreach ($request->dates as $date) {
@@ -111,7 +103,6 @@ class CustomVacationsController extends Controller
                 }
                 $dates[] = $date;
             }
-
             $customVacations = [];
             foreach ($dates as $date){
                 $customVacations[] = [
@@ -121,7 +112,6 @@ class CustomVacationsController extends Controller
             }
             DB::table('custom_vacations')->insert($customVacations);
         }
-
         return response()->json([
             'custom_vacations' => DB::table('custom_vacations') ->orderBy('date')->get()
         ]);
@@ -133,15 +123,12 @@ class CustomVacationsController extends Controller
             'ids' => 'array',
             'ids.*' => 'integer|min:1'
         ]);
-
         if($v->fails()){
             abort(400);
         }
-
         DB::table('custom_vacations')
             ->whereIn('id', $request->ids)
             ->delete();
-
         return response()->json([
             'custom_vacations' => DB::table('custom_vacations')->orderBy('date')->get(),
         ]);

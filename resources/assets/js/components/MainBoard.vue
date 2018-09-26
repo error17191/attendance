@@ -75,6 +75,11 @@
 <script>
     export default {
         mounted() {
+            makeRequest({
+               method: 'get',
+               url: '/status'
+            }).then((response)=>{
+            });
             axios.get('/init_state?t=' + new Date().getTime() ).then(response => {
                 this.status = response.data.status;
                 this.workTime = response.data.today_time;
