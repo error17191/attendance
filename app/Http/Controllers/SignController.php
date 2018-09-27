@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 
+use Illuminate\Http\Request;
+use Validator;
+
 class SignController extends Controller
 {
     public function __construct()
@@ -10,13 +13,21 @@ class SignController extends Controller
         $this->middleware('auth');
     }
 
-    public function startWork()
+    public function startWork(Request $request)
     {
         if (auth()->user()->isWorking()) {
             abort(400);
         }
 
-        $result = auth()->user()->startWork();
+        $v = Validator::make($request->only('workStatus'),[
+            'workStatus' => 'required|string'
+        ]);
+
+        if($v->fails()){
+            abort(400);
+        }
+
+        $result = auth()->user()->startWork($request->workStatus);
 
         return response()->json([
             'sign' => $result['sign'],

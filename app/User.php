@@ -48,7 +48,7 @@ class User extends Authenticatable
         return $this->workTimes()->where('day', now()->toDateString())->first();
     }
 
-    public function startWork()
+    public function startWork($workStatus)
     {
         $now = now();
 
@@ -59,6 +59,7 @@ class User extends Authenticatable
             $workTime->day = $now->toDateString();
         }
         $workTime->started_work_at = $now;
+        $workTime->status = $workStatus;
         $workTime->save();
 
         $sign = new Sign();

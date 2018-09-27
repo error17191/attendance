@@ -10,6 +10,20 @@
                     <div class="card-body">
                         <div class="row justify-content-center">
                             <div class="col-md-8">
+                                <multiselect tag-placeholder="Add Work Status"
+                                             placeholder="Add or Select Work Status"
+                                             @tag="addTag"
+                                             @search-change="getWorkStatus"
+                                             v-model="workStatus"
+                                             :options="workStatusOptions"
+                                             :taggable="true"
+                                             :close-on-select="false"
+                                             :searchable="true"
+                                             :internal-search="false"
+                                             :loading="loadingSearch"
+                                             :multiple="false"
+                                             :hide-selected="false"
+                                ></multiselect>
                                 <button v-if="status == 'on'"
                                         @click="stopWork()"
                                         class="btn btn-lg btn-block btn-danger"
@@ -17,6 +31,7 @@
                                 </button>
                                 <button v-else
                                         @click="startWork()"
+                                        :disabled="workStatus == ''"
                                         class="btn btn-lg btn-block btn-success"
                                 >Start Work
                                 </button>
@@ -74,13 +89,24 @@
 
 <script>
     export default {
+        data() {
+            return {
+                show: false,
+                status: null,
+                workTime: null,
+                signs: null,
+                monthStats: null,
+                workStatus: '',
+                workStatusOptions: [],
+                loadingSearch: false
+            }
+        },
         mounted() {
+            let url = '/init_state?t=' + new Date().getTime();
             makeRequest({
-               method: 'get',
-               url: '/status'
+                method: 'get',
+                url: url
             }).then((response)=>{
-            });
-            axios.get('/init_state?t=' + new Date().getTime() ).then(response => {
                 this.status = response.data.status;
                 this.workTime = response.data.today_time;
                 this.signs = response.data.signs;
@@ -94,18 +120,14 @@
                 this.show = true;
             });
         },
-        data() {
-            return {
-                show: false,
-                status: null,
-                workTime: null,
-                signs: null,
-                monthStats: null,
-            }
-        },
         methods: {
             startWork() {
-                axios.post('/start_work').then(response => {
+                let data = {workStatus: this.workStatus};
+                makeRequest({
+                    method: 'post',
+                    url: '/start_work',
+                    data: data
+                }).then((response)=>{
                     this.status = 'on';
                     this.signs.push(response.data.sign);
                     this.startCounter(this.workTime.partitions);
@@ -114,7 +136,10 @@
                 });
             },
             stopWork() {
-                axios.post('/stop_work').then(response => {
+                makeRequest({
+                    method: 'post',
+                    url: '/stop_work'
+                }).then((response)=>{
                     this.status = 'off';
                     this.signs.push(response.data.sign);
                     this.workTime = response.data.today_time;
@@ -180,6 +205,21 @@
                 } else {
                     this.startCounterDown(this.monthStats.diff.partitions);
                 }
+            },
+            getWorkStatus(query){
+                let url = '/status?q=' + query;
+                this.loadingSearch = true;
+                makeRequest({
+                    method: 'get',
+                    url: url
+                }).then((response)=>{
+                    this.workStatusOptions = response.data.status;
+                    this.loadingSearch = false;
+                });
+            },
+            addTag(tag){
+                this.workStatusOptions.push(tag);
+                this.workStatus = tag;
             }
         },
         watch: {
