@@ -4,18 +4,33 @@ namespace App\Http\Controllers;
 
 use App\WorkTime;
 use Carbon\Carbon;
+use App\Managers\DayWorkTimes;
 use Illuminate\Http\Request;
 
 class StatsController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function init()
     {
+        $dayWorkTimeManager = new DayWorkTimes(auth()->user());
         // Today numbers
-        $todayWorkTime = auth()->user()->todayTime();
-        if ($todayWorkTime) {
-            $todayWorkSeconds = $todayWorkTime->secondsTillNow();
-            $todayWorkTimePartitions = $todayWorkTime->partitionSecondsTillNow();
-        } else {
+//        $todayWorkTime = auth()->user()->todayTime();
+//        if ($todayWorkTime) {
+//            $todayWorkSeconds = $todayWorkTime->secondsTillNow();
+//            $todayWorkTimePartitions = $todayWorkTime->partitionSecondsTillNow();
+//        } else {
+//            $todayWorkSeconds = 0;
+//            $todayWorkTimePartitions = ['hours' => 0, 'minutes' => 0, 'seconds' => 0];
+//        }
+
+        if($dayWorkTimeManager->startedWorkingToday()){
+            $todayWorkSeconds = $dayWorkTimeManager->daySecondsTillNow();
+            $todayWorkTimePartitions = partition_seconds($todayWorkSeconds);
+        }else{
             $todayWorkSeconds = 0;
             $todayWorkTimePartitions = ['hours' => 0, 'minutes' => 0, 'seconds' => 0];
         }

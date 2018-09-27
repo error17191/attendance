@@ -79,7 +79,6 @@
                                 </b-collapse>
                             </b-card>
                         </div>
-
                     </div>
                 </div>
             </div>

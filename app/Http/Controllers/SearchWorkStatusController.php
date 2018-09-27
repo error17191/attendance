@@ -7,11 +7,13 @@ use App\WorkTime;
 
 class SearchWorkStatusController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index(Request $request)
     {
-        if(!auth()->user()){
-            abort(400);
-        }
         if(!$request->q){
             return response()->json([
                 'status' => []
