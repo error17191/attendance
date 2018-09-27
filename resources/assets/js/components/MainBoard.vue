@@ -17,12 +17,11 @@
                                              v-model="workStatus"
                                              :options="workStatusOptions"
                                              :taggable="true"
-                                             :close-on-select="false"
+                                             :close-on-select="true"
                                              :searchable="true"
                                              :internal-search="false"
                                              :loading="loadingSearch"
                                              :multiple="false"
-                                             :hide-selected="false"
                                 ></multiselect>
                                 <button v-if="status == 'on'"
                                         @click="stopWork()"
@@ -108,6 +107,7 @@
             }).then((response)=>{
                 this.status = response.data.status;
                 this.workTime = response.data.today_time;
+                this.workStatus = this.workTime.workStatus;
                 this.signs = response.data.signs;
                 this.monthStats = response.data.month_report;
 

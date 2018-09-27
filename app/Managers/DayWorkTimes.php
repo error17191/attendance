@@ -33,6 +33,26 @@ class DayWorkTimes
         return $this->todayWorkTimes->count() > 0;
     }
 
+    public function lastWorkDay()
+    {
+        if($this->startedWorkingToday()){
+            return $this->lastWorkTime()->day;
+        }else{
+            return WorkTime::where('day'.'<',today())
+                ->orderBy('day','desc')->first()->day;
+        }
+    }
+
+    public function lastWorkStatus()
+    {
+        if($this->startedWorkingToday()){
+            return $this->lastWorkTime()->status;
+        }else{
+            return WorkTime::where('day',$this->lastWorkDay())
+                ->orderBy('day_seconds','desc')->first()->status;
+        }
+    }
+
     public function lastWorkTime()
     {
         if($this->isWorking()){

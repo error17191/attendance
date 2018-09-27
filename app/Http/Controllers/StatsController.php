@@ -38,6 +38,8 @@ class StatsController extends Controller
         $firstOfMonth = today()->firstOfMonth();
         $daysPassed = today()->diffInDays($firstOfMonth);// Days passed of current month
 
+
+
         $workHoursIdeal = 0;
         for ($i = 0; $i <= $daysPassed; $i++) {
             $day = (new Carbon($firstOfMonth))->addDays($i);
@@ -62,7 +64,8 @@ class StatsController extends Controller
             'status' => auth()->user()->status,
             'today_time' => [
                 'seconds' => $todayWorkSeconds,
-                'partitions' => $todayWorkTimePartitions
+                'partitions' => $todayWorkTimePartitions,
+                'workStatus' => $dayWorkTimeManager->lastWorkStatus()
             ],
             'month_report' => [
                 'actual' => [
