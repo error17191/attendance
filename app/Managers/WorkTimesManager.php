@@ -212,6 +212,11 @@ class WorkTimesManager
         return $this->workTimesSigns($this->todayWorkTimes->sortByDesc('started_work_at'));
     }
 
+    /**
+     * Check if the user has any work time
+     *
+     * @return bool
+     */
     public function hasAnyWorkTime():bool
     {
         return WorkTime::where('user_id',$this->user->id)->get()->count() > 0;

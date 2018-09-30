@@ -24,7 +24,6 @@ class StatsController extends Controller
             $todayWorkSeconds = 0;
             $todayWorkTimePartitions = ['hours' => 0, 'minutes' => 0, 'seconds' => 0];
         }
-
         $firstOfMonth = today()->firstOfMonth();
         $daysPassed = today()->diffInDays($firstOfMonth);// Days passed of current month
         $workHoursIdeal = 0;
