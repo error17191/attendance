@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\WorkTime;
 use Carbon\Carbon;
-use App\Managers\DayWorkTimes;
+use App\Managers\WorkTimesManager;
 use Illuminate\Http\Request;
 
 class StatsController extends Controller
@@ -16,19 +16,9 @@ class StatsController extends Controller
 
     public function init()
     {
-        $dayWorkTimeManager = new DayWorkTimes(auth()->user());
-        // Today numbers
-//        $todayWorkTime = auth()->user()->todayTime();
-//        if ($todayWorkTime) {
-//            $todayWorkSeconds = $todayWorkTime->secondsTillNow();
-//            $todayWorkTimePartitions = $todayWorkTime->partitionSecondsTillNow();
-//        } else {
-//            $todayWorkSeconds = 0;
-//            $todayWorkTimePartitions = ['hours' => 0, 'minutes' => 0, 'seconds' => 0];
-//        }
-
-        if($dayWorkTimeManager->startedWorkingToday()){
-            $todayWorkSeconds = $dayWorkTimeManager->daySecondsTillNow();
+        $manager = new WorkTimesManager(auth()->user());
+        if($manager->startedWorkingToday()){
+            $todayWorkSeconds = $manager->daySecondsTillNow();
             $todayWorkTimePartitions = partition_seconds($todayWorkSeconds);
         }else{
             $todayWorkSeconds = 0;
@@ -37,9 +27,6 @@ class StatsController extends Controller
 
         $firstOfMonth = today()->firstOfMonth();
         $daysPassed = today()->diffInDays($firstOfMonth);// Days passed of current month
-
-
-
         $workHoursIdeal = 0;
         for ($i = 0; $i <= $daysPassed; $i++) {
             $day = (new Carbon($firstOfMonth))->addDays($i);
@@ -48,24 +35,21 @@ class StatsController extends Controller
             }
         }
         $workSecondsIdeal = 60 * 60 * $workHoursIdeal;
-
         $workSecondsActual = WorkTime::whereBetween('day', [today()->firstOfMonth(), today()->subDay()])->sum('seconds');
         $workSecondsActual += $todayWorkSeconds;
-
         if ($workSecondsActual > $workSecondsIdeal) {
             $diffType = 'more';
         } else {
             $diffType = 'less';
         }
         $diffSeconds = abs($workSecondsIdeal - $workSecondsActual);
-
         return response()->json([
-            'signs' => auth()->user()->todaySigns,
+            'workTimeSigns' => $manager->todayWorkTimeSigns(),
             'status' => auth()->user()->status,
             'today_time' => [
                 'seconds' => $todayWorkSeconds,
                 'partitions' => $todayWorkTimePartitions,
-                'workStatus' => $dayWorkTimeManager->lastWorkStatus()
+                'workStatus' => $manager->lastWorkStatus()
             ],
             'month_report' => [
                 'actual' => [

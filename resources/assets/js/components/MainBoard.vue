@@ -46,9 +46,10 @@
                                 </b-card-header>
                                 <b-collapse id="today_report" accordion="my-accordion">
                                     <b-card-body>
-                                        <p v-for="sign in signs"
-                                           :class="sign.type == 'start'? 'text-success': 'text-danger'">
-                                            You {{sign.type == 'start' ? 'Started': 'Stopped'}} Work at {{sign.time}}
+                                        <p v-for="sign in signs">
+                                            <span class="text-success"> You Started Work on {{sign.status}} at {{sign.started_at}}</span>
+                                            <br>
+                                            <span v-if="sign.stopped_at" class="text-danger"> You Stopped Work on {{sign.status}} at {{sign.stopped_at}}</span>
                                         </p>
                                     </b-card-body>
                                 </b-collapse>
@@ -108,7 +109,7 @@
                 this.status = response.data.status;
                 this.workTime = response.data.today_time;
                 this.workStatus = this.workTime.workStatus;
-                this.signs = response.data.signs;
+                this.signs = response.data.workTimeSigns;
                 this.monthStats = response.data.month_report;
 
                 if (this.status == 'on') {
@@ -128,7 +129,7 @@
                     data: data
                 }).then((response)=>{
                     this.status = 'on';
-                    this.signs.push(response.data.sign);
+                    this.updateSign(response.data.workTimeSign);
                     this.startCounter(this.workTime.partitions);
                     this.startCounter(this.monthStats.actual.partitions);
                     this.startDiffCounter();
@@ -140,7 +141,7 @@
                     url: '/stop_work'
                 }).then((response)=>{
                     this.status = 'off';
-                    this.signs.push(response.data.sign);
+                    this.updateSign(response.data.workTimeSign);
                     this.workTime = response.data.today_time;
                     this.stopCounter(this.workTime.partitions.counterInterval);
                     this.stopCounter(this.monthStats.actual.partitions.counterInterval);
@@ -219,6 +220,21 @@
             addTag(tag){
                 this.workStatusOptions.push(tag);
                 this.workStatus = tag;
+            },
+            getSignIndex(id){
+                for(let i in this.signs){
+                    if(this.signs[i].id === id){
+                        return i;
+                    }
+                }
+                return -1;
+            },
+            updateSign(newSign){
+                let signIndex = this.getSignIndex(newSign.id);
+                if(signIndex < 0){
+                    return null;
+                }
+                this.signs.splice(signIndex,1,newSign);
             }
         },
         watch: {

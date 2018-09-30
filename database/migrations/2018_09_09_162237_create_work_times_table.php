@@ -16,9 +16,12 @@ class CreateWorkTimesTable extends Migration
         Schema::create('work_times', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id');
+            $table->string('status');
             $table->date('day');
-            $table->timestamp('started_work_at')->nullable();
+            $table->timestamp('started_work_at');
+            $table->timestamp('stopped_work_at')->nullable();
             $table->integer('seconds')->default(0);
+            $table->unsignedInteger('day_seconds')->default(0);
         });
     }
 
