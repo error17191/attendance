@@ -30,7 +30,7 @@ class StatsController extends Controller
         for ($i = 0; $i <= $daysPassed; $i++) {
             $day = (new Carbon($firstOfMonth))->addDays($i);
             if (!$day->isWeekend()) {
-                $workHoursIdeal += 8;
+                $workHoursIdeal += app('settings')->getRegularTime()['regularHours'];
             }
         }
         $workSecondsIdeal = 60 * 60 * $workHoursIdeal;
