@@ -21,6 +21,7 @@ class CreateUsersTable extends Migration
             $table->string('mobile')->unique();
             $table->string('password');
             $table->enum('status', ['on', 'off'])->default('off');
+            $table->enum('flag', ['on', 'off'])->default('off');
             $table->rememberToken();
             $table->timestamps();
         });

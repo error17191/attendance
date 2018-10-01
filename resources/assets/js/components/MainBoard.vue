@@ -10,6 +10,14 @@
                     <div class="card-body">
                         <div class="row justify-content-center">
                             <div class="col-md-8">
+                                <label v-for="flag in flags"
+                                       class="btn"
+                                       :class="{'btn-primary': !flag.inUse,'btn-dark': flag.inUse}"
+                                       :disabled="(flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit')"
+                                       @click.prevent="toggleFlag(flag.type)"
+                                >
+                                    {{flag.type}}
+                                </label>
                                 <multiselect tag-placeholder="Add Work Status"
                                              placeholder="Add or Select Work Status"
                                              @tag="addTag"
@@ -90,6 +98,7 @@
     export default {
         data() {
             return {
+                flags: [],
                 show: false,
                 status: null,
                 workTime: null,
@@ -97,7 +106,8 @@
                 monthStats: null,
                 workStatus: '',
                 workStatusOptions: [],
-                loadingSearch: false
+                loadingSearch: false,
+                flagInUse: ''
             }
         },
         mounted() {
@@ -111,7 +121,13 @@
                 this.workStatus = this.workTime.workStatus;
                 this.signs = response.data.workTimeSigns;
                 this.monthStats = response.data.month_report;
-
+                this.flags = response.data.flags;
+                for(let i in this.flags){
+                    if(this.flags[i].inUse === true){
+                        this.flagInUse = this.flags[i].type;
+                        break;
+                    }
+                }
                 if (this.status == 'on') {
                     this.startCounter(this.workTime.partitions);
                     this.startCounter(this.monthStats.actual.partitions);
@@ -129,7 +145,7 @@
                     data: data
                 }).then((response)=>{
                     this.status = 'on';
-                    this.updateSign(response.data.workTimeSign);
+                    this.signs.push(response.data.workTimeSign);
                     this.startCounter(this.workTime.partitions);
                     this.startCounter(this.monthStats.actual.partitions);
                     this.startDiffCounter();
@@ -147,6 +163,41 @@
                     this.stopCounter(this.monthStats.actual.partitions.counterInterval);
                     this.stopCounter(this.monthStats.diff.partitions.counterInterval);
                 });
+            },
+            toggleFlag(type){
+                if(this.flagInUse !== ''){
+                    this.endFlag();
+                    if(this.flagInUse === type){
+                        this.flagInUse = '';
+                        return;
+                    }
+                }
+                this.flagInUse = type;
+                this.startFlag();
+            },
+            startFlag(){
+                let url = '/flag/start?type=' + this.flagInUse;
+                makeRequest({
+                    method: 'get',
+                    url: url
+                }).then((response)=>{
+                    this.updateFlags();
+                    console.log(response.data.message);
+                });
+            },
+            endFlag(){
+                makeRequest({
+                    method: 'get',
+                    url: '/flag/end'
+                }).then((response)=>{
+                    this.updateFlags();
+                    console.log(response.data.message);
+                });
+            },
+            updateFlags(){
+                for(let i in this.flags){
+                    this.flags[i].inUse = this.flagInUse === this.flags[i].type;
+                }
             },
             timePartitionsFormatted(partitions) {
                 return this.padWithZero(partitions.hours) + ":" +
@@ -221,16 +272,16 @@
                 this.workStatusOptions.push(tag);
                 this.workStatus = tag;
             },
-            getSignIndex(id){
+            getSignIndex(startTime){
                 for(let i in this.signs){
-                    if(this.signs[i].id === id){
+                    if(this.signs[i].started_at === startTime){
                         return i;
                     }
                 }
                 return -1;
             },
             updateSign(newSign){
-                let signIndex = this.getSignIndex(newSign.id);
+                let signIndex = this.getSignIndex(newSign.started_at);
                 if(signIndex < 0){
                     return null;
                 }

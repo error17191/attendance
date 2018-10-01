@@ -27,6 +27,11 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
+    public function isUsingFlag()
+    {
+        return $this->flag == 'on';
+    }
+
     public function workTimes()
     {
         return $this->hasMany(WorkTime::class);
