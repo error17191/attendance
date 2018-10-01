@@ -55,26 +55,17 @@
 
                 <!-- Right aligned nav items -->
                 <b-navbar-nav class="ml-auto">
-                    @guest
-                    <b-nav-item href="#">cPanel</b-nav-item>
-                    @else
+                    @auth
                         <b-nav-item-dropdown right>
                             <template slot="button-content">
                                 <em>{{auth()->user()->name}}</em>
                             </template>
-                            <b-dropdown-item href="{{ route('logout') }}"
-                             onclick="event.preventDefault();
-                                     document.getElementById('logout-form').submit();"
-                            >
+                            <b-dropdown-item @click="logout">
                                 Logout
                             </b-dropdown-item>
 
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                @csrf
-                            </form>
-
                         </b-nav-item-dropdown>
-                    @endguest
+                    @endauth
                 </b-navbar-nav>
 
             </b-collapse>

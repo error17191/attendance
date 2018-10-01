@@ -71,6 +71,10 @@ window.router = new VueRouter({
 
 const app = new Vue({
     router,
+    data: {
+        email: null,
+        password: null
+    },
     methods: {
         isCPanel() {
             return router.currentRoute.name == 'c_panel';
@@ -78,6 +82,23 @@ const app = new Vue({
         isMainBoard() {
             return router.currentRoute.name == 'main_board';
         },
+        login(){
+            axios.post('/login',{
+                email : this.email,
+                password: this.password
+            }).then(response => {
+                localStorage.setItem('token', response.data.access_token);
+                localStorage.setItem('user_id',response.data.user.id)
+                window.location.href = response.data.url;
+            });
+        },
+        logout(){
+            axios.post('/logout').then(response => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user_id');
+                window.location.href = response.data.url;
+            });
+        }
     }
 }).$mount('#app');
 
