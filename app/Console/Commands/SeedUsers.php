@@ -44,17 +44,30 @@ class SeedUsers extends Command
         ];
         $mobile = '0122159011';
         $users = [];
-        $count = -1;
+        $count = 0;
         foreach ($names as $name) {
-            $count++;
             $users[] = [
+                'id' => $count + 1,
                 'name' => $name,
                 'username' => strtolower($name),
                 'mobile' => $mobile . $count,
                 'email' => strtolower($name) . '@email.com',
+                'is_admin' => false,
                 'password' => Hash::make('123456')
             ];
+            $count++;
         }
+
+        $users[] = [
+            'id' => 11,
+            'name' => 'ADMIN',
+            'username' => 'admin',
+            'mobile' => '000000000',
+            'email' => 'admin@mail.com',
+            'is_admin' => true,
+            'password' => Hash::make('123456')
+        ];
+
         DB::table('users')->truncate();
         DB::table('users')->insert($users);
 
