@@ -10,14 +10,14 @@
                     <div class="card-body">
                         <div class="row justify-content-center">
                             <div class="col-md-8">
-                                <label v-for="flag in flags"
+                                <button v-for="flag in flags"
                                        class="btn"
                                        :class="{'btn-primary': !flag.inUse,'btn-dark': flag.inUse}"
-                                       :disabled="(flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit')"
+                                       :disabled="status === 'off' || (flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit')"
                                        @click.prevent="toggleFlag(flag.type)"
                                 >
-                                    {{flag.type}}
-                                </label>
+                                    {{flag.type | capitalize}}
+                                </button>
                                 <multiselect tag-placeholder="Add Work Status"
                                              placeholder="Add or Select Work Status"
                                              @tag="addTag"
@@ -135,6 +135,19 @@
                 }
                 this.show = true;
             });
+        },
+        filters: {
+            capitalize: function (value) {
+                if(!value){
+                    return '';
+                }
+                value = value.toString();
+                let values = value.split('_');
+                for(let i in values){
+                    values[i] = values[i].charAt(0).toUpperCase() + values[i].slice(1);
+                }
+                return values.join(' ');
+            }
         },
         methods: {
             startWork() {

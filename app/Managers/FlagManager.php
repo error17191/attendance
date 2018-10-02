@@ -36,6 +36,7 @@ class FlagManager
         if($this->user->isUsingFlag()){
             $this->setFlagType($this->currentFlag()->type);
         }
+
     }
 
     public function currentWorkTime()
