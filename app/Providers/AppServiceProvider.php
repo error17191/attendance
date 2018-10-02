@@ -17,6 +17,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if(config('app.enable_fake_login')){
+            $userId = config('app.fake_logged_user');
+            auth()->guard('web')->loginUsingId($userId);
+            $token = auth()->guard('api')->fromUser(\App\User::find($userId));
+            auth()->guard('api')->setToken($token);
+            auth()->guard('api')->authenticate();
+        }
         if(Schema::hasTable('settings') && DB::table('settings')->count()){
             if(config('app.enable_test_time')){
                 Carbon::setTestNow(new Carbon(config('app.test_time')));
