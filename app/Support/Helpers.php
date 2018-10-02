@@ -1,5 +1,7 @@
 <?php
 
+use App\Flag;
+use App\WorkTime;
 
 function json_encodei($mixed)
 {
@@ -14,6 +16,43 @@ function partition_seconds($seconds)
     $seconds = (int)$seconds - $minutes * 60;
 
     return compact('hours', 'minutes', 'seconds');
+}
+
+function end_flag($user)
+{
+    $flag = Flag::where('user_id',$user->id)
+        ->where('day',now()->toDateString())
+        ->where('stopped_at',null)->first();
+    if(!$user->isWorking() || !$user->isUsingFlag() || !$flag){
+        return;
+    }
+    $type = $flag->type;
+    $flagSeconds = Flag::where('day',now()->toDateString())
+        ->where('user_id',$user->id)
+        ->where('type',$type)->sum('seconds');
+    if($flagSeconds > app('settings')->getFlags()[$type] * 60 * 60){
+        $workTime = WorkTime::where('day',now()->toDateString())
+            ->where('user_id',$user->id)
+            ->where('stopped_work_at',null)->first();
+        $workTime->stopped_work_at = now();
+        $workTime->seconds = now()->diffInSeconds($workTime->started_work_at) -
+            $flagSeconds - app('settings')->getFlags()[$type];
+        $workTime->day_seconds += $workTime->seconds;
+        $workTime->save();
+        $flag->stopped_at = now();
+        $flag->seconds = now()->diffInSeconds($flag->started_at) -
+            $flagSeconds - app('settings')->getFlags()[$type];
+        $flag->save();
+        $user->status = 'off';
+        $user->flag = 'off';
+        $user->save();
+        return;
+    }
+    $flag->stopped_at = now();
+    $flag->seconds = now()->diffInSeconds($flag->started_at);
+    $flag->save();
+    $user->flag = 'off';
+    $user->save();
 }
 
 

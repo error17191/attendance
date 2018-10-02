@@ -10,14 +10,14 @@
                     <div class="card-body">
                         <div class="row justify-content-center">
                             <div class="col-md-8">
-                                <label v-for="flag in flags"
+                                <button v-for="flag in flags"
                                        class="btn"
                                        :class="{'btn-primary': !flag.inUse,'btn-dark': flag.inUse}"
-                                       :disabled="(flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit')"
+                                       :disabled="status === 'off' || (flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit')"
                                        @click.prevent="toggleFlag(flag.type)"
                                 >
-                                    {{flag.type}}
-                                </label>
+                                    {{flag.type | capitalize}}
+                                </button>
                                 <multiselect tag-placeholder="Add Work Status"
                                              placeholder="Add or Select Work Status"
                                              @tag="addTag"
@@ -111,32 +111,48 @@
             }
         },
         mounted() {
-            let url = '/init_state?t=' + new Date().getTime();
-            makeRequest({
-                method: 'get',
-                url: url
-            }).then((response)=>{
-                this.status = response.data.status;
-                this.workTime = response.data.today_time;
-                this.workStatus = this.workTime.workStatus;
-                this.signs = response.data.workTimeSigns;
-                this.monthStats = response.data.month_report;
-                this.flags = response.data.flags;
-                for(let i in this.flags){
-                    if(this.flags[i].inUse === true){
-                        this.flagInUse = this.flags[i].type;
-                        break;
-                    }
+            this.getStats();
+        },
+        filters: {
+            capitalize: function (value) {
+                if(!value){
+                    return '';
                 }
-                if (this.status == 'on') {
-                    this.startCounter(this.workTime.partitions);
-                    this.startCounter(this.monthStats.actual.partitions);
-                    this.startDiffCounter();
+                value = value.toString();
+                let values = value.split('_');
+                for(let i in values){
+                    values[i] = values[i].charAt(0).toUpperCase() + values[i].slice(1);
                 }
-                this.show = true;
-            });
+                return values.join(' ');
+            }
         },
         methods: {
+            getStats(){
+                let url = '/init_state?t=' + new Date().getTime();
+                makeRequest({
+                    method: 'get',
+                    url: url
+                }).then((response)=>{
+                    this.status = response.data.status;
+                    this.workTime = response.data.today_time;
+                    this.workStatus = this.workTime.workStatus;
+                    this.signs = response.data.workTimeSigns;
+                    this.monthStats = response.data.month_report;
+                    this.flags = response.data.flags;
+                    for(let i in this.flags){
+                        if(this.flags[i].inUse === true){
+                            this.flagInUse = this.flags[i].type;
+                            break;
+                        }
+                    }
+                    if (this.status == 'on') {
+                        this.startCounter(this.workTime.partitions);
+                        this.startCounter(this.monthStats.actual.partitions);
+                        this.startDiffCounter();
+                    }
+                    this.show = true;
+                });
+            },
             startWork() {
                 let data = {workStatus: this.workStatus};
                 makeRequest({
@@ -144,6 +160,7 @@
                     url: '/start_work',
                     data: data
                 }).then((response)=>{
+                    this.getStats();
                     this.status = 'on';
                     this.signs.push(response.data.workTimeSign);
                     this.startCounter(this.workTime.partitions);
@@ -156,6 +173,7 @@
                     method: 'post',
                     url: '/stop_work'
                 }).then((response)=>{
+                    this.getStats();
                     this.status = 'off';
                     this.updateSign(response.data.workTimeSign);
                     this.workTime = response.data.today_time;

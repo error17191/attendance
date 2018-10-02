@@ -161,7 +161,7 @@ class WorkTimesManager
         $workTime->day_seconds = $this->daySecondsTillNow();
         $workTime->save();
         if($this->user->isUsingFlag()){
-            (new FlagManager($this->user))->endFlag();
+            end_flag($this->user);
         }
         $this->user->status = 'off';
         $this->user->save();
