@@ -53,7 +53,8 @@ class SeedUsers extends Command
                 'mobile' => $mobile . $count,
                 'email' => strtolower($name) . '@email.com',
                 'is_admin' => false,
-                'password' => Hash::make('123456')
+                'machines' => '[]',
+                'password' => Hash::make('123456'),
             ];
             $count++;
         }
@@ -65,6 +66,7 @@ class SeedUsers extends Command
             'mobile' => '000000000',
             'email' => 'admin@mail.com',
             'is_admin' => true,
+            'machines' => '[]',
             'password' => Hash::make('123456')
         ];
 
