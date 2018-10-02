@@ -17,7 +17,7 @@ class CreateFlagsTable extends Migration
             $table->increments('id');
             $table->unsignedInteger('user_id');
             $table->unsignedInteger('work_time_id');
-            $table->enum('type',['lose_time','meeting','thinking']);
+            $table->string('type');
             $table->string('day');
             $table->timestamp('started_at');
             $table->timestamp('stopped_at')->nullable();

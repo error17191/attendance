@@ -35,6 +35,7 @@ class FlagManager
         $this->workTimeManager = new WorkTimesManager($this->user);
         if($this->user->isUsingFlag()){
             $this->setFlagType($this->currentFlag()->type);
+//            $this->handleOverLimitFlag();
         }
 
     }
@@ -150,8 +151,9 @@ class FlagManager
         if($this->flagTypeRemainingTime() >= 0){
             return false;
         }
+        $this->workTimeManager->endWorkTime();
         /** @var \App\WorkTime $workTime */
-        $workTime = $this->workTimeManager->endWorkTime()['workTime'];
+        $workTime = $this->currentFlag()->worktime;
         $workTime->seconds += $this->flagTypeRemainingTime();
         $workTime->save();
         return true;

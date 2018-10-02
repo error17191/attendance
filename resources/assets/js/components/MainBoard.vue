@@ -111,30 +111,7 @@
             }
         },
         mounted() {
-            let url = '/init_state?t=' + new Date().getTime();
-            makeRequest({
-                method: 'get',
-                url: url
-            }).then((response)=>{
-                this.status = response.data.status;
-                this.workTime = response.data.today_time;
-                this.workStatus = this.workTime.workStatus;
-                this.signs = response.data.workTimeSigns;
-                this.monthStats = response.data.month_report;
-                this.flags = response.data.flags;
-                for(let i in this.flags){
-                    if(this.flags[i].inUse === true){
-                        this.flagInUse = this.flags[i].type;
-                        break;
-                    }
-                }
-                if (this.status == 'on') {
-                    this.startCounter(this.workTime.partitions);
-                    this.startCounter(this.monthStats.actual.partitions);
-                    this.startDiffCounter();
-                }
-                this.show = true;
-            });
+            this.getStats();
         },
         filters: {
             capitalize: function (value) {
@@ -150,6 +127,32 @@
             }
         },
         methods: {
+            getStats(){
+                let url = '/init_state?t=' + new Date().getTime();
+                makeRequest({
+                    method: 'get',
+                    url: url
+                }).then((response)=>{
+                    this.status = response.data.status;
+                    this.workTime = response.data.today_time;
+                    this.workStatus = this.workTime.workStatus;
+                    this.signs = response.data.workTimeSigns;
+                    this.monthStats = response.data.month_report;
+                    this.flags = response.data.flags;
+                    for(let i in this.flags){
+                        if(this.flags[i].inUse === true){
+                            this.flagInUse = this.flags[i].type;
+                            break;
+                        }
+                    }
+                    if (this.status == 'on') {
+                        this.startCounter(this.workTime.partitions);
+                        this.startCounter(this.monthStats.actual.partitions);
+                        this.startDiffCounter();
+                    }
+                    this.show = true;
+                });
+            },
             startWork() {
                 let data = {workStatus: this.workStatus};
                 makeRequest({
@@ -157,6 +160,7 @@
                     url: '/start_work',
                     data: data
                 }).then((response)=>{
+                    this.getStats();
                     this.status = 'on';
                     this.signs.push(response.data.workTimeSign);
                     this.startCounter(this.workTime.partitions);
@@ -169,6 +173,7 @@
                     method: 'post',
                     url: '/stop_work'
                 }).then((response)=>{
+                    this.getStats();
                     this.status = 'off';
                     this.updateSign(response.data.workTimeSign);
                     this.workTime = response.data.today_time;
