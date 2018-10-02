@@ -48,6 +48,5 @@ class SeedCustomVacations extends Command
         }
         DB::table('custom_vacations')->truncate();
         DB::table('custom_vacations')->insert($customVacations);
-        print_r(DB::table('custom_vacations')->get());
     }
 }
