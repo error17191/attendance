@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Schema;
 
 class SeedCustomVacations extends Command
 {
@@ -46,7 +47,9 @@ class SeedCustomVacations extends Command
                 'date' => (new Carbon())->month(rand(1,12))->day(rand(1,28))->toDateString()
             ];
         }
+        Schema::disableForeignKeyConstraints();
         DB::table('custom_vacations')->truncate();
+        Schema::disableForeignKeyConstraints();
         DB::table('custom_vacations')->insert($customVacations);
     }
 }

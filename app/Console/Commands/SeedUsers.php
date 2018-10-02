@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use DB;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class SeedUsers extends Command
 {
@@ -67,8 +68,9 @@ class SeedUsers extends Command
             'is_admin' => true,
             'password' => Hash::make('123456')
         ];
-
+        Schema::disableForeignKeyConstraints();
         DB::table('users')->truncate();
+        Schema::enableForeignKeyConstraints();
         DB::table('users')->insert($users);
 
     }

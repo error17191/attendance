@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SeedSettings extends Command
 {
@@ -71,7 +72,9 @@ class SeedSettings extends Command
                 ])
             ]
         ];
+        Schema::disableForeignKeyConstraints();
         DB::table('settings')->truncate();
+        Schema::enableForeignKeyConstraints();
         DB::table('settings')->insert($settings);
     }
 }
