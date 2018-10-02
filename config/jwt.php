@@ -101,7 +101,7 @@ return [
     |
     */
 
-    'ttl' => env('ENABLE_TEST_TIME',false ) ? 20 * 365 * 24 * 60 : env('JWT_TTL', 120),
+    'ttl' => env('ENABLE_TEST_TIME',0 ) ? null : env('JWT_TTL', 120),
 
     /*
     |--------------------------------------------------------------------------
@@ -208,7 +208,7 @@ return [
     |
     */
 
-    'leeway' => env('JWT_LEEWAY', 0),
+    'leeway' => env('ENABLE_TEST_TIME' , 0)  ? 20 * 365 * 24 * 60 * 60  : env('JWT_LEEWAY', 0),
 
     /*
     |--------------------------------------------------------------------------
