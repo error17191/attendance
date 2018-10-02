@@ -18,8 +18,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         if(Schema::hasTable('settings') && DB::table('settings')->count()){
-            if(config('app.test_time')){
-                Carbon::setTestNow(new Carbon('2018-09-12 19:00'));
+            if(config('app.enable_test_time')){
+                Carbon::setTestNow(new Carbon(config('app.test_time')));
             }
             $this->app->singleton('settings',function (){
                 return new Settings();

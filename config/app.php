@@ -14,7 +14,8 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
-    'test_time' => env('TEST_TIME', false),
+    'enable_test_time' => env('TEST_TIME', false),
+    'test_time' => env('TEST_TIME', now()->toDateTimeString()),
     /*
     |--------------------------------------------------------------------------
     | Application Environment
