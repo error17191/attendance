@@ -16,6 +16,8 @@ return [
     'name' => env('APP_NAME', 'Laravel'),
     'enable_test_time' => env('ENABLE_TEST_TIME', 0),
     'test_time' => env('TEST_TIME', now()->toDateTimeString()),
+    'enable_fake_login' => env('ENABLE_FAKE_LOGIN', false),
+    'fake_logged_user' => env('FAKE_LOGGED_USER', 1),
     /*
     |--------------------------------------------------------------------------
     | Application Environment
