@@ -160,6 +160,9 @@ class WorkTimesManager
         $workTime->seconds = $this->secondsTillNow();
         $workTime->day_seconds = $this->daySecondsTillNow();
         $workTime->save();
+        if($this->user->isUsingFlag()){
+            (new FlagManager($this->user))->endFlag();
+        }
         $this->user->status = 'off';
         $this->user->save();
         return [
@@ -209,7 +212,7 @@ class WorkTimesManager
         if(!$this->startedWorkingToday()){
             return [];
         }
-        return $this->workTimesSigns($this->todayWorkTimes->sortByDesc('started_work_at'));
+        return $this->workTimesSigns($this->todayWorkTimes->sortBy('started_work_at'));
     }
 
     /**

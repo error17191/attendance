@@ -86,4 +86,17 @@ class Settings
             ->where('key','notifications')
             ->update(['value' => json_encode($this->settings['notifications'])]);
     }
+
+    public function getFlags()
+    {
+        return $this->settings['flags'];
+    }
+
+    public function setFlags($flags)
+    {
+        $this->settings['flags'] = $flags;
+        DB::table('settings')
+            ->where('key','flags')
+            ->update(['value' => json_encode($this->settings['flags'])]);
+    }
 }

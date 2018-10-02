@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\WorkTime;
+use App\Managers\FlagManager;
 use Carbon\Carbon;
 use App\Managers\WorkTimesManager;
 use Illuminate\Http\Request;
@@ -43,6 +44,7 @@ class StatsController extends Controller
         }
         $diffSeconds = abs($workSecondsIdeal - $workSecondsActual);
         return response()->json([
+            'flags' => (new FlagManager(auth()->user()))->allFlagsTimeLimit(),
             'workTimeSigns' => $manager->todayWorkTimeSigns(),
             'status' => auth()->user()->status,
             'today_time' => [

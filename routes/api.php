@@ -45,3 +45,9 @@ Route::post('/regular/time','RegularTimeController@store')
 
 Route::get('/status','SearchWorkStatusController@index')
     ->name('status.index');
+
+Route::get('/flag/start','FlagsController@startFlag');
+Route::get('/flag/end','FlagsController@endFlag');
+
+Route::get('/status','SearchWorkStatusController@index')
+    ->name('status.index');

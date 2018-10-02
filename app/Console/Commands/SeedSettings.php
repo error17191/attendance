@@ -63,6 +63,12 @@ class SeedSettings extends Command
                     'early_checkout' => false,
                     'early_checkout_time' => 0
                 ])
+            ],
+            [
+                'key' => 'flags',
+                'value' => json_encode([
+                    'lose_time' => 0.5,
+                ])
             ]
         ];
         DB::table('settings')->truncate();
