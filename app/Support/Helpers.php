@@ -24,40 +24,52 @@ function end_flag($user)
     $flag = Flag::where('user_id',$user->id)
         ->where('day',now()->toDateString())
         ->where('stopped_at',null)->first();
+
     if(!$user->isWorking() || !$user->isUsingFlag() || !$flag){
         return response()->json([
             'message' => 'you are not working or using any flag'
         ]);
     }
+
     $type = $flag->type;
-    $flagSeconds = Flag::where('day',now()->toDateString())
+    $flagSeconds = now()->diffInSeconds($flag->started_at);
+    $flagUsedSeconds = Flag::where('day',now()->toDateString())
         ->where('user_id',$user->id)
         ->where('type',$type)->sum('seconds');
-    if($flagSeconds > app('settings')->getFlags()[$type] * 60 * 60 && app('settings')->getFlags()[$type] != 'no time limit'){
-        dd('if');
+    $todayFlagSeconds = $flagUsedSeconds + $flagSeconds;
+
+
+    if($todayFlagSeconds > app('settings')->getFlags()[$type] * 60 * 60 && app('settings')->getFlags()[$type] != 'no time limit'){
         $workTime = $flag->workTime;
         $workTime->stopped_work_at = now();
         $workTime->seconds = now()->diffInSeconds($workTime->started_work_at) +
-             app('settings')->getFlags()[$type] - $flagSeconds;
+            (app('settings')->getFlags()[$type] * 60 * 60) - $todayFlagSeconds;
         $workTime->day_seconds += $workTime->seconds;
         $workTime->save();
+
         $flag->stopped_at = now();
-        $flag->seconds = now()->diffInSeconds($flag->started_at) -
-            $flagSeconds - app('settings')->getFlags()[$type];
+        $flag->seconds = (app('settings')->getFlags()[$type] * 60 * 60) - $flagUsedSeconds;
         $flag->save();
+
         $user->status = 'off';
         $user->flag = 'off';
         $user->save();
+
         return response()->json([
-            'message' => 'you passed your lost time by ' . ($flagSeconds - app('settings')->getFlags()[$type])
+            'message' => 'you passed your lost time by ' . ($todayFlagSeconds - app('settings')->getFlags()[$type])
         ]);
     }
-    dd('else');
+
     $flag->stopped_at = now();
-    $flag->seconds = now()->diffInSeconds($flag->started_at);
+    $flag->seconds = $flagSeconds;
     $flag->save();
+
     $user->flag = 'off';
     $user->save();
+
+    return response()->json([
+        'message' => 'you stopped using ' . $type . ' flag'
+    ]);
 }
 
 
