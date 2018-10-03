@@ -19,11 +19,35 @@ window.axios = require('axios');
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-if(window.token = localStorage.getItem('token')){
+if (window.token = localStorage.getItem('token')) {
     window.axios.defaults.headers.common['Authorization'] = 'Bearer ' + window.token;
 }
 
 window.auth_user_id = localStorage.getItem('user_id');
+
+import Echo from 'laravel-echo'
+
+window.io = require('socket.io-client');
+
+
+window.Echo = new Echo({
+    broadcaster: 'socket.io',
+    auth:
+        {
+            headers:
+                {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+        },
+    host: window.location.hostname + ':6001'
+});
+
+window.Echo.channel('test-event')
+    .listen('TestEvent', (e) => {
+        console.log(e.data);
+    });
+
+
 
 /**
  * Next we will register the CSRF Token as a common header with Axios so that
@@ -40,7 +64,7 @@ if (token) {
 }
 
 window.makeRequest = (params) => {
-    if(params.method == 'get' && !params.cache){
+    if (params.method == 'get' && !params.cache) {
         // params.url = params.url + '?t=' + new Date().getTime();
     }
     return new Promise((resolve) => {

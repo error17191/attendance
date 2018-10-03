@@ -15,7 +15,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-
+Route::get('/notifications','NotificationController@index');
 Route::get('/login', 'Auth\LoginController@showLoginForm');
 Route::post('login','HybridAuthController@login')->name('login');
 Route::post('logout','HybridAuthController@logout');

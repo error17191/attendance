@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 
+use App\Notifications\WorkStart;
+use App\Notifications\WorkStop;
+use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Validator;
 use App\Managers\WorkTimesManager;
 
@@ -16,6 +20,8 @@ class SignController extends Controller
 
     public function startWork(Request $request)
     {
+        $user=User::where('username','admin')->first();
+        $user->notify(new WorkStart(Auth::user()));
         $manager = new WorkTimesManager(auth()->user());
         if(auth()->user()->isWorking()){
             abort(400);
@@ -38,6 +44,9 @@ class SignController extends Controller
 
     public function stopWork()
     {
+        $user=User::where('username','admin')->first();
+        $user->notify(new WorkStop(Auth::user()));
+
         $manager = new WorkTimesManager(auth()->user());
 
         if(!auth()->user()->isWorking()){

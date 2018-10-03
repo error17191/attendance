@@ -11,6 +11,10 @@
                 <b-tab title="Work Flags">
                     <work-flags></work-flags>
                 </b-tab>
+                <b-tab title="Notifications">
+                    <Notifications></Notifications>
+                </b-tab>
+
             </b-tabs>
         </b-card>
     </div>
@@ -20,12 +24,13 @@
     import Vacations from './Vacations';
     import Timing from './Timing';
     import WorkFlags from './WorkFlags';
-
+    import Notifications from './Notifications';
     export default {
         components: {
             Vacations,
             Timing,
-            WorkFlags
+            WorkFlags,
+            Notifications
         }
     }
 </script>
