@@ -9,6 +9,8 @@ use App\User;
 
 class FlagManager
 {
+    //TODO decide to remove the class or leave it
+
     /** @var \App\User */
     protected $user;
 

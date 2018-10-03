@@ -160,7 +160,6 @@
                     url: '/start_work',
                     data: data
                 }).then((response)=>{
-                    this.getStats();
                     this.status = 'on';
                     this.signs.push(response.data.workTimeSign);
                     this.startCounter(this.workTime.partitions);
@@ -173,8 +172,11 @@
                     method: 'post',
                     url: '/stop_work'
                 }).then((response)=>{
-                    this.getStats();
+                    if(this.flagInUse === ''){
+                        this.getStats();
+                    }
                     this.status = 'off';
+                    this.flagInUse = '';
                     this.updateSign(response.data.workTimeSign);
                     this.workTime = response.data.today_time;
                     this.stopCounter(this.workTime.partitions.counterInterval);

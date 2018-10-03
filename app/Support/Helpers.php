@@ -20,23 +20,25 @@ function partition_seconds($seconds)
 
 function end_flag($user)
 {
+    //TODO decide to leave as function or move to the class
     $flag = Flag::where('user_id',$user->id)
         ->where('day',now()->toDateString())
         ->where('stopped_at',null)->first();
     if(!$user->isWorking() || !$user->isUsingFlag() || !$flag){
-        return;
+        return response()->json([
+            'message' => 'you are not working or using any flag'
+        ]);
     }
     $type = $flag->type;
     $flagSeconds = Flag::where('day',now()->toDateString())
         ->where('user_id',$user->id)
         ->where('type',$type)->sum('seconds');
-    if($flagSeconds > app('settings')->getFlags()[$type] * 60 * 60){
-        $workTime = WorkTime::where('day',now()->toDateString())
-            ->where('user_id',$user->id)
-            ->where('stopped_work_at',null)->first();
+    if($flagSeconds > app('settings')->getFlags()[$type] * 60 * 60 && app('settings')->getFlags()[$type] != 'no time limit'){
+        dd('if');
+        $workTime = $flag->workTime;
         $workTime->stopped_work_at = now();
-        $workTime->seconds = now()->diffInSeconds($workTime->started_work_at) -
-            $flagSeconds - app('settings')->getFlags()[$type];
+        $workTime->seconds = now()->diffInSeconds($workTime->started_work_at) +
+             app('settings')->getFlags()[$type] - $flagSeconds;
         $workTime->day_seconds += $workTime->seconds;
         $workTime->save();
         $flag->stopped_at = now();
@@ -46,8 +48,11 @@ function end_flag($user)
         $user->status = 'off';
         $user->flag = 'off';
         $user->save();
-        return;
+        return response()->json([
+            'message' => 'you passed your lost time by ' . ($flagSeconds - app('settings')->getFlags()[$type])
+        ]);
     }
+    dd('else');
     $flag->stopped_at = now();
     $flag->seconds = now()->diffInSeconds($flag->started_at);
     $flag->save();

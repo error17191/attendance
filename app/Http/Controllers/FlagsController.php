@@ -16,6 +16,7 @@ class FlagsController extends Controller
 
     public function startFlag(Request $request)
     {
+        //TODO refactor this action
 //        $manager = new FlagManager(auth()->user());
         if(!isset(app('settings')->getFlags()[$request->type])){
             abort(400);
@@ -30,8 +31,9 @@ class FlagsController extends Controller
         if(Flag::where('day',now()->toDateString())
             ->where('user_id',auth()->user()->id)
             ->where('type',$request->type)->sum('seconds')
-            >
-            app('settings')->getFlags()[$request->type] * 60 * 60){
+            >=
+            app('settings')->getFlags()[$request->type] * 60 * 60
+            && app('settings')->getFlags()[$request->type] != 'no time limit'){
             abort(400);
         }
         $flag = new Flag();
@@ -46,10 +48,14 @@ class FlagsController extends Controller
         $user = auth()->user();
         $user->flag = 'on';
         $user->save();
+        return response()->json([
+            'message' => 'you started using ' . $request->type . ' flag'
+        ]);
     }
 
     public function endFlag()
     {
+        //TODO refactor this action
 //        $manager = new FlagManager(auth()->user());
 //        $message = $manager->endFlag();
 //        return response()->json([

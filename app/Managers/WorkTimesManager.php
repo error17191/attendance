@@ -160,14 +160,13 @@ class WorkTimesManager
         $workTime->seconds = $this->secondsTillNow();
         $workTime->day_seconds = $this->daySecondsTillNow();
         $workTime->save();
-        if($this->user->isUsingFlag()){
-            end_flag($this->user);
-        }
+        $flagMessage = end_flag($this->user);
         $this->user->status = 'off';
         $this->user->save();
         return [
             'workTimeSign' => $this->workTimeSign($workTime),
-            'workTime' => $workTime
+            'workTime' => $workTime,
+            'flagMessage' => $flagMessage
         ];
     }
 
