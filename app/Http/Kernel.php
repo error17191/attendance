@@ -39,7 +39,8 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            'throttle:60,1',
+            // TODO: Modify this value before production to suitable value
+            'throttle:5000,1',
             'bindings',
         ],
     ];

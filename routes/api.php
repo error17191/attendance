@@ -51,3 +51,5 @@ Route::get('/flag/end','FlagsController@endFlag');
 
 Route::get('/status','SearchWorkStatusController@index')
     ->name('status.index');
+
+Route::post('request_work_machine','UserMachineController@requestWorkMachine');
