@@ -147,7 +147,7 @@ return [
     |
     */
 
-    'required_claims' => [
+    'required_claims' => env('ENABLE_TEST_TIME', 0) ? [] : [
         'iss',
         'iat',
         'exp',
