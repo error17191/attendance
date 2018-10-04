@@ -1,7 +1,7 @@
 <?php
 
 use App\Flag;
-use App\WorkTime;
+use App\Managers\WorkTimesManager;
 
 function json_encodei($mixed)
 {
@@ -18,7 +18,7 @@ function partition_seconds($seconds)
     return compact('hours', 'minutes', 'seconds');
 }
 
-function end_flag($user)
+function end_flag($user,$stopWork = false)
 {
     //TODO decide to leave as function or move to the class
     $flag = Flag::where('user_id',$user->id)
@@ -54,6 +54,10 @@ function end_flag($user)
         $user->status = 'off';
         $user->flag = 'off';
         $user->save();
+
+        if(!$stopWork){
+            (new WorkTimesManager($user))->startWorkTime($workTime->status);
+        }
 
         return response()->json([
             'message' => 'you passed your lost time by ' . ($todayFlagSeconds - app('settings')->getFlags()[$type])
