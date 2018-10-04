@@ -20,13 +20,13 @@
             });
             Instascan.Camera.getCameras().then(function (cameras) {
                 if (cameras.length > 0) {
-                    alert(cameras.length);
+                    // alert(cameras.length);
                     scanner.start(cameras[1]);
                 } else {
-                    alert('No cameras found.');
+                    // alert('No cameras found.');
                 }
             }).catch(function (e) {
-                alert(e);
+                // alert(e);
             });
 
         }
