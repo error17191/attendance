@@ -22,16 +22,21 @@ class SignController extends Controller
     {
         $user=User::where('username','admin')->first();
         $user->notify(new WorkStart(Auth::user()));
-        $manager = new WorkTimesManager(auth()->user());
+
         if(auth()->user()->isWorking()){
             abort(400);
         }
+
+        $manager = new WorkTimesManager(auth()->user());
+
         $v = Validator::make($request->only('workStatus'),[
             'workStatus' => 'required|string'
         ]);
+
         if($v->fails()){
             abort(400);
         }
+
         $result = $manager->startWorkTime($request->workStatus);
         return response()->json([
             'workTimeSign' => $result['workTimeSign'],
