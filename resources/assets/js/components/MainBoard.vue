@@ -196,10 +196,11 @@
                 this.startFlag();
             },
             startFlag(){
-                let url = '/flag/start?type=' + this.flagInUse;
+                let data = {type: this.flagInUse};
                 makeRequest({
-                    method: 'get',
-                    url: url
+                    method: 'post',
+                    url: '/flag/start',
+                    data: data
                 }).then((response)=>{
                     this.updateFlags();
                     console.log(response.data.message);
@@ -207,7 +208,7 @@
             },
             endFlag(){
                 makeRequest({
-                    method: 'get',
+                    method: 'post',
                     url: '/flag/end'
                 }).then((response)=>{
                     this.updateFlags();

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\User;
+use App\WorkTime;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -56,5 +58,23 @@ class AttendanceTest extends TestCase
        $this->assertEquals(0,$monthReport['actual']['seconds']);
        $this->assertEquals($monthReport['ideal']['seconds'],$monthReport['diff']['seconds']);
        $this->assertEquals('less',$monthReport['diff']['type']);
+   }
+
+   public function test_start_first_work_time()
+   {
+       //create initial settings and dummy testing users data
+       Artisan::call('seed:settings');
+       Artisan::call('seed:users');
+
+       //enable fake authentication
+       config(['app.enable_fake_login' => true]);
+       config(['app.fake_logged_user' => 1]);
+
+       //make the test request to to start_work
+       $response = $this->json('POST','start_work',['workStatus' => 'work']);
+       $content = json_decode($response->content(),true);
+
+       //test that response succeeded
+       $this->assertEquals(200,$response->status());
    }
 }
