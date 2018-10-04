@@ -5,7 +5,6 @@
 </template>
 
 <script>
-    const Instascan = require('instascan');
 
     export default {
         name: "QRCode",
