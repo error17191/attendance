@@ -14,6 +14,9 @@
                 <b-tab title="Notifications">
                     <Notifications></Notifications>
                 </b-tab>
+                <b-tab title="ScanQR">
+                    <q-r-code></q-r-code>
+                </b-tab>
 
             </b-tabs>
         </b-card>
@@ -25,12 +28,15 @@
     import Timing from './Timing';
     import WorkFlags from './WorkFlags';
     import Notifications from './Notifications';
+    import QRCode from './QRCode';
+
     export default {
         components: {
             Vacations,
             Timing,
             WorkFlags,
-            Notifications
+            Notifications,
+            QRCode
         }
     }
 </script>
