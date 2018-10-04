@@ -8,10 +8,25 @@ use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Artisan;
+use Carbon\Carbon;
 
 class AttendanceTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * Fake login user
+     *
+     * @param int $userId
+     * @return void
+     */
+    public function loginUser(int $userId)
+    {
+        auth()->guard('web')->loginUsingId($userId);
+        $token = auth()->guard('api')->fromUser(\App\User::find($userId));
+        auth()->guard('api')->setToken($token);
+        auth()->guard('api')->authenticate();
+    }
 
     public function test_init_state_with_fresh_user()
     {
@@ -19,14 +34,14 @@ class AttendanceTest extends TestCase
         Artisan::call('seed:settings');
         Artisan::call('seed:users');
 
-        //enable fake authentication
-        config(['app.enable_fake_login' => true]);
-        config(['app.fake_logged_user' => 11]);
+        //fake login
+        $this->loginUser(1);
 
         //make the test request to init_state
         $response = $this->json('GET', 'init_state');
         $content = json_decode($response->content(), true);
 
+        dd($content);
         //test that response succeeded
         $this->assertEquals(200, $response->status());
         $this->assertCount(5, $content);
@@ -62,23 +77,94 @@ class AttendanceTest extends TestCase
 
     public function test_start_first_work_time()
     {
+        //create initial settings and dummy testing users data
         Artisan::call('seed:settings');
         Artisan::call('seed:users');
 
+        //fake login
         $this->loginUser(1);
+
+        $test = now();
+        Carbon::setTestNow($test);
 
         //make the test request to to start_work
         $response = $this->json('POST', 'start_work', ['workStatus' => 'work']);
         $content = json_decode($response->content(), true);
+
         //test that response succeeded
         $this->assertEquals(200,$response->status());
+        $this->assertCount(2,$content);
+
+        //test the work time sign field
+        $workTimeSign = $content['workTimeSign'];
+        $this->assertCount(3,$workTimeSign);
+        $this->assertEquals($test->toTimeString(),$workTimeSign['started_at']);
+        $this->assertEquals(null,$workTimeSign['stopped_at']);
+        $this->assertEquals('work',$workTimeSign['status']);
+
+        //test the today time field
+        $todayTime = $content['today_time'];
+        $this->assertCount(2,$todayTime);
+        $this->assertEquals(0,$todayTime['seconds']);
     }
 
-    public function loginUser($userId)
+    public function test_stop_work_after_three_hours_of_work()
     {
-        auth()->guard('web')->loginUsingId($userId);
-        $token = auth()->guard('api')->fromUser(\App\User::find($userId));
-        auth()->guard('api')->setToken($token);
-        auth()->guard('api')->authenticate();
+        //create initial settings and dummy testing users data
+        Artisan::call('seed:settings');
+        Artisan::call('seed:users');
+
+        //fake login
+        $this->loginUser(1);
+
+        //set start time
+        $start = new Carbon();
+        Carbon::setTestNow($start);
+
+        //make the test request to to start_work
+        $response = $this->json('POST', 'start_work', ['workStatus' => 'work']);
+        $content = json_decode($response->content(), true);
+
+        //test that response succeeded
+        $this->assertEquals(200,$response->status());
+        $this->assertCount(2,$content);
+
+        //test the work time sign field
+        $workTimeSign = $content['workTimeSign'];
+        $this->assertCount(3,$workTimeSign);
+        $this->assertEquals($start->toTimeString(),$workTimeSign['started_at']);
+        $this->assertEquals(null,$workTimeSign['stopped_at']);
+        $this->assertEquals('work',$workTimeSign['status']);
+
+        //test the today time field
+        $todayTime = $content['today_time'];
+        $this->assertCount(2,$todayTime);
+        $this->assertEquals(0,$todayTime['seconds']);
+
+        //set stop time after 3 hours
+        $stop = $start->copy()->addHours(3);
+        Carbon::setTestNow($stop);
+
+        //make the stop_work request
+        $response = $this->json('POST','stop_work');
+        $content = json_decode($response->content(),true);
+
+        //test the response was succeeded
+        $this->assertEquals(200,$response->status());
+        $this->assertCount(2,$content);
+
+        //test the work time sign field
+        $workTimeSign = $content['workTimeSign'];
+        $this->assertCount(3,$workTimeSign);
+        $this->assertEquals($start->toTimeString(),$workTimeSign['started_at']);
+        $this->assertEquals($stop->toTimeString(),$workTimeSign['stopped_at']);
+        $this->assertEquals('work',$workTimeSign['status']);
+
+        //test the today time field
+        $todayTime = $content['today_time'];
+        $this->assertCount(2,$todayTime);
+        $this->assertEquals(3 * 60 * 60,$todayTime['seconds']);
     }
+
+
 }
