@@ -1,4 +1,9 @@
 let mix = require('laravel-mix');
+mix.webpackConfig({
+    node: {
+        fs: "empty"
+    }
+});
 
 /*
  |--------------------------------------------------------------------------

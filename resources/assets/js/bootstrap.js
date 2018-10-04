@@ -77,6 +77,7 @@ window.makeRequest = (params) => {
     });
 };
 
+window.Instascan = require('instascan');
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
