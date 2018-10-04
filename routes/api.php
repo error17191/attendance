@@ -52,4 +52,7 @@ Route::post('/flag/end','FlagsController@endFlag');
 Route::get('/status','SearchWorkStatusController@index')
     ->name('status.index');
 
-Route::post('request_work_machine','UserMachineController@requestWorkMachine');
+Route::post('machine/request','UserMachineController@requestWorkMachine');
+Route::post('machine/accept','UserMachineController@acceptWorkMachine');
+Route::post('machine/reject','UserMachineController@rejectWorkMachine');
+Route::post('machine/delete','UserMachineController@deleteWorkMachine');
