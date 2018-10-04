@@ -55,6 +55,8 @@ class SeedUsers extends Command
                 'email' => strtolower($name) . '@email.com',
                 'is_admin' => false,
                 'password' => Hash::make('123456'),
+                'created_at' => now(),
+                'updated_at' => now()
             ];
             $count++;
         }
@@ -66,7 +68,9 @@ class SeedUsers extends Command
             'mobile' => '000000000',
             'email' => 'admin@mail.com',
             'is_admin' => true,
-            'password' => Hash::make('123456')
+            'password' => Hash::make('123456'),
+            'created_at' => now(),
+            'updated_at' => now()
         ];
         Schema::disableForeignKeyConstraints();
         DB::table('users')->truncate();
