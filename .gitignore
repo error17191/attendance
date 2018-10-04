@@ -15,3 +15,6 @@ yarn-error.log
 .env
 .phpunit.result.cache
 /public/mix-manifest.json
+echo.log
+worker.log
+laravel-echo-server.json
