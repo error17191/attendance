@@ -10,6 +10,9 @@
                         Add Flag
                     </button>
                 </div>
+                <span class="text-danger" v-if="flagExists">
+                    This flag is already exists
+                </span>
             </div>
         </div>
         <div v-if="flags.length === 0" class="alert alert-info">No Flags</div>
@@ -52,7 +55,8 @@
                 selectedFlags: [],
                 newFlag: '',
                 selectAll: false,
-                deleting: false
+                deleting: false,
+                flagExists: false
             }
         },
         mounted(){
@@ -69,7 +73,7 @@
                 });
             },
             addFlag(){
-                if(this.newFlag.length <= 0){
+                if(this.newFlag.length <= 0 || this.getFlagIndex(this.newFlag) >= 0){
                     return;
                 }
                 let data = {flagName: this.newFlag};
@@ -134,6 +138,9 @@
                         this.flags[i].highlighted = false;
                     }
                 }
+            },
+            newFlag(value){
+                this.flagExists = this.getFlagIndex(value) >= 0;
             }
         }
     }
