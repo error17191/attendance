@@ -25,6 +25,11 @@
                 </b-form-select>
             </div>
         </b-form-group>
+        <b-form-group label="Lost Time Flag Limit" horizontal>
+            <div class="col-md-3">
+                <input type="number" class="form-control" v-model="form.lostTime">
+            </div>
+        </b-form-group>
         <b-form-group horizontal label="Notifications">
             <b-form-checkbox
                 v-model="form.notifyMe.late_attendance"
@@ -83,7 +88,8 @@
                         late_attendance_time: 0,
                         early_checkout: false,
                         early_checkout_time: 0.5
-                    }
+                    },
+                    lostTime: 0
                 },
                 saving:false
             }
@@ -118,7 +124,7 @@
                     options.push({
                         text: this.formatTime(number),
                         value: number,
-                        selected: number === this.form[type][field]
+                        selectedFlags: number === this.form[type][field]
                     });
                 }
                 return options;
@@ -140,15 +146,18 @@
                     this.form.notifyMe.late_attendance_time = response.data[0].notifications.late_attendance_time;
                     this.form.notifyMe.early_checkout = response.data[0].notifications.early_checkout;
                     this.form.notifyMe.early_checkout_time = response.data[0].notifications.early_checkout_time;
+                    this.form.lostTime = response.data[0].lostTime / 60;
                 });
             },
             save(){
                 this.saving = true;
+                this.form.lostTime *= 60;
                 makeRequest({
                     method: 'post',
                     url: 'regular/time',
                     data: this.form
                 }).then((response)=>{
+                    this.form.lostTime /= 60;
                     this.saving = false;
                     this.$snotify.success('Settings Saved Successfully');
                 });

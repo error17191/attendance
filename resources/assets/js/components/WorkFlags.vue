@@ -17,7 +17,7 @@
             <h4>
                     <span   style="cursor: pointer"
                             v-for="flag,index in flags"
-                            @click.prevent="toggleHighlight($event,flag)"
+                            @click.prevent="toggleHighlight(flag)"
                             :class="`noselect badge m-2 ${flag.highlighted ? 'badge-primary' : 'badge-info'}`">{{flag.name}}
                         &nbsp;
                         <button type="button" class="close text-light"
@@ -37,7 +37,7 @@
         <div class="text-right" v-if="flags.length > 1">
             <button
                     @click="deleteFlags"
-                    :disabled="selected.length === 0"
+                    :disabled="selectedFlags.length === 0"
                     class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
         </div>
     </div>
@@ -49,7 +49,7 @@
         data(){
             return {
                 flags: [],
-                selected: [],
+                selectedFlags: [],
                 newFlag: '',
                 selectAll: false,
                 deleting: false
@@ -72,28 +72,68 @@
                 if(this.newFlag.length <= 0){
                     return;
                 }
-                let data = {flag: this.newFlag};
+                let data = {flagName: this.newFlag};
                 makeRequest({
-                    method: 'POST',
+                    method: 'post',
                     url: '/admin/flag',
                     data: data
                 }).then((response)=>{
+                    this.newFlag = '';
                     this.getFlags();
                 });
             },
-            deleteFlags(flag){
-
+            deleteFlags($event,flag){
+                let data = {flagsNames: flag ? [flag] : this.selectedFlags};
+                this.deleting = true;
+                makeRequest({
+                    method: 'delete',
+                    url: '/admin/flags',
+                    data: data
+                }).then((response)=>{
+                    this.deleting = false;
+                    this.removeDeletedFlags();
+                });
             },
-            toggleHighlight(event,flag){
+            toggleHighlight(flag){
                 let index = this.flags.indexOf(flag);
-                if(flag.highlighted && this.selected.indexOf(flag.name) >= 0){
-                    this.selected.splice(this.selected.indexOf(flag.name),1);
-                    this.flags[index].highlighted = false;
-                }else if(!flag.highlighted && this.selected.indexOf(flag.name) < 0){
-                    this.selected.push(flag.name);
-                    this.flags[index].highlighed = true;
+                let highlighted = this.flags[index].highlighted = !this.flags[index].highlighted;
+                if(highlighted){
+                    this.selectedFlags.push(this.flags[index].name);
+                }else{
+                    this.selectedFlags.splice(this.selectedFlags.indexOf(flag.name),1);
                 }
-
+            },
+            removeDeletedFlags(){
+                for(let i in this.selectedFlags){
+                    let index = this.getFlagIndex(this.selectedFlags[i]);
+                    if(index >= 0){
+                        this.flags.splice(index,1);
+                    }
+                }
+                this.selectedFlags = [];
+            },
+            getFlagIndex(name){
+                for(let i in this.flags){
+                    if(this.flags[i].name === name){
+                        return i;
+                    }
+                }
+                return -1;
+            }
+        },
+        watch: {
+            selectAll(value){
+                this.selectedFlags = [];
+                if(value){
+                    for(let i in this.flags){
+                        this.selectedFlags.push(this.flags[i].name);
+                        this.flags[i].highlighted = true;
+                    }
+                }else{
+                    for(let i in this.flags){
+                        this.flags[i].highlighted = false;
+                    }
+                }
             }
         }
     }

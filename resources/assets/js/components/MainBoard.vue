@@ -11,10 +11,10 @@
                         <div class="row justify-content-center">
                             <div class="col-md-8">
                                 <button v-for="flag in flags"
-                                       class="btn"
-                                       :class="{'btn-primary': !flag.inUse,'btn-dark': flag.inUse}"
-                                       :disabled="status === 'off' || (flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit')"
-                                       @click.prevent="toggleFlag(flag.type)"
+                                        class="btn mr-2 mb-2 col-md-3"
+                                        :class="{'btn-primary': !flag.inUse,'btn-dark': flag.inUse}"
+                                        :disabled="status === 'off' || (flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit')"
+                                        @click.prevent="toggleFlag(flag.type)"
                                 >
                                     {{flag.type | capitalize}}
                                 </button>
@@ -139,6 +139,7 @@
                     this.signs = response.data.workTimeSigns;
                     this.monthStats = response.data.month_report;
                     this.flags = response.data.flags;
+                    this.flagInUse = '';
                     for(let i in this.flags){
                         if(this.flags[i].inUse === true){
                             this.flagInUse = this.flags[i].type;
@@ -172,7 +173,7 @@
                     method: 'post',
                     url: '/stop_work'
                 }).then((response)=>{
-                    if(this.flagInUse === ''){
+                    if(this.flagInUse !== ''){
                         this.getStats();
                     }
                     this.status = 'off';

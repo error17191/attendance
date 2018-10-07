@@ -44,7 +44,7 @@ class StatsController extends Controller
         }
         $diffSeconds = abs($workSecondsIdeal - $workSecondsActual);
         return response()->json([
-            'flags' => (new FlagManager(auth()->user()))->allFlagsTimeLimit(),
+            'flags' => get_all_flags(auth()->user()),
             'workTimeSigns' => $manager->todayWorkTimeSigns(),
             'status' => auth()->user()->status,
             'today_time' => [

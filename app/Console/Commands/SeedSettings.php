@@ -68,7 +68,7 @@ class SeedSettings extends Command
             [
                 'key' => 'flags',
                 'value' => json_encode([
-                    'lost_time' => 0.5,
+                    'lost_time' => 1800,
                 ])
             ]
         ];
