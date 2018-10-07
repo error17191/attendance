@@ -56,6 +56,7 @@ Route::post('machine/request','UserMachineController@requestWorkMachine');
 Route::post('machine/accept','UserMachineController@acceptWorkMachine');
 Route::post('machine/reject','UserMachineController@rejectWorkMachine');
 Route::post('machine/delete','UserMachineController@deleteWorkMachine');
+Route::post('machine/check','UserMachineController@checkUserMachine');
 
 Route::get('/admin/flags','AdminFlagsController@index');
 Route::post('/admin/flag','AdminFlagsController@store');

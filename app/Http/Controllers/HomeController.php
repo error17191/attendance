@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\AdminChannel;
+use App\Events\TestEvent;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
