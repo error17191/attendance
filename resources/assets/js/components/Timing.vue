@@ -151,13 +151,11 @@
             },
             save(){
                 this.saving = true;
-                this.form.lostTime *= 60;
                 makeRequest({
                     method: 'post',
                     url: 'regular/time',
                     data: this.form
                 }).then((response)=>{
-                    this.form.lostTime /= 60;
                     this.saving = false;
                     this.$snotify.success('Settings Saved Successfully');
                 });
