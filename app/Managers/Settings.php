@@ -2,7 +2,10 @@
 
 namespace App\Managers;
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class Settings
 {
@@ -10,11 +13,19 @@ class Settings
 
     public function __construct()
     {
+        if (Schema::hasTable('settings') && DB::table('settings')->count() > 0) {
+            $this->refresh();
+        }
+    }
+
+    public function refresh()
+    {
         $settings = DB::table('settings')->get();
         $this->settings = [];
         foreach ($settings as $setting) {
             $this->settings[$setting->key] = json_decode($setting->value, true);
         }
+        Carbon::setWeekendDays($this->getWeekends());
     }
 
     public function setWeekends($array = null)
@@ -70,7 +81,7 @@ class Settings
     {
         $this->settings['regular_time'] = $regularTime;
         DB::table('settings')
-            ->where('key','regular_time')
+            ->where('key', 'regular_time')
             ->update(['value' => json_encodei($this->settings['regular_time'])]);
     }
 
@@ -83,7 +94,7 @@ class Settings
     {
         $this->settings['notifications'] = $notifications;
         DB::table('settings')
-            ->where('key','notifications')
+            ->where('key', 'notifications')
             ->update(['value' => json_encode($this->settings['notifications'])]);
     }
 
@@ -96,7 +107,7 @@ class Settings
     {
         $this->settings['flags'] = $flags;
         DB::table('settings')
-            ->where('key','flags')
+            ->where('key', 'flags')
             ->update(['value' => json_encode($this->settings['flags'])]);
     }
 }
