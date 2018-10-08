@@ -37,7 +37,7 @@
         },
         data() {
             return {
-                selected: null,
+                selectedFlags: null,
                 options: [],
                 weekdays: [],
                 weekends: [],

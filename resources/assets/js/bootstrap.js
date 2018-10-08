@@ -42,8 +42,10 @@ window.Echo = new Echo({
     host: window.location.hostname + ':6001'
 });
 
-window.Echo.channel('test-event')
-    .listen('TestEvent', (e) => {
+
+
+window.Echo.private('Admin')
+    .listen('AdminChannel', (e) => {
         console.log(e.data);
     });
 

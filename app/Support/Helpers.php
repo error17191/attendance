@@ -21,9 +21,7 @@ function partition_seconds($seconds)
 function end_flag($user,$stopWork = false)
 {
     //TODO decide to leave as function or move to the class
-    $flag = Flag::where('user_id',$user->id)
-        ->where('day',now()->toDateString())
-        ->where('stopped_at',null)->first();
+    $flag = get_current_flag($user);
 
     if(!$user->isWorking() || !$user->isUsingFlag() || !$flag){
         return response()->json([
@@ -33,22 +31,20 @@ function end_flag($user,$stopWork = false)
 
     $type = $flag->type;
     $flagSeconds = now()->diffInSeconds($flag->started_at);
-    $flagUsedSeconds = Flag::where('day',now()->toDateString())
-        ->where('user_id',$user->id)
-        ->where('type',$type)->sum('seconds');
+    $flagUsedSeconds = get_flag_used_time_today($type,$user);
     $todayFlagSeconds = $flagUsedSeconds + $flagSeconds;
 
 
-    if($todayFlagSeconds > app('settings')->getFlags()[$type] * 60 * 60 && app('settings')->getFlags()[$type] != 'no time limit'){
+    if(flag_has_time_limit($type) && $todayFlagSeconds > get_flag_time_limit_seconds($type)){
         $workTime = $flag->workTime;
         $workTime->stopped_work_at = now();
         $workTime->seconds = now()->diffInSeconds($workTime->started_work_at) +
-            (app('settings')->getFlags()[$type] * 60 * 60) - $todayFlagSeconds;
+            get_flag_time_limit_seconds($type) - $todayFlagSeconds;
         $workTime->day_seconds += $workTime->seconds;
         $workTime->save();
 
         $flag->stopped_at = now();
-        $flag->seconds = (app('settings')->getFlags()[$type] * 60 * 60) - $flagUsedSeconds;
+        $flag->seconds = get_flag_time_limit_seconds($type) - $flagUsedSeconds;
         $flag->save();
 
         $user->status = 'off';
@@ -76,6 +72,60 @@ function end_flag($user,$stopWork = false)
     ]);
 }
 
+function get_all_flags($user)
+{
+    $allFlags = [];
+    foreach (app('settings')->getFlags() as $flag => $limit) {
+        $usedSeconds = get_flag_used_time_today($flag,$user);
+        $allFlags[] = [
+            'type' => $flag,
+            'timeLimit' => flag_has_time_limit($flag) ?
+                partition_seconds(get_flag_time_limit_seconds($flag)) : $limit,
+            'limitSeconds' => flag_has_time_limit($flag) ?
+                get_flag_time_limit_seconds($flag) : $limit,
+            'remainingSeconds' => flag_has_time_limit($flag) ?
+                get_flag_time_limit_seconds($flag) - $usedSeconds : $limit,
+            'remainingTime' => flag_has_time_limit($flag) ?
+                partition_seconds(get_flag_time_limit_seconds($flag) - $usedSeconds) : $limit,
+            'inUse' => flag_in_use($flag,$user)
+        ];
+    }
+    return $allFlags;
+}
+
+function get_flag_used_time_today($type,$user)
+{
+    return Flag::where('user_id',$user->id)
+        ->where('type',$type)
+        ->where('day',now()->toDateString())
+        ->sum('seconds');
+}
+
+function flag_in_use($type,$user)
+{
+    return Flag::where('user_id',$user->id)
+        ->where('type',$type)
+        ->where('day',now()->toDateString())
+        ->where('stopped_at',null)
+        ->get()->count() == 1;
+}
+
+function flag_has_time_limit($type)
+{
+    return gettype(app('settings')->getFlags()[$type]) != 'string';
+}
+
+function get_flag_time_limit_seconds($type)
+{
+    return app('settings')->getFlags()[$type];
+}
+
+function get_current_flag($user)
+{
+    return Flag::where('user_id',$user->id)
+        ->where('day',now()->toDateString())
+        ->where('stopped_at',null)->first();
+}
 
 function week_days()
 {

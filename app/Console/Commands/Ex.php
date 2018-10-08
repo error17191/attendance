@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Events\AdminChannel;
 use App\Notifications\WorkStart;
 use App\User;
 use Illuminate\Console\Command;
@@ -39,6 +40,6 @@ class Ex extends Command
      */
     public function handle()
     {
-        User::find(11)->notify(new WorkStart(User::find(2)));
+        broadcast(new AdminChannel(User::find(11)));
     }
 }

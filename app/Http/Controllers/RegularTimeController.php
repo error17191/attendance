@@ -10,8 +10,9 @@ class RegularTimeController extends Controller
     {
         $regularTime = app('settings')->getRegularTime();
         $notifications = app('settings')->getNotifications();
+        $lostTime = get_flag_time_limit_seconds('lost_time');
         return response()->json([
-            compact('regularTime','notifications')
+            compact('regularTime','notifications','lostTime')
         ]);
     }
 
@@ -20,6 +21,9 @@ class RegularTimeController extends Controller
         $request->validate($this->rules());
         app('settings')->setRegularTime($request->regularTime);
         app('settings')->setNotifications($request->notifyMe);
+        $flags = app('settings')->getFlags();
+        $flags['lost_time'] = $request->lostTime * 60;
+        app('settings')->setFlags($flags);
         return response()->json([
             'message' => 'saved'
         ]);
@@ -36,7 +40,8 @@ class RegularTimeController extends Controller
             'notifyMe.late_attendance' => 'required|boolean',
             'notifyMe.late_attendance_time' => 'nullable|numeric|min:0|max:23.5',
             'notifyMe.early_checkout' => 'required|boolean',
-            'notifyMe.early_checkout_time' => 'nullable|numeric'
+            'notifyMe.early_checkout_time' => 'nullable|numeric',
+            'lostTime' => 'required|integer'
         ];
     }
 }

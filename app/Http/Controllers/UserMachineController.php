@@ -11,8 +11,8 @@ class UserMachineController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('is_admin')
-            ->except('requestWorkMachine');
+//        $this->middleware('is_admin')
+//            ->except('requestWorkMachine');
     }
 
     public function requestWorkMachine(Request $request)
@@ -75,5 +75,29 @@ class UserMachineController extends Controller
         }
 
         $userMachine->delete();
+    }
+
+    public function checkUserMachine(Request $request)
+    {
+        $user_id = auth()->id();
+        $machine_id = $request->machine_id;
+        $userMachine = UserMachine::find($machine_id);
+        if (!$userMachine) {
+            return response()->json([
+                'status' => 'not_exists',
+                'message' => 'No machine with this id in our records'
+            ]);
+        }
+
+        if($userMachine->user_id != $user_id){
+            return response()->json([
+                'status' => 'already_used',
+                'message' => 'This machine id is already used by someoneelse'
+            ]);
+        }
+
+        return response([
+            'status' => 'success'
+        ]);
     }
 }

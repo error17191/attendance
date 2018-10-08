@@ -58,7 +58,10 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(UserBrowser::class);
     }
 
-
+    public function isAdmin()
+    {
+        return $this->is_admin;
+    }
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *

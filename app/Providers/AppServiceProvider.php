@@ -24,16 +24,14 @@ class AppServiceProvider extends ServiceProvider
             auth()->guard('api')->setToken($token);
             auth()->guard('api')->authenticate();
         }
-        // TODO : improve this condition
-        if(Schema::hasTable('settings') && DB::table('settings')->count()){
-            if(config('app.enable_test_time')){
-                Carbon::setTestNow(new Carbon(config('app.test_time')));
-            }
-            $this->app->singleton('settings',function (){
-                return new Settings();
-            });
-            Carbon::setWeekendDays(app('settings')->getWeekends());
+
+        if(config('app.enable_test_time')){
+            Carbon::setTestNow(new Carbon(config('app.test_time')));
         }
+
+        $this->app->singleton('settings',function (){
+            return new Settings();
+        });
     }
 
     /**

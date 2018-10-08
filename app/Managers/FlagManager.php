@@ -83,7 +83,7 @@ class FlagManager
 
     public function setFlagTypeTimeLimit()
     {
-        if(!$this->flagType){
+        if(!$this->flagType || app('settings')->getFlags()[$this->flagType] === 'no time limit'){
             $this->flagTypeTimeLimit = 0.0;
         }
         $this->flagTypeTimeLimit = app('settings')->getFlags()[$this->flagType] * 60 * 60;
@@ -96,7 +96,7 @@ class FlagManager
             $this->setFlagType($flag);
             $flagsTimeLimits[] = [
                 'type' => $flag,
-                'timeLimit' => (float)$value != 0 ?
+                'timeLimit' => gettype($value) != 'string' ?
                     partition_seconds($value * 60 * 60) : 'no time limit',
                 'limitSeconds' => $value * 60 * 60,
                 'remainingTime' => $this->flagTypeRemainingTime() > 0 ?

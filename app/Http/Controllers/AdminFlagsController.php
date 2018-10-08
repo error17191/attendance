@@ -31,40 +31,38 @@ class AdminFlagsController extends Controller
 
     public function store(Request $request)
     {
-        $v = Validator::make($request->only('flag'),[
-            'flag' => 'required|string'
+        $v = Validator::make($request->only('flagName'),[
+            'flagName' => 'required|string'
         ]);
 
-        if($v->fails() || $request->flag == 'lost_time'){
+        if($v->fails() || $request->flagName == 'lost_time'){
             abort(400,'the given flag is not valid');
         }
 
         $flags = app('settings')->getFlags();
-        if(isset($flags[$request->flag])){
+        if(isset($flags[$request->flagName])){
             abort(400,'this flag already exists');
         }
-        $flags[$request->flag] = 'no time limit';
+        $flags[$request->flagName] = 'no time limit';
 
         app('settings')->setFlags($flags);
     }
 
     public function destroy(Request $request)
     {
-        $v = Validator::make($request->only('flags'),[
-            'flags' => 'required|array|min:1',
-            'flags.*' => 'string'
+        $v = Validator::make($request->only('flagsNames'),[
+            'flagsNames' => 'required|array|min:1',
+            'flagsNames.*' => 'string'
         ]);
-
         if($v->fails()){
             abort(400,'flags is not valid');
         }
+        $flags = app('settings')->getFlags();
 
-        $oldFlags = app('settings')->getFlags();
-
-        foreach ($request->flags as $flag) {
-            unset($oldFlags[$flag]);
+        foreach ($request->flagsNames as $flag) {
+            unset($flags[$flag]);
         }
 
-        app('settings')->setFlags($oldFlags);
+        app('settings')->setFlags($flags);
     }
 }
