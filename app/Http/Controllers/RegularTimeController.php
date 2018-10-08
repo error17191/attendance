@@ -22,7 +22,7 @@ class RegularTimeController extends Controller
         app('settings')->setRegularTime($request->regularTime);
         app('settings')->setNotifications($request->notifyMe);
         $flags = app('settings')->getFlags();
-        $flags['lost_time'] = $request->lostTime;
+        $flags['lost_time'] = $request->lostTime * 60;
         app('settings')->setFlags($flags);
         return response()->json([
             'message' => 'saved'
