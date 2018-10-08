@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\WorkTime;
-use App\Managers\FlagManager;
 use Carbon\Carbon;
 use App\Managers\WorkTimesManager;
 use Illuminate\Http\Request;

@@ -14,11 +14,11 @@ class Settings
     public function __construct()
     {
         if (Schema::hasTable('settings') && DB::table('settings')->count() > 0) {
-            $this->refresh();
+            $this->refreshData();
         }
     }
 
-    public function refresh()
+    public function refreshData()
     {
         $settings = DB::table('settings')->get();
         $this->settings = [];

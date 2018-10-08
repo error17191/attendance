@@ -33,8 +33,9 @@ class AttendanceTest extends TestCase
 
         //create initial settings and dummy testing users data
         Artisan::call('seed:settings');
-        app('settings')->refresh();
+        app('settings')->refreshData();
         Artisan::call('seed:users');
+
         //fake login
         $this->loginUser(1);
 
@@ -52,8 +53,8 @@ class AttendanceTest extends TestCase
         $this->assertCount(count($actualFlags), $flags);
         foreach ($flags as $flag) {
             $this->assertTrue(isset($actualFlags[$flag['type']]));
-            $this->assertEquals($actualFlags[$flag['type']] * 60 * 60, $flag['limitSeconds']);
-            $this->assertEquals($actualFlags[$flag['type']] * 60 * 60, $flag['remainingSeconds']);
+            $this->assertEquals($actualFlags[$flag['type']], $flag['limitSeconds']);
+            $this->assertEquals($actualFlags[$flag['type']], $flag['remainingSeconds']);
             $this->assertTrue(!$flag['inUse']);
         }
 
@@ -79,6 +80,7 @@ class AttendanceTest extends TestCase
     {
         //create initial settings and dummy testing users data
         Artisan::call('seed:settings');
+        app('settings')->refreshData();
         Artisan::call('seed:users');
 
         //fake login
@@ -112,6 +114,7 @@ class AttendanceTest extends TestCase
     {
         //create initial settings and dummy testing users data
         Artisan::call('seed:settings');
+        app('settings')->refreshData();
         Artisan::call('seed:users');
 
         //fake login

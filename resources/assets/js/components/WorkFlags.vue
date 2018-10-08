@@ -21,7 +21,7 @@
                     <span   style="cursor: pointer"
                             v-for="flag,index in flags"
                             @click.prevent="toggleHighlight(flag)"
-                            :class="`noselect badge m-2 ${flag.highlighted ? 'badge-primary' : 'badge-info'}`">{{flag.name}}
+                            :class="`noselect badge m-2 ${flag.highlighted ? 'badge-primary' : 'badge-info'}`">{{flag.name | capitalize}}
                         &nbsp;
                         <button type="button" class="close text-light"
                                 :disabled="deleting"
@@ -59,6 +59,19 @@
                 flagExists: false
             }
         },
+        filters: {
+            capitalize: function (value) {
+                if(!value){
+                    return '';
+                }
+                value = value.toString();
+                let values = value.split('_');
+                for(let i in values){
+                    values[i] = values[i].charAt(0).toUpperCase() + values[i].slice(1);
+                }
+                return values.join(' ');
+            }
+        },
         mounted(){
             this.getFlags();
         },
@@ -69,14 +82,13 @@
                     url: '/admin/flags'
                 }).then((response)=>{
                     this.flags = response.data.flags;
-                    console.log(response.data.flags);
                 });
             },
             addFlag(){
-                if(this.newFlag.length <= 0 || this.getFlagIndex(this.newFlag) >= 0){
+                if(this.newFlag.length <= 0 || this.flagExists){
                     return;
                 }
-                let data = {flagName: this.newFlag};
+                let data = {flagName: this.formatFlagName(this.newFlag)};
                 makeRequest({
                     method: 'post',
                     url: '/admin/flag',
@@ -123,6 +135,17 @@
                     }
                 }
                 return -1;
+            },
+            formatFlagName(name){
+                if(!name.length){
+                    return '';
+                }
+                name = name.toString();
+                let words = name.split(' ');
+                for(let i in words){
+                    words[i] = words[i].toLowerCase();
+                }
+                return words.join('_');
             }
         },
         watch: {
@@ -140,7 +163,7 @@
                 }
             },
             newFlag(value){
-                this.flagExists = this.getFlagIndex(value) >= 0;
+                this.flagExists = this.getFlagIndex(this.formatFlagName(value)) >= 0;
             }
         }
     }
