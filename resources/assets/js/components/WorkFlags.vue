@@ -6,12 +6,12 @@
                     <input type="text" class="form-control" placeholder="New Flag" v-model="newFlag">
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-primary form-control" @click="addFlag">
+                    <button class="btn btn-primary form-control" @click="addFlag" :disabled="flagExists || !newFlag.length">
                         Add Flag
                     </button>
                 </div>
                 <span class="text-danger" v-if="flagExists">
-                    This flag is already exists
+                    This flag already exists
                 </span>
             </div>
         </div>
