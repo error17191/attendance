@@ -11,7 +11,7 @@
                         <div class="row justify-content-center">
                             <div class="col-md-8">
                                 <button v-for="flag in flags"
-                                        class="btn mr-2 mb-2 col-md-3"
+                                        class="btn mr-2 mb-2"
                                         :class="{'btn-primary': !flag.inUse,'btn-dark': flag.inUse}"
                                         :disabled="status === 'off' || (flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit')"
                                         @click.prevent="toggleFlag(flag.type)"
