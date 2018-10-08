@@ -40,7 +40,7 @@
         <div class="text-right" v-if="flags.length > 1">
             <button
                     @click="deleteFlags"
-                    :disabled="selectedFlags.length === 0"
+                    :disabled="selectedFlags.length === 0 || deleting"
                     class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
         </div>
     </div>
