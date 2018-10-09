@@ -112,6 +112,7 @@ class UserMachineController extends Controller
         $user_machine->machine_id = $machine_id;
         $user_machine->save();
         broadcast(new AdminChannel(User::find($user_id)));
+        return response()->json(['messages'=>'QR code added successfully']);
 
     }
 }
