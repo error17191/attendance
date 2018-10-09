@@ -2,6 +2,7 @@
 
 return [
 
+// TODO : FIX EXPIRATION VALUES BEFORE PRODUCTION
     /*
     |--------------------------------------------------------------------------
     | Default Session Driver

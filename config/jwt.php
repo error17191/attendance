@@ -10,7 +10,7 @@
  */
 
 return [
-
+// TODO : FIX EXPIRATION VALUES BEFORE PRODUCTION
     /*
     |--------------------------------------------------------------------------
     | JWT Authentication Secret
