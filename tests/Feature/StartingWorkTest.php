@@ -42,16 +42,16 @@ class StartingWorkTest extends TestCase
         $this->assertEquals('work_status_required', $data['status']);
     }
 
-    public function test_a_user_can_stop_work()
-    {
-        $this->seedData();
-        $this->logInUser(1);
-        $startTime = new Carbon('11:40:39');
-        Carbon::setTestNow($startTime);
-        $this->json('post', '/start_work');
-
-        $stopTime = new Carbon('12:39:11');
-        Carbon::setTestNow($stopTime);
-        $this->json('post', '/stop_work');
-    }
+//    public function test_a_user_can_stop_work()
+//    {
+//        $this->seedData();
+//        $this->logInUser(1);
+//        $startTime = new Carbon('11:40:39');
+//        Carbon::setTestNow($startTime);
+//        $this->json('post', '/start_work');
+//
+//        $stopTime = new Carbon('12:39:11');
+//        Carbon::setTestNow($stopTime);
+//        $this->json('post', '/stop_work');
+//    }
 }
