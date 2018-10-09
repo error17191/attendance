@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class UserMachine extends Model
 {
     public $timestamps = false;
+    protected $table="user_machines";
     protected $primaryKey = 'machine_id';
     protected $keyType = 'string';
     public $incrementing = false;

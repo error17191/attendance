@@ -16,7 +16,10 @@
         mounted() {
             let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
             scanner.addListener('scan', function (content) {
-                alert(content)
+                let data=content.split('__');
+                let user_id=data[0];
+                let machine_id=data[1];
+                axios.post('machine/add',{'user_id':user_id,'machine_id':machine_id})
             });
             Instascan.Camera.getCameras().then(function (cameras) {
                 if (cameras.length > 0) {
