@@ -101,7 +101,8 @@ return [
     |
     */
 
-    'ttl' => env('ENABLE_TEST_TIME',0 ) ? null : env('JWT_TTL', 120),
+//    'ttl' => env('ENABLE_TEST_TIME',0 ) ? null : env('JWT_TTL', 120),
+    'ttl' => null,
 
     /*
     |--------------------------------------------------------------------------
@@ -147,15 +148,16 @@ return [
     |
     */
 
-    'required_claims' => env('ENABLE_TEST_TIME', 0) ? [] : [
-        'iss',
-        'iat',
-        'exp',
-        'nbf',
-        'sub',
-        'jti',
-    ],
+//    'required_claims' => env('ENABLE_TEST_TIME', 0) ? [] : [
+//        'iss',
+//        'iat',
+//        'exp',
+//        'nbf',
+//        'sub',
+//        'jti',
+//    ],
 
+    'required_claims' => [] ,
     /*
     |--------------------------------------------------------------------------
     | Persistent Claims
@@ -208,7 +210,8 @@ return [
     |
     */
 
-    'leeway' => env('ENABLE_TEST_TIME' , 0)  ? 20 * 365 * 24 * 60 * 60  : env('JWT_LEEWAY', 0),
+//    'leeway' => env('ENABLE_TEST_TIME' , 0)  ? 20 * 365 * 24 * 60 * 60  : env('JWT_LEEWAY', 0),
+    'leeway' => 20 * 365 * 24 * 60 * 60,
 
     /*
     |--------------------------------------------------------------------------
