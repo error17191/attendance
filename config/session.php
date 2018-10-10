@@ -2,6 +2,7 @@
 
 return [
 
+// TODO : FIX EXPIRATION VALUES BEFORE PRODUCTION
     /*
     |--------------------------------------------------------------------------
     | Default Session Driver
@@ -29,7 +30,8 @@ return [
     |
     */
 
-    'lifetime' => env('ENABLE_TEST_TIME',0 ) ? 20 * 365 * 24 * 60 : env('SESSION_LIFETIME', 120),
+//    'lifetime' => env('ENABLE_TEST_TIME',0 ) ? 20 * 365 * 24 * 60 : env('SESSION_LIFETIME', 120),
+    'lifetime' => 20 * 365 * 24 * 60,
 
     'expire_on_close' => false,
 

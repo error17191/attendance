@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\AdminChannel;
+use App\Events\TestEvent;
+use App\User;
 use App\UserMachine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -89,7 +92,7 @@ class UserMachineController extends Controller
             ]);
         }
 
-        if($userMachine->user_id != $user_id){
+        if ($userMachine->user_id != $user_id) {
             return response()->json([
                 'status' => 'already_used',
                 'message' => 'This machine id is already used by someoneelse'
@@ -99,5 +102,18 @@ class UserMachineController extends Controller
         return response([
             'status' => 'success'
         ]);
+    }
+
+    public function addNewUserMachine(Request $request)
+    {
+        $user_id = $request->user_id;
+        $machine_id = $request->machine_id;
+        $user_machine = new  UserMachine();
+        $user_machine->user_id = $user_id;
+        $user_machine->machine_id = $machine_id;
+        $user_machine->save();
+        broadcast(new TestEvent());
+        return response()->json(['messages'=>'QR code added successfully']);
+
     }
 }

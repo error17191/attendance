@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Events\AdminChannel;
+use App\Events\TestEvent;
 use App\Notifications\WorkStart;
 use App\User;
 use Illuminate\Console\Command;
@@ -40,6 +41,6 @@ class Ex extends Command
      */
     public function handle()
     {
-        broadcast(new AdminChannel(User::find(11)));
+        broadcast(new TestEvent());
     }
 }

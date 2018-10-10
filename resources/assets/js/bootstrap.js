@@ -39,7 +39,7 @@ window.Echo = new Echo({
                     'Authorization': 'Bearer ' + localStorage.getItem('token')
                 }
         },
-    host: window.location.hostname + ':6001'
+    host: "http://localhost" + ':6001'
 });
 
 
@@ -47,6 +47,7 @@ window.Echo = new Echo({
 window.Echo.private('Admin')
     .listen('AdminChannel', (e) => {
         console.log(e.data);
+        alert(e.data.data)
     });
 
 

@@ -25,7 +25,10 @@ class SignController extends Controller
         $user->notify(new WorkStart(Auth::user()));
 
         if(auth()->user()->isWorking()){
-            abort(400);
+            return response()->json([
+                'status' => 'already_working',
+                'message' => 'User is already working'
+            ],422);
         }
 
         $manager = new WorkTimesManager(auth()->user());
@@ -35,7 +38,10 @@ class SignController extends Controller
         ]);
 
         if($v->fails()){
-            abort(400);
+            return response()->json([
+                'status' => 'work_status_required',
+                'message' => 'Work status is required'
+            ],422);
         }
 
         $result = $manager->startWorkTime($request->workStatus);

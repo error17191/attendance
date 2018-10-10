@@ -39,7 +39,7 @@ class AdminChannel implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'data' => 'hello karim'
+            'data' => $this->user->name.'added new machine'
         ];
     }
 }
