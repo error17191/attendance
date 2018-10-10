@@ -1,6 +1,7 @@
 <?php
 
 use App\Flag;
+use App\WorkTime;
 use App\Managers\WorkTimesManager;
 
 function json_encodei($mixed)
@@ -24,11 +25,10 @@ function end_flag($user,$stopWork = false)
     $flag = get_current_flag($user);
 
     if(!$user->isWorking() || !$user->isUsingFlag() || !$flag){
-        return response()->json([
+        return [
             'message' => 'you are not working or using any flag'
-        ]);
+        ];
     }
-
     $type = $flag->type;
     $flagSeconds = now()->diffInSeconds($flag->started_at);
     $flagUsedSeconds = get_flag_used_time_today($type,$user);
@@ -40,9 +40,13 @@ function end_flag($user,$stopWork = false)
         $workTime->stopped_work_at = now();
         $workTime->seconds = now()->diffInSeconds($workTime->started_work_at) +
             get_flag_time_limit_seconds($type) - $todayFlagSeconds;
-        $workTime->day_seconds += $workTime->seconds;
+        $previousWorkTime = WorkTime::where('user_id',$user->id)
+            ->where('day',now()->toDateString())
+            ->where('started_work_at','<',$workTime->started_work_at)
+            ->orderBy('started_work_at','desc')->first();
+        $workTime->day_seconds = $previousWorkTime ?
+            $previousWorkTime->day_seconds + $workTime->seconds : $workTime->seconds;
         $workTime->save();
-
         $flag->stopped_at = now();
         $flag->seconds = get_flag_time_limit_seconds($type) - $flagUsedSeconds;
         $flag->save();
@@ -54,22 +58,20 @@ function end_flag($user,$stopWork = false)
         if(!$stopWork){
             (new WorkTimesManager($user))->startWorkTime($workTime->status);
         }
-
-        return response()->json([
-            'message' => 'you passed your lost time by ' . ($todayFlagSeconds - app('settings')->getFlags()[$type])
-        ]);
+        return [
+            'message' => 'if'
+        ];
     }
 
     $flag->stopped_at = now();
     $flag->seconds = $flagSeconds;
     $flag->save();
-
     $user->flag = 'off';
     $user->save();
 
-    return response()->json([
-        'message' => 'you stopped using ' . $type . ' flag'
-    ]);
+    return [
+        'message' => 'else'
+    ];
 }
 
 function get_all_flags($user)

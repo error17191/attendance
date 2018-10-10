@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Flag;
+use App\Managers\WorkTimesManager;
 use App\User;
 use App\WorkTime;
 use Tests\TestCase;
@@ -87,7 +88,7 @@ class AttendanceTest extends TestCase
         //fake login
         $this->loginUser(1);
 
-        $test = now();
+        $test = now()->hour(12);
         Carbon::setTestNow($test);
 
         //make the test request to to start_work
@@ -122,7 +123,7 @@ class AttendanceTest extends TestCase
         $this->loginUser(1);
 
         //set start time
-        $start = new Carbon();
+        $start = (new Carbon())->hour(12);
         Carbon::setTestNow($start);
 
         //make the test request to to start_work
@@ -186,7 +187,7 @@ class AttendanceTest extends TestCase
         $this->loginUser(1);
 
         //set start work time
-        $startWork = new Carbon();
+        $startWork = (new Carbon())->hour(12);
         Carbon::setTestNow($startWork);
 
         //make the test request to to start_work
@@ -331,7 +332,7 @@ class AttendanceTest extends TestCase
         $this->loginUser(1);
 
         //set start work time
-        $startWork = new Carbon();
+        $startWork = (new Carbon())->hour(12);
         Carbon::setTestNow($startWork);
 
         //make the test request to to start_work
@@ -439,5 +440,132 @@ class AttendanceTest extends TestCase
         $this->assertEquals($todaySeconds, $monthReport['actual']['seconds']);
         $this->assertEquals($monthReport['ideal']['seconds'] - $todaySeconds, $monthReport['diff']['seconds']);
         $this->assertEquals('less', $monthReport['diff']['type']);
+    }
+
+    public function test_stop_work_while_using_time_flag_and_passing_the_time_limit()
+    {
+        //create initial settings and dummy testing users data
+        Artisan::call('seed:settings');
+        app('settings')->refreshData();
+        Artisan::call('seed:users');
+
+        //fake login
+        $this->loginUser(1);
+
+        //set start work time
+        $startWork = (new Carbon())->hour(12);
+        Carbon::setTestNow($startWork);
+
+        //make the test request to to start_work
+        $response = $this->json('POST', 'start_work', ['workStatus' => 'work']);
+        $content = json_decode($response->content(), true);
+
+        //test that response succeeded
+        $this->assertEquals(200,$response->status());
+        $this->assertCount(2,$content);
+
+        //test the work time sign field
+        $workTimeSign = $content['workTimeSign'];
+        $this->assertCount(3,$workTimeSign);
+        $this->assertEquals($startWork->toTimeString(),$workTimeSign['started_at']);
+        $this->assertEquals(null,$workTimeSign['stopped_at']);
+        $this->assertEquals('work',$workTimeSign['status']);
+
+        //test the today time field
+        $todayTime = $content['today_time'];
+        $this->assertCount(2,$todayTime);
+        $this->assertEquals(0,$todayTime['seconds']);
+
+        //set start lost time flag
+        $startFlag = $startWork->copy()->addHours(2);
+        Carbon::setTestNow($startFlag);
+
+        //make the test request to start flag
+        $response = $this->json('POST','/flag/start',['type' => 'lost_time']);
+        $content = json_decode($response->content(),true);
+
+        //test that response succeeded
+        $this->assertEquals(200,$response->status());
+        $this->assertCount(1,$content);
+
+        //test the returned message
+        $this->assertEquals('you started using lost_time flag',$content['message']);
+
+        //test the started flag
+        $this->assertEquals('on',User::find(1)->flag);
+        $this->assertCount(1,Flag::all());
+        $this->assertEquals($startFlag,Flag::first()->started_at);
+        $this->assertEquals(null,Flag::first()->stopped_at);
+        $this->assertEquals(0,Flag::first()->seconds);
+        $this->assertEquals(1,Flag::first()->user_id);
+        $this->assertEquals(1,Flag::first()->work_time_id);
+        $this->assertEquals($startFlag->toDateString(),Flag::first()->day);
+
+        //set stop work time
+        $stopWork = $startWork->copy()->addHours(4);
+        Carbon::setTestNow($stopWork);
+
+        //make the stop_work request
+        $response = $this->json('POST','stop_work');
+        $content = json_decode($response->content(),true);
+
+        //test the response was succeeded
+        $this->assertEquals(200,$response->status());
+        $this->assertCount(2,$content);
+
+        //test the work time sign field
+        $workTimeSign = $content['workTimeSign'];
+        $this->assertCount(3,$workTimeSign);
+        $this->assertEquals($startWork->toTimeString(),$workTimeSign['started_at']);
+        $this->assertEquals($stopWork->toTimeString(),$workTimeSign['stopped_at']);
+        $this->assertEquals('work',$workTimeSign['status']);
+
+        //test the today time field
+        $todayTime = $content['today_time'];
+        $this->assertCount(2,$todayTime);
+        $this->assertEquals(2.5 * 60 * 60,$todayTime['seconds']);
+
+
+        //make init state test request to check the final states
+        $response = $this->json('GET', 'init_state');
+        $content = json_decode($response->content(), true);
+
+        //test that response succeeded
+        $this->assertEquals(200, $response->status());
+        $this->assertCount(5, $content);
+
+        //test the flags field
+        $flag = $content['flags'][0];
+        $lostTime = app('settings')->getFlags()['lost_time'];
+        $this->assertEquals($lostTime, $flag['limitSeconds']);
+        $this->assertEquals(0, $flag['remainingSeconds']);
+        $this->assertTrue(!$flag['inUse']);
+
+        //test the work time signs field
+        $workTimeSigns = $content['workTimeSigns'];
+        $this->assertCount(1, $workTimeSigns);
+        $this->assertEquals($startWork->toTimeString(),$workTimeSigns[0]['started_at']);
+        $this->assertEquals($stopWork->toTimeString(),$workTimeSigns[0]['stopped_at']);
+        $this->assertEquals('work',$workTimeSigns[0]['status']);
+
+        //test the status field
+        $this->assertEquals('off', $content['status']);
+
+        //test the today time field
+        $todayTime = $content['today_time'];
+        $todaySeconds = $startFlag->diffInSeconds($startWork) + app('settings')->getFlags()['lost_time'];
+        $this->assertEquals($todaySeconds, $todayTime['seconds']);
+        $this->assertEquals('work', $todayTime['workStatus']);
+
+        //test the month report
+        $monthReport = $content['month_report'];
+        $this->assertEquals($todaySeconds, $monthReport['actual']['seconds']);
+        $this->assertEquals($monthReport['ideal']['seconds'] - $todaySeconds, $monthReport['diff']['seconds']);
+        $this->assertEquals('less', $monthReport['diff']['type']);
+    }
+
+    public function test_start_work_in_day_stop_in_the_day_after()
+    {
+        
     }
 }

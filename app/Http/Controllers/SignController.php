@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Notifications\WorkStart;
 use App\Notifications\WorkStop;
 use App\User;
+use App\WorkTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Validator;
@@ -58,6 +59,7 @@ class SignController extends Controller
             abort(400);
         }
         $result = $manager->endWorkTime();
+
         return response()->json([
             'workTimeSign' => $result['workTimeSign'],
             'today_time' => [

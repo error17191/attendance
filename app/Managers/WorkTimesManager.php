@@ -9,16 +9,29 @@ use App\User;
 
 class WorkTimesManager
 {
-    /** @var string  */
+    /**
+     * @var string
+     */
     protected $today;
 
-    /** @var \Illuminate\Database\Eloquent\Collection */
+    /**
+     * @var \Illuminate\Database\Eloquent\Collection
+     */
     protected $todayWorkTimes;
 
-    /** @var \App\User */
+    /**
+     * @var \App\WorkTime
+     */
+    protected $lastWorkTime;
+
+    /**
+     * @var \App\User
+     */
     protected $user;
 
-    /** @var \Carbon\Carbon */
+    /**
+     * @var \Carbon\Carbon
+     */
     protected $now;
 
     /**
@@ -34,6 +47,15 @@ class WorkTimesManager
         $this->user = $user;
         $this->todayWorkTimes = WorkTime::where('day',$this->today)
             ->where('user_id',$this->user->id)->get();
+        $this->lastWorkTime = WorkTime::where('user_id',$this->user->id)
+            ->orderBy('started_work_at','desc')->first();
+        if($this->user->isWorking() && !$this->hasActiveWorkTime()){
+            $this->user->status = 'off';
+            $this->user->save();
+        }elseif(!$this->user->isWorking() && $this->hasActiveWorkTime()){
+            $this->user->status = 'on';
+            $this->user->save();
+        }
     }
 
     /**
@@ -44,6 +66,11 @@ class WorkTimesManager
     public function startedWorkingToday():bool
     {
         return $this->todayWorkTimes->count() > 0;
+    }
+
+    public function hasActiveWorkTime():bool
+    {
+        return $this->hasAnyWorkTime() && $this->lastWorkTime->stopped_work_at == null;
     }
 
     /**
@@ -95,28 +122,20 @@ class WorkTimesManager
      *
      * @return int
      */
-    public function daySecondsTillNow():int
+    public function daySeconds():int
     {
         if(!$this->startedWorkingToday()){
             return 0;
         }
-        if($this->user->isWorking()){
-            return $this->todayLastWorkTime()->day_seconds + $this->secondsTillNow();
-        }
-        return $this->todayLastWorkTime()->day_seconds;
+        return $this->todayWorkTimes->sum('seconds');
     }
 
-    /**
-     * Calculate the seconds from the start of last work time till now if the user is working
-     *
-     * @return int
-     */
-    public function secondsTillNow():int
+    public function daySecondsTillNow():int
     {
-        if(!$this->startedWorkingToday() || !$this->user->isWorking()){
-            return 0;
+        if($this->hasActiveWorkTime()){
+            return $this->daySeconds() + (new Carbon($this->lastWorkTime->started_work_at))->diffInSeconds($this->now);
         }
-        return $this->now->diffInSeconds($this->todayLastWorkTime()->started_work_at);
+        return $this->daySeconds();
     }
 
     /**
@@ -125,23 +144,26 @@ class WorkTimesManager
      * @param string $status
      * @return array|null
      */
-    public function startWorkTime(string $status)
+    public function startWorkTime(string $status,bool $end = false)
     {
-        if($this->user->isWorking()){
+        if($this->user->isWorking() || $this->hasActiveWorkTime()){
             return null;
         }
         $workTime = new WorkTime();
         $workTime->user_id = $this->user->id;
         $workTime->status = $status;
         $workTime->day = $this->today;
-        $workTime->started_work_at = $this->now;
-        $workTime->day_seconds = $this->daySecondsTillNow();
+        $workTime->started_work_at = $end ? $this->now->hour(0)->minute(0)->second(0) : $this->now;
+        $workTime->day_seconds = $this->daySeconds();
         $workTime->save();
         $this->user->status = 'on';
         $this->user->save();
+        if($end){
+            $this->endWorkTime();
+        }
         return [
             'workTimeSign' => $this->workTimeSign($workTime),
-            'workTime' => $workTime
+            'workTime' => $workTime->fresh()
         ];
     }
 
@@ -152,21 +174,26 @@ class WorkTimesManager
      */
     public function endWorkTime()
     {
-        if(!$this->user->isWorking()){
+        if(!$this->user->isWorking() || !$this->hasActiveWorkTime()){
             return null;
         }
-        $workTime = $this->todayLastWorkTime();
-        $workTime->stopped_work_at = $this->now;
-        $workTime->seconds = $this->secondsTillNow();
-        $workTime->day_seconds = $this->daySecondsTillNow();
+        if($this->lastWorkTime->day != $this->today){
+           $endTime = $this->now->yesterday()->hour(23)->minute(59)->second(59);
+        }
+        $workTime = $this->lastWorkTime;
+        $workTime->stopped_work_at = !empty($endTime) ?: $this->now;
+        $workTime->seconds = $this->getSeconds(new Carbon($workTime->started_work_at),$this->now);
+        $workTime->day_seconds += $workTime->seconds;
         $workTime->save();
-        $flagMessage = end_flag($this->user,true);
+        end_flag($this->user,true);
         $this->user->status = 'off';
         $this->user->save();
+        if(!empty($endTime)){
+            $this->startWorkTime($workTime->status,true);
+        }
         return [
             'workTimeSign' => $this->workTimeSign($workTime),
-            'workTime' => $workTime,
-            'flagMessage' => $flagMessage
+            'workTime' => $workTime->fresh()
         ];
     }
 
@@ -223,4 +250,11 @@ class WorkTimesManager
     {
         return WorkTime::where('user_id',$this->user->id)->get()->count() > 0;
     }
+
+    public function getSeconds(Carbon $startTime,Carbon $endTime):int
+    {
+        return $endTime->diffInSeconds($startTime);
+    }
+
+
 }
