@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Flag;
-use App\Managers\WorkTimesManager;
 use App\User;
 use App\WorkTime;
 use Tests\TestCase;
@@ -220,10 +219,10 @@ class AttendanceTest extends TestCase
 
         //test that response succeeded
         $this->assertEquals(200,$response->status());
-        $this->assertCount(1,$content);
+        $this->assertCount(2,$content);
 
         //test the returned message
-        $this->assertEquals('you started using lost_time flag',$content['message']);
+        $this->assertEquals('user started using lost_time flag',$content['message']);
 
         //test the started flag
         $this->assertEquals('on',User::find(1)->flag);
@@ -365,10 +364,10 @@ class AttendanceTest extends TestCase
 
         //test that response succeeded
         $this->assertEquals(200,$response->status());
-        $this->assertCount(1,$content);
+        $this->assertCount(2,$content);
 
         //test the returned message
-        $this->assertEquals('you started using lost_time flag',$content['message']);
+        $this->assertEquals('user started using lost_time flag',$content['message']);
 
         //test the started flag
         $this->assertEquals('on',User::find(1)->flag);
@@ -442,6 +441,10 @@ class AttendanceTest extends TestCase
         $this->assertEquals('less', $monthReport['diff']['type']);
     }
 
+    /**
+     * Test stop working using lost time flag and passing the flags
+     * time limit
+     */
     public function test_stop_work_while_using_time_flag_and_passing_the_time_limit()
     {
         //create initial settings and dummy testing users data
@@ -486,10 +489,10 @@ class AttendanceTest extends TestCase
 
         //test that response succeeded
         $this->assertEquals(200,$response->status());
-        $this->assertCount(1,$content);
+        $this->assertCount(2,$content);
 
         //test the returned message
-        $this->assertEquals('you started using lost_time flag',$content['message']);
+        $this->assertEquals('user started using lost_time flag',$content['message']);
 
         //test the started flag
         $this->assertEquals('on',User::find(1)->flag);
@@ -564,8 +567,50 @@ class AttendanceTest extends TestCase
         $this->assertEquals('less', $monthReport['diff']['type']);
     }
 
+    /**
+     * Test start the work in a day and stop working in the
+     * day after
+     */
     public function test_start_work_in_day_stop_in_the_day_after()
     {
-        
+        //create initial settings and dummy testing users data
+        Artisan::call('seed:settings');
+        app('settings')->refreshData();
+        Artisan::call('seed:users');
+
+        //fake login
+        $this->loginUser(1);
+
+        //set start work time
+        $startWork = (new Carbon())->hour(20)->minute(0)->second(0);
+        Carbon::setTestNow($startWork);
+
+        //make the test request to to start_work
+        $response = $this->json('POST', 'start_work', ['workStatus' => 'work']);
+        $content = json_decode($response->content(), true);
+
+        //test that response succeeded
+        $this->assertEquals(200,$response->status());
+        $this->assertCount(2,$content);
+
+        //test the work time sign field
+        $workTimeSign = $content['workTimeSign'];
+        $this->assertCount(3,$workTimeSign);
+        $this->assertEquals($startWork->toTimeString(),$workTimeSign['started_at']);
+        $this->assertEquals(null,$workTimeSign['stopped_at']);
+        $this->assertEquals('work',$workTimeSign['status']);
+
+        //test the today time field
+        $todayTime = $content['today_time'];
+        $this->assertCount(2,$todayTime);
+        $this->assertEquals(0,$todayTime['seconds']);
+
+        //set stop work time after 6 hours
+        $stopWork = $startWork->copy()->addHours(6);
+        Carbon::setTestNow($stopWork);
+
+        //make the stop work request
+        $response = $this->json('POST','/stop_work');
+        $content = json_decode($response->content(),true);
     }
 }

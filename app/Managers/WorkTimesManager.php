@@ -58,6 +58,18 @@ class WorkTimesManager
         }
     }
 
+    public function refreshTodayWorkTimes()
+    {
+        $this->todayWorkTimes = WorkTime::where('day',$this->today)
+            ->where('user_id',$this->user->id)->get();
+    }
+
+    public function refreshLastWorkTime()
+    {
+        $this->lastWorkTime = WorkTime::where('user_id',$this->user->id)
+            ->orderBy('started_work_at','desc')->first();
+    }
+
     /**
      * Check if user started work today
      *
@@ -159,10 +171,13 @@ class WorkTimesManager
         $this->user->status = 'on';
         $this->user->save();
         if($end){
+            $this->refreshLastWorkTime();
+            $this->refreshTodayWorkTimes();
             $this->endWorkTime();
+            $workTime = $this->lastWorkTime->fresh();
         }
         return [
-            'workTimeSign' => $this->workTimeSign($workTime),
+            'workTimeSign' => $this->workTimeSign($workTime->fresh()),
             'workTime' => $workTime->fresh()
         ];
     }
@@ -178,11 +193,13 @@ class WorkTimesManager
             return null;
         }
         if($this->lastWorkTime->day != $this->today){
-           $endTime = $this->now->yesterday()->hour(23)->minute(59)->second(59);
+           $endTime = $this->now->copy()->yesterday()->hour(23)->minute(59)->second(59);
         }
         $workTime = $this->lastWorkTime;
-        $workTime->stopped_work_at = !empty($endTime) ?: $this->now;
-        $workTime->seconds = $this->getSeconds(new Carbon($workTime->started_work_at),$this->now);
+        $workTime->stopped_work_at = !empty($endTime) ? $endTime : now();
+        $workTime->seconds = !empty($endTime) ?
+            $this->getSeconds(new Carbon($workTime->started_work_at),$endTime->copy()->addSecond()) :
+            $this->getSeconds(new Carbon($workTime->started_work_at),now());
         $workTime->day_seconds += $workTime->seconds;
         $workTime->save();
         end_flag($this->user,true);
@@ -190,10 +207,12 @@ class WorkTimesManager
         $this->user->save();
         if(!empty($endTime)){
             $this->startWorkTime($workTime->status,true);
+
         }
+
         return [
-            'workTimeSign' => $this->workTimeSign($workTime),
-            'workTime' => $workTime->fresh()
+            'workTimeSign' => $this->workTimeSign($workTime->fresh()),
+            'workTime' => $workTime
         ];
     }
 
