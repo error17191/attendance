@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Validator;
+use App\Utilities\WorKTimeUtility;
 
 class SignController extends Controller
 {
@@ -24,34 +25,19 @@ class SignController extends Controller
     {
         //TODO: refactor this action
 
-        $user = User::where('username','admin')->first();
-        $user->notify(new WorkStart(Auth::user()));
+        $admin = User::where('username','admin')->first();
+        $admin->notify(new WorkStart(Auth::user()));
 
-        $id = auth()->user()->id;
-
-        //stop the last work day unstopped work time if exists
-        if($unstoppedWorkTime = WorkTime::where('user_id',$id)
-            ->where('day','<',now()->toDateString())
-            ->where('stopped_work_at',null)
-            ->where('seconds',0)
-            ->first()){
-            $unstoppedWorkTime->stopped_work_at = (new Carbon($unstoppedWorkTime->started_work_at))->hour(23)->minute(59)->second(59);
-            $unstoppedWorkTime->seconds = today()->diffInSeconds($unstoppedWorkTime->started_work_at);
-            $unstoppedWorkTime->day_seconds += $unstoppedWorkTime->seconds;
-        }
+        /** @var \App\User $user */
+        $user = auth()->user();
+        $id = $user->id;
 
         //TODO: see if this check is necessary
         //check if the status is wrong
-        if(auth()->user()->isWorking() && !WorkTime::where('user_id',$id)->where('stopped_work_at',null)->first()){
-            auth()->user()->status = 'off';
-            auth()->user()->save();
-        }elseif(!auth()->user()->isWorking() && WorkTime::where('user_id',$id)->where('stopped_work_at',null)->first()){
-            auth()->user()->status = 'on';
-            auth()->user()->save();
-        }
+        WorKTimeUtility::fixStatus($user);
 
         //reject the request to start a new work time when the user is already in a work time
-        if(auth()->user()->isWorking()){
+        if($user->isWorking()){
             return response()->json([
                 'status' => 'already_working',
                 'message' => 'User is already working'
@@ -71,18 +57,11 @@ class SignController extends Controller
         }
 
         //start new work time
-        $workTime = new WorkTime();
-        $workTime->user_id = $id;
-        $workTime->status = $request->workStatus;
-        $workTime->day = now()->toDateString();
-        $workTime->started_work_at = now();
-        $workTime->day_seconds = WorkTime::where('user_id',$id)
-            ->where('day',now()->toDateString())
-            ->sum('seconds');
+        $workTime = WorKTimeUtility::startWorkTime($id,$request->workStatus);
         $workTime->save();
 
-        auth()->user()->status = 'on';
-        auth()->user()->save();
+        $user->status = 'on';
+        $user->save();
 
         return response()->json([
             'workTimeSign' => [
@@ -101,39 +80,31 @@ class SignController extends Controller
     {
         //TODO: refactor this action
 
-        $user=User::where('username','admin')->first();
-        $user->notify(new WorkStop(Auth::user()));
+        $admin =User::where('username','admin')->first();
+        $admin->notify(new WorkStop(Auth::user()));
 
-        $id = auth()->user()->id;
+        /** @var \App\User $user */
+        $user = auth()->user();
+        $id = $user->id;
 
         //TODO: see if this check is necessary
         //check if the status is wrong
-        if(!auth()->user()->isWorking() && WorkTime::where('user_id',$id)->where('stopped_work_at',null)->first()){
-            auth()->user()->status = 'on';
-            auth()->user()->save();
-        }elseif(auth()->user()->isWorking() && !WorkTime::where('user_id',$id)->where('stopped_work_at',null)->first()){
-            auth()->user()->status = 'off';
-            auth()->user()->save();
-        }
+        WorKTimeUtility::fixStatus($user);
 
         //validate if user is working
-        if(!auth()->user()->isWorking()){
+        if(!$user->isWorking()){
             return response()->json([
                 'status' => 'not_working',
                 'message' => 'user is not working'
             ],422);
         }
 
-        if(!WorkTime::where('user_id',$id)->where('day',now()->toDateString())->where('stopped_work_at',null)->where('seconds',0)->first()){
-            $workTime = WorkTime::where('user_id',$id)
-                ->where('day','<',now()->toDateString())
-                ->where('stopped_work_at',null)
-                ->where('seconds',0)
-                ->orderBy('started_work_at','desc')->first();
+        if(WorKTimeUtility::noActiveWorkTime($id,now()->toDateString())){
+            $workTime = WorKTimeUtility::activeWorkTime($id,now()->toDateString(),true);
             $workTime->stopped_work_at = (new Carbon($workTime->started_work_at))->hour(23)->minute(59)->second(59);
 
             //handle flags
-            if(auth()->user()->isUsingFlag()){
+            if($user->isUsingFlag()){
                 $flag = Flag::where('work_time_id',$workTime->id)
                     ->where('user_id',$id)
                     ->where('stopped_at',null)
@@ -179,9 +150,9 @@ class SignController extends Controller
                 $secondWorkTime->save();
             }
 
-            auth()->user()->flag = 'off';
-            auth()->user()->status = 'off';
-            auth()->user()->save();
+            $user->flag = 'off';
+            $user->status = 'off';
+            $user->save();
 
             return response()->json([
                 'workTimeSign' => [
@@ -242,9 +213,9 @@ class SignController extends Controller
         $workTime->day_seconds += $workTime->seconds;
         $workTime->save();
 
-        auth()->user()->flag = 'off';
-        auth()->user()->status = 'off';
-        auth()->user()->save();
+        $user->flag = 'off';
+        $user->status = 'off';
+        $user->save();
 
 
         return response()->json([

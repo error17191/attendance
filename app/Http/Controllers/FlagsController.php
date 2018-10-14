@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Flag;
 use App\WorkTime;
+use App\Utilities\WorKTimeUtility;
+use App\Utilities\FlagUtility;
 
 class FlagsController extends Controller
 {
@@ -19,7 +20,9 @@ class FlagsController extends Controller
     {
         //TODO refactor this action
 
-        $id = auth()->user()->id;
+        /** @var \App\User $user */
+        $user = auth()->user();
+        $id = $user->id;
 
         //validate flag type
         if(!isset(app('settings')->getFlags()[$request->type])){
@@ -31,32 +34,14 @@ class FlagsController extends Controller
 
         //TODO: see if this check is necessary
         //fix if is using flag property is wrong
-        if(auth()->user()->isUsingFlag() && !Flag::where('user_id',$id)
-                                                ->where('stopped_at',null)
-                                                ->first()){
-            auth()->user()->flag = 'off';
-            auth()->user()->save();
-        }elseif(!auth()->user()->isUsingFlag() && Flag::where('user_id',$id)
-                                                    ->where('stopped_at',null)
-                                                    ->first()){
-            auth()->user()->flag = 'on';
-            auth()->user()->save();
-        }
+        FlagUtility::fixUserFlag($user);
 
         //TODO: see if this check is necessary
         //fix if is user status is wrong
-        if(!auth()->user()->isWorking() && WorkTime::where('user_id',$id)
-                                            ->where('stopped_work_at',null)->first()){
-            auth()->user()->status = 'on';
-            auth()->user()->save();
-        }elseif(auth()->user()->isWorking() && !WorkTime::where('user_id',$id)
-                                                 ->where('stopped_work_at',null)->first()){
-            auth()->user()->status = 'off';
-            auth()->user()->save();
-        }
+        WorKTimeUtility::fixStatus($user);
 
         //validate that user is not working or using flag
-        if(!auth()->user()->isWorking() || auth()->user()->isUsingFlag()){
+        if(!$user->isWorking() || $user->isUsingFlag()){
             return response()->json([
                 'status' => 'is_not_working_or_using_flag',
                 'message' => 'user is already working or using flag'
@@ -86,8 +71,8 @@ class FlagsController extends Controller
         $flag->type = $type;
         $flag->save();
 
-        auth()->user()->flag = 'on';
-        auth()->user()->save();
+        $user->flag = 'on';
+        $user->save();
 
 
         return response()->json([
@@ -100,36 +85,20 @@ class FlagsController extends Controller
     {
         //TODO refactor this action
 
-        $id = auth()->user()->id;
+        /** @var \App\User $user */
+        $user = auth()->user();
+        $id = $user->id;
 
         //TODO: see if this check is necessary
         //fix if is using flag property is wrong
-        if(auth()->user()->isUsingFlag() && !Flag::where('user_id',$id)
-                                                ->where('stopped_at',null)
-                                                ->first()){
-            auth()->user()->flag = 'off';
-            auth()->user()->save();
-        }elseif(!auth()->user()->isUsingFlag() && Flag::where('user_id',$id)
-                                                    ->where('stopped_at',null)
-                                                    ->first()){
-            auth()->user()->flag = 'on';
-            auth()->user()->save();
-        }
+        FlagUtility::fixUserFlag($user);
 
         //TODO: see if this check is necessary
         //fix if is user status is wrong
-        if(!auth()->user()->isWorking() && WorkTime::where('user_id',$id)
-                                            ->where('stopped_work_at',null)->first()){
-            auth()->user()->status = 'on';
-            auth()->user()->save();
-        }elseif(auth()->user()->isWorking() && !WorkTime::where('user_id',$id)
-                                                 ->where('stopped_work_at',null)->first()){
-            auth()->user()->status = 'off';
-            auth()->user()->save();
-        }
+        WorKTimeUtility::fixStatus($user);
 
         //validate work and flag status
-        if(!auth()->user()->isWorking() || !auth()->user()->isUsingFlag()){
+        if(!$user->isWorking() || !$user->isUsingFlag()){
             return response()->json([
                 'status' => 'not_working_or_using_flag',
                 'message' => 'user either not working or not using a flag'
@@ -179,8 +148,8 @@ class FlagsController extends Controller
                 $secondWorkTime->save();
             }
 
-            auth()->user()->flag = 'off';
-            auth()->user()->status = empty($secondWorkTime) ? 'off' : 'on';
+            $user->flag = 'off';
+            $user->status = empty($secondWorkTime) ? 'off' : 'on';
 
             return response()->json([
                 'status' => 'stopped_flag',
@@ -219,8 +188,8 @@ class FlagsController extends Controller
 
         $flag->save();
 
-        auth()->user()->flag = 'off';
-        auth()->user()->save();
+        $user->flag = 'off';
+        $user->save();
 
         return response()->json([
             'status' => 'flag_stopped',
