@@ -63,3 +63,6 @@ Route::post('machine/add','UserMachineController@addNewUserMachine');
 Route::get('/admin/flags','AdminFlagsController@index');
 Route::post('/admin/flag','AdminFlagsController@store');
 Route::delete('/admin/flags','AdminFlagsController@destroy');
+
+Route::get('/user/settings','UserSettingsController@getUserSettings');
+Route::post('set/user/settings','UserSettingsController@setUserSettings');
