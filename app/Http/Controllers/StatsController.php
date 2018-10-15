@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\WorkTime;
 use Carbon\Carbon;
 use App\Utilities\WorKTime as UW;
+use App\Utilities\Flag;
 use Illuminate\Http\Request;
 
 class StatsController extends Controller
@@ -44,7 +45,7 @@ class StatsController extends Controller
         }
         $diffSeconds = abs($workSecondsIdeal - $workSecondsActual);
         return response()->json([
-            'flags' => get_all_flags($user),
+            'flags' => Flag::today($id),
             'workTimeSigns' => UW::todaySigns($id),
             'status' => $user->status,
             'today_time' => [

@@ -74,6 +74,37 @@ class Flag
         return static::secondsTillNow($id,$type,$day,$stop) > static::timeLimit($type);
     }
 
+    public static function inUse(int $id,string $type):bool
+    {
+        return FlagModel::where('user_id',$id)
+            ->where('type',$type)
+            ->where('stopped_at',null)
+            ->where('seconds',0)
+            ->get()->count() == 1;
+    }
+
+    public static function today(int $id):array
+    {
+        $all = [];
+        foreach (app('settings')->getFlags() as $type => $limit) {
+            if(static::hasTimeLimit($type)){
+                $usedSeconds = static::daySeconds($id,$type,now()->toDateString());
+            }
+            $all[] = [
+                'type' => $type,
+                'timeLimit' => static::hasTimeLimit($type) ?
+                    partition_seconds($limit) : $limit,
+                'limitSeconds' => $limit,
+                'remainingSeconds' => static::hasTimeLimit($type) ?
+                    $limit - $usedSeconds : $limit,
+                'remainingTime' => static::hasTimeLimit($type) ?
+                    partition_seconds($limit - $usedSeconds) : $limit,
+                'inUse' => static::inUse($id,$type)
+            ];
+        }
+        return $all;
+    }
+
     public static function start(int $id,string $type,int $workTimeId):FlagModel
     {
         $flag = new FlagModel();
