@@ -4,10 +4,9 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Flag;
-use App\WorkTime;
-use App\Utilities\WorKTimeUtility;
-use App\Utilities\FlagUtility;
+use Validator;
+use App\Utilities\WorKTime;
+use App\Utilities\Flag;
 
 class FlagsController extends Controller
 {
@@ -25,7 +24,18 @@ class FlagsController extends Controller
         $id = $user->id;
 
         //validate flag type
-        if(!isset(app('settings')->getFlags()[$request->type])){
+        $v = Validator::make($request->only('type'),[
+            'type' => 'required|string'
+        ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'invalid_type',
+                'message' => 'type is required and must be string'
+            ],422);
+        }
+
+        if(!Flag::exists($request->type)){
            return response()->json([
                'status' => 'invalid_flag',
                'message' => 'this flag is not valid'
@@ -34,11 +44,11 @@ class FlagsController extends Controller
 
         //TODO: see if this check is necessary
         //fix if is using flag property is wrong
-        FlagUtility::fixUserFlag($user);
+        Flag::fixUserFlag($user);
 
         //TODO: see if this check is necessary
         //fix if is user status is wrong
-        WorKTimeUtility::fixStatus($user);
+        WorKTime::fixStatus($user);
 
         //validate that user is not working or using flag
         if(!$user->isWorking() || $user->isUsingFlag()){
@@ -50,25 +60,15 @@ class FlagsController extends Controller
 
         $type = $request->type;
 
-        if(gettype(app('settings')->getFlags()[$type]) == 'integer' &&
-            app('settings')->getFlags()[$type] <= Flag::where('user_id',$id)
-                                                            ->where('day',now()->toDateString())
-                                                            ->where('type',$type)->sum('seconds')){
+        if(Flag::hasTimeLimit($type) && Flag::timeLimit($type) <= Flag::daySeconds($id,$type,now()->toDateString())){
             return response()->json([
                 'status' => 'flag_passed_time_limit',
                 'message' => 'user has used the limit of this flag'
             ],422);
         }
 
-
-        $flag = new Flag();
-        $flag->user_id = $id;
-        $flag->work_time_id = WorkTime::where('day',now()->toDateString())
-            ->where('user_id',$id)
-            ->where('stopped_work_at',null)->first()->id;
-        $flag->started_at = now();
-        $flag->day = now()->toDateString();
-        $flag->type = $type;
+        $workTimeId = WorKTime::active($id,now()->toDateString())->id;
+        $flag = Flag::start($id,$type,$workTimeId);
         $flag->save();
 
         $user->flag = 'on';
@@ -91,11 +91,11 @@ class FlagsController extends Controller
 
         //TODO: see if this check is necessary
         //fix if is using flag property is wrong
-        FlagUtility::fixUserFlag($user);
+        Flag::fixUserFlag($user);
 
         //TODO: see if this check is necessary
         //fix if is user status is wrong
-        WorKTimeUtility::fixStatus($user);
+        WorKTime::fixStatus($user);
 
         //validate work and flag status
         if(!$user->isWorking() || !$user->isUsingFlag()){
@@ -105,46 +105,24 @@ class FlagsController extends Controller
             ],422);
         }
 
-        $flag = Flag::where('user_id',$id)
-            ->where('stopped_at',null)
-            ->where('seconds',0)
-            ->first();
+        $flag = Flag::current($id);
         $type = $flag->type;
 
         //if the flag started before today
         if(now()->toDateString() > $flag->day){
-            $flag->stopped_at = (new Carbon($flag->started_at))->hour(23)->minute(59)->second(59);
-            $flagSeconds = $flag->stopped_at->diffInSeconds($flag->started_at) + 1;
-            $flagUsedSeconds = Flag::where('user_id',$id)
-                ->where('type',$type)
-                ->where('day',$flag->day)
-                ->sum('seconds');
-            $todayFlagSeconds = $flagSeconds + $flagUsedSeconds;
-
+            $stop = (new Carbon($flag->day))->hour(23)->minute(59)->second(59);
+            $flag = Flag::stop($flag,$stop);
             $workTime = $flag->workTime;
-            $workTime->stopped_work_at = (new Carbon($workTime->started_work_at))->hour(23)->minute(59)->second(59);
-
-            if(gettype(app('settings')->getFals()[$type]) != 'integer'){
-                $flag->seconds = $flagSeconds;
-                $workTime->seconds = $workTime->stopped_work_at->diffInSeconds($workTime->started_work_at) + 1;
-            }elseif($todayFlagSeconds > app('settings')->getFlags()[$type]){
-                $flag->seconds = app('settings')->getFlags()[$type] - $flagUsedSeconds;
-                $workTime->seconds = (new Carbon($workTime->started_work_at))->diffInSeconds($flag->started_at) + $flag->sconds;
-            }else{
-                $flag->seconds = $flagSeconds;
-                $workTime->secnds = $workTime->stopped_work_at->diffInSeconds($workTime->started_work_at) + 1;
-            }
+            $seconds = Flag::hasTimeLimit($type) && Flag::passedTimeLimit($id,$type,$flag->day,$stop) ?
+                (new Carbon($flag->started_at))->diffInSeconds($workTime->started_work_at) + $flag->seconds :
+                $stop->diffInSeconds($workTime->started_work_at) + 1;
+            $workTime = WorKTime::stop($workTime,$stop,$seconds);
             $flag->save();
-
-            $workTime->day_seconds += $workTime->seconds;
             $workTime->save();
 
             if(now()->diffInDays($flag->started_at) <= 1){
-                $secondWorkTime = new WorkTime();
-                $secondWorkTime->user_id = $id;
-                $secondWorkTime->status = $workTime->status;
-                $secondWorkTime->day = now()->toDateString();
-                $secondWorkTime->started_work_at = now()->hour(0)->minute(0)->second(0);
+                $start = now()->hour(0)->minute(0)->second(0);
+                $secondWorkTime = WorKTime::start($id,$workTime->status,$start);
                 $secondWorkTime->save();
             }
 
@@ -157,35 +135,17 @@ class FlagsController extends Controller
             ]);
         }
 
-        $flag->stopped_at = now();
-        $flagSeconds = $flag->stopped_at->diffInSeconds($flag->started_at);
-        $flagUsedSeconds = Flag::where('user_id',$id)
-            ->where('type',$type)
-            ->where('day',$flag->day)
-            ->sum('seconds');
-        $todayFlagSeconds = $flagSeconds + $flagUsedSeconds;
+        $flag = Flag::stop($flag);
 
-        if(gettype(app('settings')->getFlags()[$type]) != 'integer'){
-            $flag->seconds = $flagSeconds;
-        }elseif($todayFlagSeconds > app('settings')->getFlags()[$type]){
-            $flag->seconds = app('settings')->getFlags()[$type] - $flagUsedSeconds;
-
+        if(Flag::hasTimeLimit($flag->type) && Flag::passedTimeLimit($id,$type,$flag->day,$flag->stopped_at)){
             $workTime = $flag->workTime;
-            $workTime->stopped_work_at = now();
-            $workTime->seconds = (new Carbon($workTime->started_work_at))->diffInSeconds($flag->started_at) + $flag->seconds;
-            $workTime->day_seconds += $workTime->seconds;
+            $seconds = (new Carbon($flag->started_at))->diffInSeconds($workTime->started_work_at) + $flag->seconds;
+            $workTime = WorKTime::stop($workTime,now(),$seconds);
             $workTime->save();
 
-            $secondWorkTime = new WorkTime();
-            $secondWorkTime->user_id = $id;
-            $secondWorkTime->status = $workTime->status;
-            $secondWorkTime->day = now()->toDateString();
-            $secondWorkTime->started_work_at = now();
+            $secondWorkTime = WorKTime::start($id,$workTime->status);
             $secondWorkTime->save();
-        }else{
-            $flag->seconds = $flagSeconds;
         }
-
         $flag->save();
 
         $user->flag = 'off';

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\WorkTime;
 use Carbon\Carbon;
-use App\Managers\WorkTimesManager;
+use App\Utilities\WorKTime as UW;
 use Illuminate\Http\Request;
 
 class StatsController extends Controller
@@ -16,9 +16,10 @@ class StatsController extends Controller
 
     public function init()
     {
-        $manager = new WorkTimesManager(auth()->user());
-        if($manager->startedWorkingToday()){
-            $todayWorkSeconds = $manager->daySecondsTillNow();
+        $user = auth()->user();
+        $id = $user->id;
+        if(UW::startedToday($id)){
+            $todayWorkSeconds = UW::secondsTillNow($id,now()->toDateString());
             $todayWorkTimePartitions = partition_seconds($todayWorkSeconds);
         }else{
             $todayWorkSeconds = 0;
@@ -43,13 +44,13 @@ class StatsController extends Controller
         }
         $diffSeconds = abs($workSecondsIdeal - $workSecondsActual);
         return response()->json([
-            'flags' => get_all_flags(auth()->user()),
-            'workTimeSigns' => $manager->todayWorkTimeSigns(),
-            'status' => auth()->user()->status,
+            'flags' => get_all_flags($user),
+            'workTimeSigns' => UW::todaySigns($id),
+            'status' => $user->status,
             'today_time' => [
                 'seconds' => $todayWorkSeconds,
                 'partitions' => $todayWorkTimePartitions,
-                'workStatus' => $manager->lastWorkStatus()
+                'workStatus' => UW::hasAny($id) ? UW::last($id)->status : null
             ],
             'month_report' => [
                 'actual' => [
