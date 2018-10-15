@@ -6,92 +6,104 @@
             <div class="col-md-8">
                 <div class="card card-default">
                     <div class="card-header">Good Morning</div>
+                    <div v-if="!tracked">
 
-                    <div class="card-body">
-                        <div class="row justify-content-center">
-                            <div class="col-md-8">
-                                <button v-for="flag in flags"
-                                        class="btn mr-2 mb-2"
-                                        :class="{'btn-primary': !flag.inUse,'btn-dark': flag.inUse}"
-                                        :disabled="status === 'off' || (flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit')"
-                                        @click.prevent="toggleFlag(flag.type)"
-                                >
-                                    {{flag.type | capitalize}}
-                                </button>
-                                <multiselect tag-placeholder="Add Work Status"
-                                             placeholder="Add or Select Work Status"
-                                             @tag="addTag"
-                                             @search-change="getWorkStatus"
-                                             v-model="workStatus"
-                                             :options="workStatusOptions"
-                                             :taggable="true"
-                                             :close-on-select="true"
-                                             :searchable="true"
-                                             :internal-search="false"
-                                             :loading="loadingSearch"
-                                             :multiple="false"
-                                ></multiselect>
-                                <button v-if="status == 'on'"
-                                        @click="stopWork()"
-                                        class="btn btn-lg btn-block btn-danger"
-                                >Stop Work
-                                </button>
-                                <button v-else
-                                        @click="startWork()"
-                                        :disabled="workStatus == ''"
-                                        class="btn btn-lg btn-block btn-success"
-                                >Start Work
-                                </button>
+                        <div class="card-body">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <button v-for="flag in flags"
+                                            class="btn mr-2 mb-2"
+                                            :class="{'btn-primary': !flag.inUse,'btn-dark': flag.inUse}"
+                                            :disabled="status === 'off' || (flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit')"
+                                            @click.prevent="toggleFlag(flag.type)"
+                                    >
+                                        {{flag.type | capitalize}}
+                                    </button>
+                                    <multiselect tag-placeholder="Add Work Status"
+                                                 placeholder="Add or Select Work Status"
+                                                 @tag="addTag"
+                                                 @search-change="getWorkStatus"
+                                                 v-model="workStatus"
+                                                 :options="workStatusOptions"
+                                                 :taggable="true"
+                                                 :close-on-select="true"
+                                                 :searchable="true"
+                                                 :internal-search="false"
+                                                 :loading="loadingSearch"
+                                                 :multiple="false"
+                                    ></multiselect>
+                                    <button v-if="status == 'on'"
+                                            @click="stopWork()"
+                                            class="btn btn-lg btn-block btn-danger"
+                                    >Stop Work
+                                    </button>
+                                    <button v-else
+                                            @click="startWork()"
+                                            :disabled="workStatus == ''"
+                                            class="btn btn-lg btn-block btn-success"
+                                    >Start Work
+                                    </button>
+                                </div>
+                            </div>
+                            <hr>
+                            <h5 class="text-center">You worked today</h5>
+                            <h3 class="text-center"> {{workTime ? timePartitionsFormatted(workTime.partitions) :
+                                null}}</h3>
+                            <div>
+                                <b-card no-body class="mb-1">
+                                    <b-card-header header-tag="header" class="p-0" role="tab">
+                                        <b-btn block v-b-toggle.today_report variant="default">Today Log</b-btn>
+                                    </b-card-header>
+                                    <b-collapse id="today_report" accordion="my-accordion">
+                                        <b-card-body>
+                                            <p v-for="sign in signs">
+                                                <span class="text-success"> You Started Work on {{sign.status}} at {{sign.started_at}}</span>
+                                                <br>
+                                                <span v-if="sign.stopped_at" class="text-danger"> You Stopped Work on {{sign.status}} at {{sign.stopped_at}}</span>
+                                            </p>
+                                        </b-card-body>
+                                    </b-collapse>
+                                </b-card>
+                                <b-card no-body class="mb-1">
+                                    <b-card-header header-tag="header" class="p-0" role="tab">
+                                        <b-btn block v-b-toggle.month_report variant="default">Month Report</b-btn>
+                                    </b-card-header>
+                                    <b-collapse visible id="month_report" accordion="my-accordion">
+                                        <b-card-body class="text-center">
+                                            <p>
+                                                By the end of Today you should have been worked
+                                                {{monthStats ? timePartitionsFormatted(monthStats.ideal.partitions) :
+                                                null}}
+                                            </p>
+                                            <p>
+                                                Until now you worked
+                                                {{monthStats ? timePartitionsFormatted(monthStats.actual.partitions) :
+                                                null}}
+                                            </p>
+                                            <p v-if="monthStats && monthStats.diff.type == 'more'" class="text-success">
+                                                You have worked extra
+                                                {{monthStats ? timePartitionsFormatted(monthStats.diff.partitions) :
+                                                null}}
+                                            </p>
+                                            <p v-else class="text-danger">
+                                                You have to work {{monthStats ?
+                                                timePartitionsFormatted(monthStats.diff.partitions): null}}
+                                            </p>
+                                        </b-card-body>
+                                    </b-collapse>
+                                </b-card>
                             </div>
                         </div>
-                        <hr>
-                        <h5 class="text-center">You worked today</h5>
-                        <h3 class="text-center"> {{workTime ? timePartitionsFormatted(workTime.partitions) : null}}</h3>
-                        <div>
-                            <b-card no-body class="mb-1">
-                                <b-card-header header-tag="header" class="p-0" role="tab">
-                                    <b-btn block v-b-toggle.today_report variant="default">Today Log</b-btn>
-                                </b-card-header>
-                                <b-collapse id="today_report" accordion="my-accordion">
-                                    <b-card-body>
-                                        <p v-for="sign in signs">
-                                            <span class="text-success"> You Started Work on {{sign.status}} at {{sign.started_at}}</span>
-                                            <br>
-                                            <span v-if="sign.stopped_at" class="text-danger"> You Stopped Work on {{sign.status}} at {{sign.stopped_at}}</span>
-                                        </p>
-                                    </b-card-body>
-                                </b-collapse>
-                            </b-card>
-                            <b-card no-body class="mb-1">
-                                <b-card-header header-tag="header" class="p-0" role="tab">
-                                    <b-btn block v-b-toggle.month_report variant="default">Month Report</b-btn>
-                                </b-card-header>
-                                <b-collapse visible id="month_report" accordion="my-accordion">
-                                    <b-card-body class="text-center">
-                                        <p>
-                                            By the end of Today you should have been worked
-                                            {{monthStats ? timePartitionsFormatted(monthStats.ideal.partitions) : null}}
-                                        </p>
-                                        <p>
-                                            Until now you worked
-                                            {{monthStats ? timePartitionsFormatted(monthStats.actual.partitions) : null}}
-                                        </p>
-                                        <p v-if="monthStats && monthStats.diff.type == 'more'" class="text-success">
-                                            You have worked extra
-                                            {{monthStats ? timePartitionsFormatted(monthStats.diff.partitions) : null}}
-                                        </p>
-                                        <p v-else class="text-danger">
-                                            You have to work {{monthStats ? timePartitionsFormatted(monthStats.diff.partitions): null}}
-                                        </p>
-                                    </b-card-body>
-                                </b-collapse>
-                            </b-card>
+                    </div>
+                    <div v-else>
+                        <div class="card-body">
+                            Start and stop only from Desktop
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 </template>
 
 <script>
@@ -107,32 +119,34 @@
                 workStatus: '',
                 workStatusOptions: [],
                 loadingSearch: false,
-                flagInUse: ''
+                flagInUse: '',
+                tracked: true
             }
         },
         mounted() {
             this.getStats();
+            this.checkIfUserCanBeTracked();
         },
         filters: {
             capitalize: function (value) {
-                if(!value){
+                if (!value) {
                     return '';
                 }
                 value = value.toString();
                 let values = value.split('_');
-                for(let i in values){
+                for (let i in values) {
                     values[i] = values[i].charAt(0).toUpperCase() + values[i].slice(1);
                 }
                 return values.join(' ');
             }
         },
         methods: {
-            getStats(){
+            getStats() {
                 let url = '/init_state?t=' + new Date().getTime();
                 makeRequest({
                     method: 'get',
                     url: url
-                }).then((response)=>{
+                }).then((response) => {
                     this.status = response.data.status;
                     this.workTime = response.data.today_time;
                     this.workStatus = this.workTime.workStatus;
@@ -140,8 +154,8 @@
                     this.monthStats = response.data.month_report;
                     this.flags = response.data.flags;
                     this.flagInUse = '';
-                    for(let i in this.flags){
-                        if(this.flags[i].inUse === true){
+                    for (let i in this.flags) {
+                        if (this.flags[i].inUse === true) {
                             this.flagInUse = this.flags[i].type;
                             break;
                         }
@@ -160,7 +174,7 @@
                     method: 'post',
                     url: '/start_work',
                     data: data
-                }).then((response)=>{
+                }).then((response) => {
                     this.status = 'on';
                     this.signs.push(response.data.workTimeSign);
                     this.startCounter(this.workTime.partitions);
@@ -172,8 +186,8 @@
                 makeRequest({
                     method: 'post',
                     url: '/stop_work'
-                }).then((response)=>{
-                    if(this.flagInUse !== ''){
+                }).then((response) => {
+                    if (this.flagInUse !== '') {
                         this.getStats();
                     }
                     this.status = 'off';
@@ -185,10 +199,10 @@
                     this.stopCounter(this.monthStats.diff.partitions.counterInterval);
                 });
             },
-            toggleFlag(type){
-                if(this.flagInUse !== ''){
+            toggleFlag(type) {
+                if (this.flagInUse !== '') {
                     this.endFlag();
-                    if(this.flagInUse === type){
+                    if (this.flagInUse === type) {
                         this.flagInUse = '';
                         return;
                     }
@@ -196,28 +210,28 @@
                 this.flagInUse = type;
                 this.startFlag();
             },
-            startFlag(){
+            startFlag() {
                 let data = {type: this.flagInUse};
                 makeRequest({
                     method: 'post',
                     url: '/flag/start',
                     data: data
-                }).then((response)=>{
+                }).then((response) => {
                     this.updateFlags();
                     console.log(response.data.message);
                 });
             },
-            endFlag(){
+            endFlag() {
                 makeRequest({
                     method: 'post',
                     url: '/flag/end'
-                }).then((response)=>{
+                }).then((response) => {
                     this.updateFlags();
                     console.log(response.data.message);
                 });
             },
-            updateFlags(){
-                for(let i in this.flags){
+            updateFlags() {
+                for (let i in this.flags) {
                     this.flags[i].inUse = this.flagInUse === this.flags[i].type;
                 }
             },
@@ -272,42 +286,47 @@
             stopCounter(counterInterval) {
                 clearInterval(counterInterval);
             },
-            startDiffCounter(){
+            startDiffCounter() {
                 if (this.monthStats.diff.type == 'more') {
                     this.startCounter(this.monthStats.diff.partitions);
                 } else {
                     this.startCounterDown(this.monthStats.diff.partitions);
                 }
             },
-            getWorkStatus(query){
+            getWorkStatus(query) {
                 let url = '/status?q=' + query;
                 this.loadingSearch = true;
                 makeRequest({
                     method: 'get',
                     url: url
-                }).then((response)=>{
+                }).then((response) => {
                     this.workStatusOptions = response.data.status;
                     this.loadingSearch = false;
                 });
             },
-            addTag(tag){
+            addTag(tag) {
                 this.workStatusOptions.push(tag);
                 this.workStatus = tag;
             },
-            getSignIndex(startTime){
-                for(let i in this.signs){
-                    if(this.signs[i].started_at === startTime){
+            getSignIndex(startTime) {
+                for (let i in this.signs) {
+                    if (this.signs[i].started_at === startTime) {
                         return i;
                     }
                 }
                 return -1;
             },
-            updateSign(newSign){
+            updateSign(newSign) {
                 let signIndex = this.getSignIndex(newSign.started_at);
-                if(signIndex < 0){
+                if (signIndex < 0) {
                     return null;
                 }
-                this.signs.splice(signIndex,1,newSign);
+                this.signs.splice(signIndex, 1, newSign);
+            },
+            checkIfUserCanBeTracked() {
+                axios.get(`check/user/tracked/${auth_user_id}`).then(response => {
+                    this.tracked=response.data.tracked.tracked;
+                })
             }
         },
         watch: {
