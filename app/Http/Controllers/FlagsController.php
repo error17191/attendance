@@ -121,7 +121,7 @@ class FlagsController extends Controller
             $workTime->save();
 
             if(now()->diffInDays($flag->started_at) <= 1){
-                $start = now()->hour(0)->minute(0)->second(0);
+                $start = today();
                 $secondWorkTime = WorKTime::start($id,$workTime->status,$start);
                 $secondWorkTime->save();
             }

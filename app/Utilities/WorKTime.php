@@ -104,7 +104,7 @@ class WorKTime
         $workTime->user_id = $id;
         $workTime->status = $status;
         $workTime->day = now()->toDateString();
-        $workTime->started_work_at = $start ? $start : now();
+        $workTime->started_work_at = $start ?: now();
         $workTime->day_seconds = static::daySeconds($id,$workTime->day);
         return $workTime;
     }
