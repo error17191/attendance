@@ -14,7 +14,7 @@ class CreateUserMachinesTable extends Migration
     public function up()
     {
         Schema::create('user_machines', function (Blueprint $table) {
-            $table->string('machine_id')->primary();
+            $table->string('machine_id');
             $table->integer('user_id')->index();
             $table->boolean('pending')->default(true);
             $table->timestamp('created_at');

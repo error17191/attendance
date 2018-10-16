@@ -107,13 +107,19 @@ class UserMachineController extends Controller
     public function addNewUserMachine(Request $request)
     {
         $user_id = $request->user_id;
+        $user = User::find($user_id);
+        if (!$user) {
+            return response()->json([
+                'status' => 'user_not_found'
+            ], 422);
+        }
         $machine_id = $request->machine_id;
         $user_machine = new  UserMachine();
         $user_machine->user_id = $user_id;
         $user_machine->machine_id = $machine_id;
         $user_machine->save();
         broadcast(new TestEvent());
-        return response()->json(['messages'=>'QR code added successfully']);
+        return response()->json(['status' => 'success']);
 
     }
 }
