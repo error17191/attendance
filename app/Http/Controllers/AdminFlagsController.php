@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Tymon\JWTAuth\Providers\Auth\Illuminate;
 use Validator;
+use App\Utilities\Flag;
 
 class AdminFlagsController extends Controller
 {
@@ -12,57 +15,77 @@ class AdminFlagsController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index():JsonResponse
     {
-        $flags = app('settings')->getFlags();
-        unset($flags['lost_time']);
-        $data = [];
-        foreach ($flags as $key => $value) {
-            $data[] = [
-                'name' => $key,
-                'limit' => $value,
-                'highlighted' => false
-            ];
-        }
         return response()->json([
-            'flags' => $data
+            'flags' => Flag::editable()
         ]);
     }
 
-    public function store(Request $request)
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(Request $request):JsonResponse
     {
         $v = Validator::make($request->only('flagName'),[
             'flagName' => 'required|string'
         ]);
 
         if($v->fails() || $request->flagName == 'lost_time'){
-            abort(400,'the given flag is not valid');
+            return response()->json([
+                'status' => 'invalid_flag_name',
+                'message' => 'flag name is required and must be a string'
+            ],422);
+        }
+
+        if(Flag::exists($request->flagName)){
+            return response()->json([
+                'status' => 'none_unique_name',
+                'message' => 'flag name already exists'
+            ],422);
         }
 
         $flags = app('settings')->getFlags();
-        if(isset($flags[$request->flagName])){
-            abort(400,'this flag already exists');
-        }
         $flags[$request->flagName] = 'no time limit';
-
         app('settings')->setFlags($flags);
+
+        return response()->json([
+            'status' => 'flag_stored',
+            'message' => 'flag added successfully'
+        ]);
     }
 
-    public function destroy(Request $request)
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(Request $request):JsonResponse
     {
         $v = Validator::make($request->only('flagsNames'),[
             'flagsNames' => 'required|array|min:1',
             'flagsNames.*' => 'string'
         ]);
-        if($v->fails()){
-            abort(400,'flags is not valid');
-        }
-        $flags = app('settings')->getFlags();
 
+        if($v->fails()){
+            return response()->json([
+                'status' => 'flag_invalid',
+                'message' => ''
+            ],422);
+        }
+
+        $flags = app('settings')->getFlags();
         foreach ($request->flagsNames as $flag) {
             unset($flags[$flag]);
         }
-
         app('settings')->setFlags($flags);
+
+        return response()->json([
+            'status' => 'flags_deleted',
+            'message' => 'flag deleted successfully'
+        ]);
     }
 }

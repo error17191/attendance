@@ -182,6 +182,26 @@ class Flag
     }
 
     /**
+     * Fetch all editable flags
+     *
+     * @return array
+     */
+    public static function editable():array
+    {
+        $flags = app('settings')->getFlags();
+        unset($flags['lost_time']);
+        $editable = [];
+        foreach ($flags as $key => $value) {
+            $editable[] = [
+                'name' => $key,
+                'limit' => $value,
+                'highlighted' => false
+            ];
+        }
+        return $editable;
+    }
+
+    /**
      * Start a flag
      *
      * @param int $id
