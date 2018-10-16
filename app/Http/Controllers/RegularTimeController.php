@@ -20,6 +20,7 @@ class RegularTimeController extends Controller
         $regularTime = app('settings')->getRegularTime();
         $notifications = app('settings')->getNotifications();
         $lostTime = app('settings')->getFlags()['lost_time'];
+        
         return response()->json([
             compact('regularTime','notifications','lostTime')
         ]);
@@ -37,8 +38,10 @@ class RegularTimeController extends Controller
         $flags = app('settings')->getFlags();
         $flags['lost_time'] = $request->lostTime * 60;
         app('settings')->setFlags($flags);
+
         return response()->json([
-            'message' => 'saved'
+            'status' => 'save_success',
+            'message' => 'changes saved successfully'
         ]);
     }
 
