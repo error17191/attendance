@@ -63,11 +63,7 @@ class SignController extends Controller
         $user->save();
 
         return response()->json([
-            'workTimeSign' => [
-                'started_at' => (new Carbon($workTime->started_work_at))->toTimeString(),
-                'stopped_at' => null,
-                'status' => $workTime->status
-            ],
+            'workTimeSign' => WorKTime::sign($workTime),
             'today_time' => [
                 'seconds' => $workTime->day_seconds,
                 'partitions' => partition_seconds($workTime->day_seconds)
@@ -128,16 +124,8 @@ class SignController extends Controller
             $user->save();
 
             return response()->json([
-                'workTimeSign' => [
-                    'started_at' => !empty($secondWorkTime) ?
-                        (new Carbon($secondWorkTime->started_work_at))->toTimeString() :
-                        (new Carbon($workTime->started_work_at))->toTimeString(),
-                    'stopped_at' => !empty($secondWorkTime) ?
-                        (new Carbon($secondWorkTime->stopped_work_at))->toTimeString() :
-                        (new Carbon($workTime->stopped_work_at))->toTimeString(),
-                    'status' => !empty($secondWorkTime) ?
-                        $secondWorkTime->status : $workTime->status
-                ],
+                'workTimeSign' => !empty($secondWorkTime) ?
+                    WorKTime::sign($secondWorkTime) : WorKTime::sign($workTime),
                 'today_time' => [
                     'seconds' => !empty($secondWorkTime) ?
                         $secondWorkTime->day_seconds : $workTime->day_seconds,
@@ -170,11 +158,7 @@ class SignController extends Controller
 
 
         return response()->json([
-            'workTimeSign' => [
-                'started_at' => (new Carbon($workTime->started_work_at))->toTimeString(),
-                'stopped_at' => (new Carbon($workTime->stopped_work_at))->toTimeString(),
-                'status' => $workTime->status
-            ],
+            'workTimeSign' => WorKTime::sign($workTime),
             'today_time' => [
                 'seconds' => $workTime->day_seconds,
                 'partitions' => partition_seconds($workTime->day_seconds)
