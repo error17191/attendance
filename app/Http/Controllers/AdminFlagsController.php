@@ -73,7 +73,7 @@ class AdminFlagsController extends Controller
         if($v->fails()){
             return response()->json([
                 'status' => 'flag_invalid',
-                'message' => ''
+                'message' => 'flag name is required and must be a string'
             ],422);
         }
 
