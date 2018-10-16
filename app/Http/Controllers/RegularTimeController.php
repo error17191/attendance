@@ -20,7 +20,7 @@ class RegularTimeController extends Controller
         $regularTime = app('settings')->getRegularTime();
         $notifications = app('settings')->getNotifications();
         $lostTime = app('settings')->getFlags()['lost_time'];
-        
+
         return response()->json([
             compact('regularTime','notifications','lostTime')
         ]);
