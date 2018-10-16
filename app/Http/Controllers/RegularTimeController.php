@@ -3,20 +3,33 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class RegularTimeController extends Controller
 {
-    public function index()
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index():JsonResponse
     {
         $regularTime = app('settings')->getRegularTime();
         $notifications = app('settings')->getNotifications();
-        $lostTime = get_flag_time_limit_seconds('lost_time');
+        $lostTime = app('settings')->getFlags()['lost_time'];
         return response()->json([
             compact('regularTime','notifications','lostTime')
         ]);
     }
 
-    public function store(Request $request)
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(Request $request):JsonResponse
     {
         $request->validate($this->rules());
         app('settings')->setRegularTime($request->regularTime);
@@ -29,6 +42,11 @@ class RegularTimeController extends Controller
         ]);
     }
 
+    /**
+     * Create the validation rules for the request
+     *
+     * @return array
+     */
     private function rules():array
     {
         return [
