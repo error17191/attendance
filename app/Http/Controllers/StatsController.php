@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use App\Utilities\WorKTime as UW;
 use App\Utilities\Flag;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class StatsController extends Controller
 {
@@ -15,7 +16,10 @@ class StatsController extends Controller
         $this->middleware('auth');
     }
 
-    public function init()
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function init():JsonResponse
     {
         $user = auth()->user();
         $id = $user->id;

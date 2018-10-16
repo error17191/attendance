@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Validator;
 use App\Utilities\WorKTime;
 use App\Utilities\Flag;
@@ -15,7 +16,11 @@ class FlagsController extends Controller
         $this->middleware('auth');
     }
 
-    public function startFlag(Request $request)
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function startFlag(Request $request):JsonResponse
     {
         //TODO refactor this action
 
@@ -81,7 +86,10 @@ class FlagsController extends Controller
         ]);
     }
 
-    public function endFlag()
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function endFlag():JsonResponse
     {
         //TODO refactor this action
 

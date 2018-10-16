@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Validator;
 use App\Utilities\WorKTime;
 use App\Utilities\Flag;
+use Illuminate\Http\JsonResponse;
 
 class SignController extends Controller
 {
@@ -20,7 +21,11 @@ class SignController extends Controller
         $this->middleware('auth');
     }
 
-    public function startWork(Request $request)
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function startWork(Request $request):JsonResponse
     {
         //TODO: refactor this action
 
@@ -71,7 +76,10 @@ class SignController extends Controller
         ]);
     }
 
-    public function stopWork()
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function stopWork():JsonResponse
     {
         //TODO: refactor this action
 
