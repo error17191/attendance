@@ -23,7 +23,12 @@ if (window.token = localStorage.getItem('token')) {
     window.axios.defaults.headers.common['Authorization'] = 'Bearer ' + window.token;
 }
 
-window.auth_user_id = localStorage.getItem('user_id');
+if(window.auth_user=localStorage.getItem('auth_user')){
+    window.auth_user = localStorage.getItem('auth_user');
+}
+
+
+
 
 import Echo from 'laravel-echo'
 

@@ -20,8 +20,8 @@ use Illuminate\Http\Request;
 Route::post('api/login','HybridAuthController@login')->name('login');
 Route::post('api/logout','HybridAuthController@logout');
 
-Route::post('start_work', 'SignController@startWork')->name('start_work');
-Route::post('stop_work', 'SignController@stopWork')->name('stop_work');
+Route::post('start_work/{machine_id?}', 'SignController@startWork')->name('start_work')->middleware('is_tracked');
+Route::post('stop_work/{machine_id?}', 'SignController@stopWork')->name('stop_work')->middleware('is_tracked');
 Route::get('init_state', 'StatsController@init')->name('init_state');
 
 Route::get('vacations/weekends', 'WeekendsController@index')->name('get_all_vacations');
@@ -64,7 +64,5 @@ Route::get('/admin/flags','AdminFlagsController@index');
 Route::post('/admin/flag','AdminFlagsController@store');
 Route::delete('/admin/flags','AdminFlagsController@destroy');
 
-Route::get('/user/settings','UserSettingsController@getUserSettings');
-Route::post('set/user/settings','UserSettingsController@setUserSettings');
 Route::get('check/user/tracked/{user_id}','UserSettingsController@checkIfUserCanBeTracked');
 Route::get('check/user/work/{user_id}','UserSettingsController@checkIfUserCanWorkAnywhere');

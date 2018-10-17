@@ -19,6 +19,8 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->string('username')->unique();
             $table->string('mobile')->unique();
+            $table->boolean('tracked');
+            $table->boolean('work_anywhere');
             $table->string('password');
             $table->enum('status', ['on', 'off'])->default('off');
             $table->enum('flag', ['on', 'off'])->default('off');
