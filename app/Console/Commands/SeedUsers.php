@@ -56,8 +56,6 @@ class SeedUsers extends Command
                 'email' => strtolower($name) . '@email.com',
                 'is_admin' => false,
                 'password' => Hash::make('123456'),
-                'tracked'=>$faker->numberBetween(0,1),
-                'work_anywhere'=>$faker->numberBetween(0,1),
                 'created_at' => now(),
                 'updated_at' => now()
             ];
@@ -72,9 +70,6 @@ class SeedUsers extends Command
             'email' => 'admin@mail.com',
             'is_admin' => true,
             'password' => Hash::make('123456'),
-            'tracked'=>$faker->numberBetween(0,1),
-            'work_anywhere'=>$faker->numberBetween(0,1),
-
             'created_at' => now(),
             'updated_at' => now()
         ];
