@@ -21,21 +21,14 @@ class IsTracked
         /*check if workanywhere false then check if request has machine id or not
         if has then check if attached to this user or not
         */;
-        $params=$request->route()->parameters();
-        if (User::find(Auth::id())->where('work_anywhere',0)->first()) {
-            if (array_key_exists('machine_id',$params)) {
-                if (UserMachine::where('user_id', Auth::id())->where('machine_id', $params['machine_id'])->first()) {
-                    return $next($request);
-                } else {
-                    abort(401);
-                }
-            } else {
-                abort(401);
-            }
-        }
-        else {
+        if(Auth::user()->work_anywhere){
             return $next($request);
         }
-        return $next($request);
+
+        if($request->machine_id && UserMachine::where('user_id', Auth::id())->where('machine_id', $request->machine_id)->first()){
+            return $next($request);
+        }
+
+        abort(401);
     }
 }
