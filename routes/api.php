@@ -64,7 +64,5 @@ Route::get('/admin/flags','AdminFlagsController@index');
 Route::post('/admin/flag','AdminFlagsController@store');
 Route::delete('/admin/flags','AdminFlagsController@destroy');
 
-Route::get('/user/settings','UserSettingsController@getUserSettings');
-Route::post('set/user/settings','UserSettingsController@setUserSettings');
 Route::get('check/user/tracked/{user_id}','UserSettingsController@checkIfUserCanBeTracked');
 Route::get('check/user/work/{user_id}','UserSettingsController@checkIfUserCanWorkAnywhere');

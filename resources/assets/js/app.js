@@ -87,15 +87,16 @@ const app = new Vue({
                 email : this.email,
                 password: this.password
             }).then(response => {
+                console.log(response.data.user);
                 localStorage.setItem('token', response.data.access_token);
-                localStorage.setItem('user_id',response.data.user.id)
+                localStorage.setItem('auth_user',JSON.stringify(response.data.user));
                 window.location.href = response.data.url;
             });
         },
         logout(){
             axios.post('/logout').then(response => {
                 localStorage.removeItem('token');
-                localStorage.removeItem('user_id');
+                localStorage.removeItem('auth_user');
                 window.location.href = response.data.url;
             });
         }

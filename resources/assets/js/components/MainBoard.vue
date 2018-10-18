@@ -324,7 +324,8 @@
                 this.signs.splice(signIndex, 1, newSign);
             },
             checkIfUserCanBeTracked() {
-                axios.get(`check/user/tracked/${auth_user_id}`).then(response => {
+                axios.get(`check/user/tracked/${JSON.parse(auth_user).id}`).then(response => {
+                    console.log(response.data);
                     this.tracked=response.data.tracked.tracked;
                 })
             }

@@ -6,6 +6,7 @@ use DB;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Faker\Generator as Faker;
 
 class SeedUsers extends Command
 {
@@ -38,7 +39,7 @@ class SeedUsers extends Command
      *
      * @return mixed
      */
-    public function handle()
+    public function handle(Faker $faker)
     {
         $names = [
             'Ibrahim','Ahmed','Ali','Mohamed','Said','Mona','Mahmud','Kareem','Nada','Shady'
