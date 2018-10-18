@@ -21,11 +21,13 @@
                     <span   style="cursor: pointer"
                             v-for="flag,index in flags"
                             @click.prevent="toggleHighlight(flag)"
-                            :class="`noselect badge m-2 ${flag.highlighted ? 'badge-primary' : 'badge-info'}`">{{flag.name | capitalize}}
+                            :class="`noselect badge m-2 ${flag.highlighted ? 'badge-primary' : 'badge-info'}`"
+                    >
+                        {{flag.name | capitalize}}
                         &nbsp;
                         <button type="button" class="close text-light"
                                 :disabled="deleting"
-                                @click.stop="deleteFlags(flag.name)"
+                                @click.stop="deleteFlags($event,flag.name)"
                         >
                           <span aria-hidden="true">&times;</span>
                         </button>
@@ -100,6 +102,9 @@
             },
             deleteFlags($event,flag){
                 let data = {flagsNames: flag ? [flag] : this.selectedFlags};
+                if(flag){
+                    this.selectedFlags.push(flag);
+                }
                 this.deleting = true;
                 makeRequest({
                     method: 'delete',

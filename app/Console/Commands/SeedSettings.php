@@ -42,7 +42,7 @@ class SeedSettings extends Command
         $settings = [
             [
                 'key' => 'weekends',
-                'value' => json_encode([])
+                'value' => json_encode([5,6])
             ],
             [
                 'key' => 'annual_vacations',
