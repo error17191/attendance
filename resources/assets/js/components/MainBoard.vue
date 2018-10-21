@@ -5,7 +5,7 @@
             <div class="col-md-8">
                 <div class="card card-default">
                     <div class="card-header">Good Morning</div>
-                    <div v-if="!tracked">
+                    <div v-if="canWorkAnywhere">
                         <div class="card-body">
                             <div class="row justify-content-center">
                                 <div class="col-md-8">
@@ -118,14 +118,14 @@
                 workStatusOptions: [],
                 loadingSearch: false,
                 flagInUse: '',
-                tracked: true
+                canWorkAnywhere: true
             }
         },
         mounted() {
             this.getStats();
         },
         created(){
-            this.checkIfUserCanBeTracked();
+            this.checkIfUserCanWorkAnyWhere();
         },
         filters: {
             capitalize: function (value) {
@@ -323,9 +323,9 @@
                 }
                 this.signs.splice(signIndex, 1, newSign);
             },
-            checkIfUserCanBeTracked() {
-                console.log(JSON.parse(auth_user).tracked);
-                this.tracked=JSON.parse(auth_user).tracked;
+            checkIfUserCanWorkAnyWhere() {
+                console.log(JSON.parse(auth_user));
+                this.canWorkAnywhere=JSON.parse(auth_user).work_anywhere;
 
             }
         },
