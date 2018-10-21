@@ -55,6 +55,7 @@ class Statistics extends Command
         $flags = $this->getMonthFlags(1,10);
         $daysReport = $this->getAttendanceDaysReport(1,10,$this->getAttendanceDays(1,10));
         $regularTome = $this->regularTimePercentage(1,10);
+        $workEfficiency = $this->workEfficiency(1,10);
         //the report
         $this->info('Total work time for ' . User::find(1)->name . ' for October 2018 is ' . $actual . ' seconds');
         $this->info('He worked ' . partition_seconds($actual)['hours'] . ' hours');
@@ -74,6 +75,13 @@ class Statistics extends Command
         $this->info('He absent in ' . count($daysReport['work_days_absence']) . ' days of work days');
         $this->info('He attended after regular time hours ' . $regularTome['offTimes'] . ' days');
         $this->info('The percentage of attending after the regular hours is ' . $regularTome['percentage']);
+        $this->info('He really worked a ' . partition_seconds($workEfficiency['actualWork'])['hours'] . ' hours ' .
+            partition_seconds($workEfficiency['actualWork'])['minutes'] . ' minutes ' .
+            partition_seconds($workEfficiency['actualWork'])['seconds'] . ' seconds ');
+        $this->info('He attended a ' . partition_seconds($workEfficiency['attendedTime'])['hours'] . ' hours ' .
+            partition_seconds($workEfficiency['attendedTime'])['minutes'] . ' minutes ' .
+            partition_seconds($workEfficiency['attendedTime'])['seconds'] . ' seconds ');
+        $this->info('His work time efficiency percentage is ' . $workEfficiency['percentage']);
         return;
     }
 
@@ -189,6 +197,22 @@ class Statistics extends Command
         }
         $percentage = round($offTimes / $all * 100 ,2);
         return compact('all','offDays','offTimes','percentage');
+    }
+
+    public function workEfficiency(int $id,int $month)
+    {
+        $workTimes = $this->getMonthData($id,$month,'work_times');
+        $workTimes = $workTimes->groupBy('day');
+        $actualWork = 0;
+        $attendedTime = 0;
+        foreach ($workTimes as $workTime) {
+            /** @var Collection $workTime */
+            $workTime = $workTime->sortBy('started_work_at');
+            $actualWork += $workTime->sum('seconds');
+            $attendedTime += (new Carbon($workTime->last()->stopped_work_at))->diffInSeconds($workTime->first()->started_work_at);
+        }
+        $percentage = round($actualWork / $attendedTime * 100 , 2);
+        return compact('attendedTime','actualWork','percentage');
     }
 
     public function isVacation(int $id,string $date)

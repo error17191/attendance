@@ -1,13 +1,11 @@
 <template>
     <div class="container">
         <vue-element-loading :active="!show" spinner="bar-fade-scale" color="#FF6700"/>
-
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card card-default">
                     <div class="card-header">Good Morning</div>
                     <div v-if="!tracked">
-
                         <div class="card-body">
                             <div class="row justify-content-center">
                                 <div class="col-md-8">
@@ -125,6 +123,8 @@
         },
         mounted() {
             this.getStats();
+        },
+        created(){
             this.checkIfUserCanBeTracked();
         },
         filters: {
@@ -324,10 +324,9 @@
                 this.signs.splice(signIndex, 1, newSign);
             },
             checkIfUserCanBeTracked() {
-                axios.get(`check/user/tracked/${JSON.parse(auth_user).id}`).then(response => {
-                    console.log(response.data);
-                    this.tracked=response.data.tracked.tracked;
-                })
+                console.log(JSON.parse(auth_user).tracked);
+                this.tracked=JSON.parse(auth_user).tracked;
+
             }
         },
         watch: {

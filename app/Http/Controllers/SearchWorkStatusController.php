@@ -22,7 +22,7 @@ class SearchWorkStatusController extends Controller
 
         $status = WorkTime::where('user_id',auth()->user()->id)
             ->where('status','like',$request->q .'%')
-            ->take(10)->select('status')->get()->pluck('status');
+            ->take(10)->select('status')->distinct()->get()->pluck('status');
         return response()->json([
             'status' => $status
         ]);

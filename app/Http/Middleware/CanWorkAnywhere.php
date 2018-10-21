@@ -7,7 +7,7 @@ use App\UserMachine;
 use Closure;
 use Illuminate\Support\Facades\Auth;
 
-class IsTracked
+class CanWorkAnywhere
 {
     /**
      * Handle an incoming request.
