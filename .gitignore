@@ -18,3 +18,4 @@ yarn-error.log
 echo.log
 worker.log
 laravel-echo-server.json
+_ide_helper.php
