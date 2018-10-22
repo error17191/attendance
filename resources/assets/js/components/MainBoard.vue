@@ -325,8 +325,7 @@
             },
 
             checkIfUserCanWorkAnyWhere() {
-                console.log(JSON.parse(auth_user));
-                this.canWorkAnywhere=JSON.parse(auth_user).work_anywhere;
+                this.canWorkAnywhere=auth_user.work_anywhere;
             }
         },
         watch: {
