@@ -324,8 +324,8 @@
                 this.signs.splice(signIndex, 1, newSign);
             },
             checkIfUserCanBeTracked() {
-                console.log(JSON.parse(auth_user).tracked);
-                this.tracked=JSON.parse(auth_user).tracked;
+                // console.log(JSON.parse(auth_user).tracked);
+                // this.tracked=JSON.parse(auth_user).tracked;
 
             }
         },

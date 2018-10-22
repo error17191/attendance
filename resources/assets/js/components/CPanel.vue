@@ -17,6 +17,9 @@
                 <b-tab title="ScanQR">
                     <q-r-code></q-r-code>
                 </b-tab>
+                <b-tab title="Statistics">
+                    <!--<statistics></statistics>-->
+                </b-tab>
 
             </b-tabs>
         </b-card>
@@ -29,6 +32,7 @@
     import WorkFlags from './WorkFlags';
     import Notifications from './Notifications';
     import QRCode from './QRCode';
+    import Statistics from './Statistics';
 
     export default {
         components: {
@@ -36,7 +40,8 @@
             Timing,
             WorkFlags,
             Notifications,
-            QRCode
+            QRCode,
+            Statistics
         }
     }
 </script>

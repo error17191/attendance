@@ -1,0 +1,209 @@
+<?php
+
+namespace App\Utilities;
+
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
+use Carbon\Carbon;
+
+class Statistics
+{
+
+    public static function monthReport(int $id,int $month,int $year = 0):array
+    {
+        $idealTime = static::monthIdeal($id,$month,$year);
+        $actualTime = static::monthWork($id,$month,$year);
+        $diffType = $actualTime < $idealTime ? 'less' : 'more';
+        if($actualTime == $idealTime){
+            $diffType = 'exact';
+        }
+        $diff = abs($actualTime - $idealTime);
+        $status = static::monthWorkStatusTimes($id,$month,$year);
+        $flags = static::monthFlags($id,$month,$year);
+        $absence = static::monthAttendanceDays($id,$month,$year);
+        $regularTime = static::monthRegularTime($id,$month,$year);
+        $workEfficiency = static::monthWorkEfficiency($id,$month,$year);
+        return compact('actualTime','idealTime','diffType','diff','status','flags','absence','regularTime','workEfficiency');
+    }
+
+    public static function monthIdeal(int $id,int $month,int $year = 0):int
+    {
+        if(!$year){
+            $year = now()->year;
+        }
+        $date = (new Carbon())->year($year)->month($month)->firstOfMonth();
+        $regularHours = app('settings')->getRegularTime()['regularHours'];
+        $monthLength = $date->copy()->diffInDays($date->copy()->lastOfMonth()) + 1;
+        $ideal = 0;
+        for($i = 0; $i < $monthLength; $i++){
+            $day = (new Carbon())->year($year)->month($month)->firstOfMonth()->addDays($i);
+            if(static::isWeekend($day) || static::isVacation($id,$day->toDateString())){
+                continue;
+            }
+            $ideal += $regularHours;
+        }
+        return $ideal * 60 * 60;
+    }
+
+    public static function monthWork(int $id,int $month,int $year = 0):int
+    {
+        return static::monthData($id,'work_times',$month,$year)->sum('seconds');
+    }
+
+    public static function monthWorkStatusTimes(int $id,int $month,int $year = 0):array
+    {
+        $status = [];
+        $workTimes = static::monthData($id,'work_times',$month,$year);
+        foreach ($workTimes as $workTime) {
+            if(!isset($status[$workTime->status])){
+                $status[$workTime->status] = 0;
+            }
+            $status[$workTime->status] += $workTime->seconds;
+        }
+        return $status;
+    }
+
+    public static function monthFlags(int $id,int $month,int $year = 0):array
+    {
+        $flags = [];
+        $monthFlags = static::monthData($id,'flags',$month,$year);
+        foreach ($monthFlags as $monthFlag) {
+            if(!isset($flags[$monthFlag->type])){
+                $flags[$monthFlag->type] = 0;
+            }
+            $flags[$monthFlag->type] += $monthFlag->seconds;
+        }
+        return $flags;
+    }
+
+    public static function monthAttendanceDays(int $id,int $month,int $year = 0):array
+    {
+        $days = static::monthData($id,'work_times',$month,$year)->groupBy('day')->keys()->toArray();
+        $vacationsAttended = [];
+        $workDaysAbsence = [];
+        $monthDays = static::monthDays($month);
+        foreach ($monthDays as $monthDay) {
+            if(static::isWeekend(new Carbon($monthDay))|| static::isVacation($id,$monthDay)){
+                if(in_array($monthDay,$days)){
+                    $vacationsAttended[] = $monthDay;
+                }
+            }else{
+                if(!in_array($monthDay,$days)){
+                    $workDaysAbsence[] = $monthDay;
+                }
+            }
+        }
+        return compact('vacationsAttended','workDaysAbsence');
+    }
+
+    public static function monthRegularTime(int $id,int $month,int $year = 0):array
+    {
+        $regularTimeFrom = app('settings')->getRegularTime()['from'] * 60 * 60;
+        $regularTimeFrom = partition_seconds($regularTimeFrom);
+        $regularTimeTo = app('settings')->getRegularTime()['to'] * 60 * 60;
+        $regularTimeTo = partition_seconds($regularTimeTo);
+        $workDays = static::monthData($id,'work_times',$month,$year);
+        /** @var Collection $workDays */
+        $workDays = $workDays->groupBy('day');
+        $all = $workDays->count();
+        $offTimes = 0;
+        $offDays = [];
+        foreach ($workDays as $workDay) {
+            $first = $workDay->sortBy('started_work_at')->first();
+            if((new Carbon($first->started_work_at)) >= (new Carbon($first->day))->hour($regularTimeFrom['hours'])->minute($regularTimeFrom['minutes']) &&
+                (new Carbon($first->started_work_at)) <= (new Carbon($first->day))->hour($regularTimeTo['hours'])->minute($regularTimeTo['minutes'])){
+                continue;
+            }
+            $offDays[] = $first->day;
+            $offTimes++;
+        }
+        $percentage = round($offTimes / $all * 100 ,2);
+        return compact('all','offDays','offTimes','percentage');
+    }
+
+    public static function monthWorkEfficiency(int $id,int $month,int $year = 0):array
+    {
+        $workTimes = static::monthData($id,'work_times',$month,$year)->groupBy('day');
+        $actualWork = 0;
+        $attendedTime = 0;
+        foreach ($workTimes as $workTime) {
+            /** @var Collection $workTime */
+            $workTime = $workTime->sortBy('started_work_at');
+            $actualWork += $workTime->sum('seconds');
+            $attendedTime += (new Carbon($workTime->last()->stopped_work_at))->diffInSeconds($workTime->first()->started_work_at);
+        }
+        $percentage = round($actualWork / $attendedTime * 100 , 2);
+        return compact('attendedTime','actualWork','percentage');
+    }
+
+    public static function monthDays(int $month):array
+    {
+        $monthLength = (new Carbon())->month($month)->firstOfMonth()->diffInDays((new Carbon())->month($month)->lastOfMonth()) + 1;
+        $days = [];
+        for($i = 0; $i < $monthLength; $i++){
+            $days[] = (new Carbon())->month($month)->firstOfMonth()->addDays($i)->toDateString();
+        }
+        return $days;
+    }
+
+    public static function dayData(int $id,string $table,string $date):Collection
+    {
+        return DB::table($table)->where('user_id',$id)
+            ->where('day',$date)
+            ->get();
+    }
+
+    public static function monthData(int $id,string $table,int $month,int $year = 0):Collection
+    {
+        if(!$year){
+            $year = now()->year;
+        }
+        return DB::table($table)->where('user_id',$id)
+            ->whereBetween('day',
+                [
+                    (new Carbon())->year($year)->month($month)->firstOfMonth()->toDateString(),
+                    (new Carbon())->year($year)->month($month)->lastOfMonth()->toDateString()
+                ])
+            ->get();
+    }
+
+    public static function yearData(int $id,string $table,int $year):Collection
+    {
+        return DB::table($table)->where('user_id',$id)
+            ->whereBetween('day',
+                [
+                    (new Carbon())->year($year)->month(1)->firstOfMonth()->toDateString(),
+                    (new Carbon())->year($year)->month(12)->lastOfMonth()->toDateString()
+                ])
+            ->get();
+    }
+
+    public static function isWeekend(Carbon $date):bool
+    {
+        Carbon::setWeekStartsAt(0);
+        Carbon::setWeekendDays(app('settings')->getWeekends());
+        return $date->isWeekend();
+    }
+
+    public static function isVacation(int $id,string $date):bool
+    {
+        return static::isGlobalVacation($date) || static::isUserVacation($id,$date);
+    }
+
+    public static function isGlobalVacation(string $date):bool
+    {
+        return DB::table('custom_vacations')->where('date',$date)->first() != null;
+    }
+
+    public static function isUserVacation(int $id,string $date):bool
+    {
+        return DB::table('users')
+                ->leftJoin('users_custom_vacations','users.id','users_custom_vacations.user_id')
+                ->leftJoin('custom_vacations','users_custom_vacations.vacation_id','custom_vacations.id')
+                ->select('custom_vacations.*')
+                ->where('users.id',$id)
+                ->where('custom_vacations.global',0)
+                ->where('custom_vacations.date',$date)
+                ->first() != null;
+    }
+}

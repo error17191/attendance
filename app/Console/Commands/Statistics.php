@@ -43,6 +43,7 @@ class Statistics extends Command
      */
     public function handle()
     {
+        dd(\App\Utilities\Statistics::monthIdeal(1,10));
         Carbon::setWeekStartsAt(0);
         Carbon::setWeekendDays([5,6]);
         $this->removeAttendance(1);
