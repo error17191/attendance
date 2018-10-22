@@ -27,6 +27,7 @@ Vue.component('VueElementLoading', VueElementLoading);
 
 import MainBoard from './components/MainBoard';
 import CPanel from './components/CPanel';
+import ChangePassword from './components/ChangePassword';
 
 const routes = [
     {
@@ -38,6 +39,11 @@ const routes = [
         path: '/cpanel',
         component: CPanel,
         name: 'c_panel'
+    },
+    {
+        path: '/change_password',
+        component: ChangePassword,
+        name: 'change_password'
     },
 ];
 
