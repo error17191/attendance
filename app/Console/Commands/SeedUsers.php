@@ -56,6 +56,8 @@ class SeedUsers extends Command
                 'email' => strtolower($name) . '@email.com',
                 'is_admin' => false,
                 'password' => Hash::make('123456'),
+                'tracked' => rand(0,1),
+                'work_anywhere' => rand(0,1),
                 'created_at' => now(),
                 'updated_at' => now()
             ];
@@ -69,6 +71,8 @@ class SeedUsers extends Command
             'mobile' => '000000000',
             'email' => 'admin@mail.com',
             'is_admin' => true,
+            'work_anywhere' => true,
+            'tracked' => false,
             'password' => Hash::make('123456'),
             'created_at' => now(),
             'updated_at' => now()

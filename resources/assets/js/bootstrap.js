@@ -22,9 +22,10 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 if (window.token = localStorage.getItem('token')) {
     window.axios.defaults.headers.common['Authorization'] = 'Bearer ' + window.token;
 }
+let userMetaTag =  document.head.querySelector('meta[name=user]');
 
-if(window.auth_user=localStorage.getItem('auth_user')){
-    window.auth_user = localStorage.getItem('auth_user');
+if(userMetaTag){
+    window.auth_user = JSON.parse(userMetaTag.content);
 }
 
 

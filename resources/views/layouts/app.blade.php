@@ -7,7 +7,9 @@
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    @auth()
+        <meta name="user" content="{{json_encode(auth()->user()->toArray()) }}">
+    @endauth
     <title>{{ config('app.name', 'Laravel') }}</title>
     <script src="{{asset('vendor/instascan.min.js')}}"></script>
     <!-- Scripts -->

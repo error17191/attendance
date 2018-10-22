@@ -38,18 +38,18 @@ Route::post('vacations/custom/delete', 'CustomVacationsController@delete')->name
 Route::post('browser/token','BrowserTokenController@store')->name('store_browser_token');
 Route::get('users','UserSearchController@index');
 
-Route::get('/regular/time','RegularTimeController@index')
+Route::get('regular/time','RegularTimeController@index')
     ->name('regular.time.index');
-Route::post('/regular/time','RegularTimeController@store')
+Route::post('regular/time','RegularTimeController@store')
     ->name('regular.time.store');
 
-Route::get('/status','SearchWorkStatusController@index')
+Route::get('status','SearchWorkStatusController@index')
     ->name('status.index');
 
-Route::post('/flag/start','FlagsController@startFlag');
-Route::post('/flag/end','FlagsController@endFlag');
+Route::post('flag/start','FlagsController@startFlag');
+Route::post('flag/end','FlagsController@endFlag');
 
-Route::get('/status','SearchWorkStatusController@index')
+Route::get('status','SearchWorkStatusController@index')
     ->name('status.index');
 
 Route::post('machine/request','UserMachineController@requestWorkMachine');
@@ -60,9 +60,18 @@ Route::post('machine/check','UserMachineController@checkUserMachine');
 Route::post('machine/add','UserMachineController@addNewUserMachine');
 
 
-Route::get('/admin/flags','AdminFlagsController@index');
-Route::post('/admin/flag','AdminFlagsController@store');
-Route::delete('/admin/flags','AdminFlagsController@destroy');
+Route::get('admin/flags','AdminFlagsController@index');
+Route::post('admin/flag','AdminFlagsController@store');
+Route::delete('admin/flags','AdminFlagsController@destroy');
 
 Route::get('check/user/tracked/{user_id}','UserSettingsController@checkIfUserCanBeTracked');
 Route::get('check/user/work/{user_id}','UserSettingsController@checkIfUserCanWorkAnywhere');
+
+Route::get('month/report/admin','StatisticsController@monthReportAdmin');
+Route::post('me', 'HybridAuthController@me');
+
+
+Route::get('user/info/{user_id}',function($user_id){
+   $user=\App\User::find($user_id);
+   return response()->json(['user'=>$user]);
+});
