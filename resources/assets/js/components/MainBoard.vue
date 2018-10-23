@@ -18,11 +18,12 @@
                                         {{flag.type | capitalize}}
                                     </button>
                                     <multiselect tag-placeholder="Add Work Status"
-                                                 placeholder="Add or Select Work Status"
-                                                 @tag="addTag"
-                                                 @search-change="getWorkStatus"
-                                                 v-model="workStatus"
-                                                 :options="workStatusOptions"
+                                                 placeholder="Task you are working on"
+                                                 @tag="addTask"
+                                                 label="content"
+                                                 @search-change="getTasks"
+                                                 v-model="task"
+                                                 :options="tasks"
                                                  :taggable="true"
                                                  :close-on-select="true"
                                                  :searchable="true"
@@ -37,7 +38,7 @@
                                     </button>
                                     <button v-else
                                             @click="startWork()"
-                                            :disabled="workStatus == ''"
+                                            :disabled="task == ''"
                                             class="btn btn-lg btn-block btn-success"
                                     >Start Work
                                     </button>
@@ -114,8 +115,8 @@
                 workTime: null,
                 signs: null,
                 monthStats: null,
-                workStatus: '',
-                workStatusOptions: [],
+                task: null,
+                tasks: [],
                 loadingSearch: false,
                 flagInUse: '',
                 canWorkAnywhere: true
@@ -149,7 +150,7 @@
                 }).then((response) => {
                     this.status = response.data.status;
                     this.workTime = response.data.today_time;
-                    this.workStatus = this.workTime.workStatus;
+                    this.task = this.workTime.task;
                     this.signs = response.data.workTimeSigns;
                     this.monthStats = response.data.month_report;
                     this.flags = response.data.flags;
@@ -169,8 +170,8 @@
                 });
             },
             startWork() {
-                let data = {workStatus: this.workStatus};
-                makeRequest({
+                let data = {task: this.task};
+                return makeRequest({
                     method: 'post',
                     url: '/start_work',
                     data: data
@@ -183,7 +184,7 @@
                 });
             },
             stopWork() {
-                makeRequest({
+                return makeRequest({
                     method: 'post',
                     url: '/stop_work'
                 }).then((response) => {
@@ -293,20 +294,30 @@
                     this.startCounterDown(this.monthStats.diff.partitions);
                 }
             },
-            getWorkStatus(query) {
-                let url = '/status?q=' + query;
+            getTasks(query) {
+                if(!query){
+                    this.tasks = [];
+                    return;
+                }
+                let url = '/tasks?q=' + query;
                 this.loadingSearch = true;
                 makeRequest({
                     method: 'get',
                     url: url
                 }).then((response) => {
-                    this.workStatusOptions = response.data.status;
+                    this.tasks = response.data.tasks;
                     this.loadingSearch = false;
                 });
             },
-            addTag(tag) {
-                this.workStatusOptions.push(tag);
-                this.workStatus = tag;
+            addTask(tag) {
+                if(this.status == 'on'){
+                    this.stopWork().then(() => {
+                        this.task = {content: tag};
+                        this.startWork();
+                    });
+                }else{
+                    this.task = {content: tag};
+                }
             },
             getSignIndex(startTime) {
                 for (let i in this.signs) {

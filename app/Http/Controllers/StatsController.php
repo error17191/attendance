@@ -55,7 +55,7 @@ class StatsController extends Controller
             'today_time' => [
                 'seconds' => $todayWorkSeconds,
                 'partitions' => $todayWorkTimePartitions,
-                'workStatus' => UW::hasAny($id) ? UW::last($id)->status : null
+                'task' => optional(UW::last($id))->task
             ],
             'month_report' => [
                 'actual' => [

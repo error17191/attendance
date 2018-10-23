@@ -16,7 +16,7 @@ class SearchTasksController extends Controller
     {
         if(!$request->q){
             return response()->json([
-                'status' => []
+                'tasks' => []
             ]);
         }
 

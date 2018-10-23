@@ -49,19 +49,21 @@ class SignController extends Controller
         }
 
         //validate request data
-        $v = Validator::make($request->only('workStatus'),[
-            'workStatus' => 'required|string'
+        $v = Validator::make($request->only('task'),[
+            'task' => 'required',
+            'task.content' => 'required|string',
+            'task.id' => 'exists:tasks,id'
         ]);
 
         if($v->fails()){
             return response()->json([
-                'status' => 'work_status_required',
-                'message' => 'Work status is required'
+                'status' => 'validation_errors',
+                'errors' => $v->errors()->toArray()
             ],422);
         }
 
         //start new work time
-        $workTime = WorKTime::start($id,$request->workStatus);
+        $workTime = WorKTime::start($id,$request->task);
         $workTime->save();
 
         $user->status = 'on';

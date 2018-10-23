@@ -44,14 +44,14 @@ Route::get('regular/time','RegularTimeController@index')
 Route::post('regular/time','RegularTimeController@store')
     ->name('regular.time.store');
 
-Route::get('status','SearchWorkStatusController@index')
+Route::get('tasks','SearchTaskController@index')
     ->name('status.index');
 
 Route::post('flag/start','FlagsController@startFlag');
 Route::post('flag/end','FlagsController@endFlag');
 
-Route::get('status','SearchWorkStatusController@index')
-    ->name('status.index');
+Route::get('tasks','SearchTasksController@index')
+    ->name('tasks.index');
 
 Route::post('machine/request','UserMachineController@requestWorkMachine');
 Route::post('machine/accept','UserMachineController@acceptWorkMachine');

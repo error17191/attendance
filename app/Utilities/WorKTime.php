@@ -2,6 +2,7 @@
 
 namespace App\Utilities;
 
+use App\Task;
 use Illuminate\Database\Eloquent\Collection;
 use App\User;
 use App\WorkTime as WorkTimeModel;
@@ -160,9 +161,8 @@ class WorKTime
      * Fetch last work time for the user
      *
      * @param int $id
-     * @return \App\WorkTime
      */
-    public static function last(int $id):WorkTimeModel
+    public static function last(int $id)
     {
         return WorkTimeModel::where('user_id',$id)
             ->orderBy('started_work_at','desc')
@@ -177,11 +177,18 @@ class WorKTime
      * @param \Carbon\Carbon|null $start
      * @return \App\WorkTime
      */
-    public static function start(int $id,string $status,Carbon $start = null):WorkTimeModel
+    public static function start(int $id,$task,Carbon $start = null):WorkTimeModel
     {
         $workTime = new WorkTimeModel();
         $workTime->user_id = $id;
-        $workTime->status = $status;
+        if(isset($task['id'])){
+            $workTime->task_id = $task['id'];
+        }else{
+            $newTask = new Task();
+            $newTask->content = $task['content'];
+            $newTask->save();
+            $workTime->task_id = $newTask->id;
+        }
         $workTime->day = now()->toDateString();
         $workTime->started_work_at = $start ?: now();
         $workTime->day_seconds = static::daySeconds($id,$workTime->day);
