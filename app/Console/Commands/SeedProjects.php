@@ -58,6 +58,9 @@ class SeedProjects extends Command
             [
                 'title' => 'Syal Tech Website'
             ],
+            [
+                'title' => 'Practice'
+            ],
         ]);
     }
 }
