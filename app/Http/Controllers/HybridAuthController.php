@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class HybridAuthController extends Controller
 {
@@ -14,7 +16,7 @@ class HybridAuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login']]);
+//        $this->middleware('auth:api', ['except' => ['login']]);
     }
 
     /**
@@ -27,10 +29,23 @@ class HybridAuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
-        $request->validate([
+        $v = Validator::make($request->all(),[
             'email' => 'required|email|exists:users,email',
             'password' => 'required'
+        ],[
+            'email.required' => 'missing',
+            'email.email' => 'invalid',
+            'email.exists' => 'not_found',
+            'password.required' => 'missing'
         ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'validation_errors',
+                'errors' => $v->errors()->toArray()
+            ],422);
+        }
+
         if (auth()->guard('web')->attempt($credentials)) {
             session()->regenerateToken();
         }
@@ -39,7 +54,7 @@ class HybridAuthController extends Controller
             return $this->respondWithToken($token);
         }
 
-        return response()->json(['error' => 'Unauthorized'], 401);
+        return response()->json(['status' => 'invalid_login'], 422);
     }
 
     /**
