@@ -41,5 +41,6 @@ class SeedAllDummyData extends Command
         Artisan::call('seed:users');
         Artisan::call('seed:settings');
         Artisan::call('seed:custom_vacations');
+        Artisan::call('seed:projects');
     }
 }

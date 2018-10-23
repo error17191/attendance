@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Project;
 use App\WorkTime;
 use Carbon\Carbon;
 use App\Utilities\WorKTime as UW;
@@ -48,14 +49,17 @@ class StatsController extends Controller
             $diffType = 'less';
         }
         $diffSeconds = abs($workSecondsIdeal - $workSecondsActual);
+        $lastWorkTime = UW::last($id);
         return response()->json([
+            'projects' => Project::all(),
             'flags' => Flag::today($id),
             'workTimeSigns' => UW::todaySigns($id),
             'status' => $user->status,
             'today_time' => [
                 'seconds' => $todayWorkSeconds,
                 'partitions' => $todayWorkTimePartitions,
-                'task' => optional(UW::last($id))->task
+                'task' => optional($lastWorkTime)->task,
+                'project' => optional($lastWorkTime)->project,
             ],
             'month_report' => [
                 'actual' => [

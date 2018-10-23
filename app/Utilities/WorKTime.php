@@ -173,19 +173,22 @@ class WorKTime
      * Start a work time
      *
      * @param int $id
-     * @param string $status
+     * @param $task
+     * @param $project_id
      * @param \Carbon\Carbon|null $start
      * @return \App\WorkTime
      */
-    public static function start(int $id,$task,Carbon $start = null):WorkTimeModel
+    public static function start(int $id,$task,$project_id ,Carbon $start = null):WorkTimeModel
     {
         $workTime = new WorkTimeModel();
         $workTime->user_id = $id;
+        $workTime->project_id = $project_id;
         if(isset($task['id'])){
             $workTime->task_id = $task['id'];
         }else{
             $newTask = new Task();
             $newTask->content = $task['content'];
+            $newTask->project_id = $project_id;
             $newTask->save();
             $workTime->task_id = $newTask->id;
         }

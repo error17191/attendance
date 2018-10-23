@@ -17,7 +17,16 @@
                                     >
                                         {{flag.type | capitalize}}
                                     </button>
-                                    <multiselect tag-placeholder="Add Work Status"
+                                    <multiselect tag-placeholder="Project you are working on"
+                                                 placeholder="Project you are working on"
+                                                 label="title"
+                                                 v-model="project"
+                                                 :options="projects"
+                                                 :close-on-select="true"
+                                                 :multiple="false"
+                                                 :searchable="false"
+                                    ></multiselect>
+                                    <multiselect tag-placeholder="Task you are working on"
                                                  placeholder="Task you are working on"
                                                  @tag="addTask"
                                                  label="content"
@@ -38,7 +47,7 @@
                                     </button>
                                     <button v-else
                                             @click="startWork()"
-                                            :disabled="task == ''"
+                                            :disabled="task == null || project == null"
                                             class="btn btn-lg btn-block btn-success"
                                     >Start Work
                                     </button>
@@ -117,9 +126,12 @@
                 monthStats: null,
                 task: null,
                 tasks: [],
+                project: null,
+                projects: [],
                 loadingSearch: false,
                 flagInUse: '',
-                canWorkAnywhere: true
+                canWorkAnywhere: true,
+                initialized: false,
             }
         },
         mounted() {
@@ -151,6 +163,8 @@
                     this.status = response.data.status;
                     this.workTime = response.data.today_time;
                     this.task = this.workTime.task;
+                    this.projects = response.data.projects;
+                    this.project = this.workTime.project;
                     this.signs = response.data.workTimeSigns;
                     this.monthStats = response.data.month_report;
                     this.flags = response.data.flags;
@@ -170,7 +184,7 @@
                 });
             },
             startWork() {
-                let data = {task: this.task};
+                let data = {task: this.task, project_id: this.project.id};
                 return makeRequest({
                     method: 'post',
                     url: '/start_work',
@@ -345,6 +359,22 @@
                     this.monthStats.diff.partitions.minutes == 0 &&
                     this.monthStats.diff.partitions.seconds == 0) {
                     this.monthStats.diff.type = 'more';
+                }
+            },
+            project: function(project,prevProject) {
+                if(!this.initialized){
+                    this.initialized = true;
+                    return;
+                }
+                if(project.id == prevProject.id){
+                    return;
+                }
+                if(this.status == 'on'){
+                    this.stopWork().then(() => {
+                        this.task = null;
+                    });
+                }else{
+                    this.task = null;
                 }
             }
         }

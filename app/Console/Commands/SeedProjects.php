@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Project;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
 
 class SeedProjects extends Command
 {
@@ -38,6 +39,9 @@ class SeedProjects extends Command
      */
     public function handle()
     {
+        Schema::disableForeignKeyConstraints();
+        Project::query()->truncate();
+        Schema::enableForeignKeyConstraints();
         Project::query()->insert([
             [
                 'title' => 'Travninja'

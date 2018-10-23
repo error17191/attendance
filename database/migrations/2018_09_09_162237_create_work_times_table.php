@@ -17,6 +17,7 @@ class CreateWorkTimesTable extends Migration
             $table->increments('id');
             $table->integer('user_id');
             $table->integer('task_id');
+            $table->integer('project_id');
             $table->date('day');
             $table->timestamp('started_work_at');
             $table->timestamp('stopped_work_at')->nullable();
