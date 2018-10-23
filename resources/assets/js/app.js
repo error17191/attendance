@@ -76,6 +76,14 @@ window.router = new VueRouter({
     routes
 });
 
+Vue.mixin({
+    methods: {
+        goToRoute: name => router.push({name: name}),
+        currentRouteIs : name => router.currentRoute.name == name,
+        auth_user : () => window.auth_user
+    }
+});
+
 
 const app = new Vue({
     router,
@@ -88,12 +96,6 @@ const app = new Vue({
         }
     },
     methods: {
-        isCPanel() {
-            return router.currentRoute.name == 'c_panel';
-        },
-        isMainBoard() {
-            return router.currentRoute.name == 'main_board';
-        },
         login() {
             axios.post('/login', {
                 email: this.email,

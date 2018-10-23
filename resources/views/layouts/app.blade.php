@@ -53,17 +53,20 @@
             <b-collapse is-nav id="nav_collapse">
 
                 <b-navbar-nav>
-                    <b-nav-item v-if="isMainBoard()" onclick="router.push('/cpanel')">cPanel</b-nav-item>
-                    <b-nav-item v-if="isCPanel()" onclick="router.push('/home')">Home</b-nav-item>
+                    <b-nav-item v-if="auth_user().is_admin &&  ! currentRouteIs('c_panel')" onclick="router.push('/cpanel')">cPanel</b-nav-item>
+                    <b-nav-item v-if="!currentRouteIs('main_board')" onclick="router.push('/home')">Home</b-nav-item>
                 </b-navbar-nav>
 
                 <!-- Right aligned nav items -->
                 <b-navbar-nav class="ml-auto">
-                    @auth
+                    @auth('web')
                         <b-nav-item-dropdown right>
                             <template slot="button-content">
                                 <em>{{auth()->user()->name}}</em>
                             </template>
+                            <b-dropdown-item @click="goToRoute('change_password')">
+                                Change Password
+                            </b-dropdown-item>
                             <b-dropdown-item @click="logout">
                                 Logout
                             </b-dropdown-item>
