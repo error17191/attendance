@@ -61,6 +61,9 @@ class SeedProjects extends Command
             [
                 'title' => 'Practice'
             ],
+            [
+                'title' => 'Learning new stuff'
+            ],
         ]);
     }
 }
