@@ -53,7 +53,7 @@
             <b-collapse is-nav id="nav_collapse">
 
                 <b-navbar-nav>
-                    <b-nav-item v-if="auth_user().is_admin &&  ! currentRouteIs('c_panel')" onclick="router.push('/cpanel')">cPanel</b-nav-item>
+                    <b-nav-item v-if="auth_user() && auth_user().is_admin &&  ! currentRouteIs('c_panel')" onclick="router.push('/cpanel')">cPanel</b-nav-item>
                     <b-nav-item v-if="!currentRouteIs('main_board')" onclick="router.push('/home')">Home</b-nav-item>
                 </b-navbar-nav>
 
