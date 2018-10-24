@@ -40,7 +40,7 @@ class StatsController extends Controller
             }
         }
         $workSecondsIdeal = 60 * 60 * $workHoursIdeal;
-        $workSecondsActual = WorkTime::whereBetween('day', [today()->firstOfMonth(), today()->subDay()])->sum('seconds');
+        $workSecondsActual = WorkTime::where('user_id', auth()->id())->whereBetween('day', [today()->firstOfMonth(), today()->subDay()])->sum('seconds');
         $workSecondsActual += $todayWorkSeconds;
         if ($workSecondsActual > $workSecondsIdeal) {
             $diffType = 'more';

@@ -45,7 +45,7 @@ window.Echo = new Echo({
                     'Authorization': 'Bearer ' + localStorage.getItem('token')
                 }
         },
-    host: "http://localhost" + ':6001'
+    host: document.head.querySelector('meta[name=url]').content + ':' + document.head.querySelector('meta[name=echo-port]').content
 });
 
 
