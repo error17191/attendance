@@ -10,6 +10,7 @@
     @auth()
         <meta name="user" content="{{json_encode(auth()->user()->toArray()) }}">
     @endauth
+    <meta name="echo-port" content="{{config('app.echo_server_port')}}">
     <title>{{ config('app.name', 'Laravel') }}</title>
     <script src="{{asset('vendor/instascan.min.js')}}"></script>
     <!-- Scripts -->
