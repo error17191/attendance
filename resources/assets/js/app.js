@@ -12,6 +12,10 @@ import BootstrapVue from 'bootstrap-vue';
 
 window.Vue = require('vue');
 
+window.bus = new Vue();
+
+window.moment = require('moment');
+
 Vue.use(BootstrapVue);
 
 import VueElementLoading from 'vue-element-loading';

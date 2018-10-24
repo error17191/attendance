@@ -9,8 +9,11 @@ use Carbon\Carbon;
 class Statistics
 {
 
-    public static function monthReport(int $id,int $month,int $year = 0):array
+    public static function monthReport(int $id,int $month,int $year = 0)
     {
+        if(static::monthData($id,'work_times',$month,$year)->count() <= 0){
+            return null;
+        }
         $idealTime = static::monthIdeal($id,$month,$year);
         $actualTime = static::monthWork($id,$month,$year);
         $diffType = $actualTime < $idealTime ? 'less' : 'more';
