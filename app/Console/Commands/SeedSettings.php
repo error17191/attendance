@@ -69,6 +69,10 @@ class SeedSettings extends Command
                 'key' => 'flags',
                 'value' => json_encode([
                     'lost_time' => 1800,
+                    'thinking' => 'no time limit',
+                    'helping_others' => 'no time limit',
+                    'meeting' => 'no time limit',
+                    'co_working' => 'no time limit',
                 ])
             ]
         ];
