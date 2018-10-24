@@ -52,7 +52,7 @@
                                         class="btn mr-2 mb-2"
                                         :class="{'btn-default': !flag.inUse,'btn-dark': flag.inUse}"
                                         @click.prevent="toggleFlag(flag.type)"
-                                        :disabled="flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit'"
+                                        :disabled="(flagInUse != '' && flag.type != flagInUse)|| flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit'"
                                 >
                                     {{flag.type | capitalize}}
                                 </button>
