@@ -51,7 +51,7 @@ class StatsController extends Controller
         $diffSeconds = abs($workSecondsIdeal - $workSecondsActual);
         $lastWorkTime = UW::last($id);
         return response()->json([
-            'projects' => Project::all(),
+            'projects' => Project::visible()->get(),
             'flags' => Flag::today($id),
             'workTimeSigns' => UW::todaySigns($id),
             'status' => $user->status,

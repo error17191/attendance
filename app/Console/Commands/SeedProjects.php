@@ -44,25 +44,40 @@ class SeedProjects extends Command
         Schema::enableForeignKeyConstraints();
         Project::query()->insert([
             [
-                'title' => 'Travninja'
+                'title' => 'Travninja',
+                'hidden' => 0
             ],
             [
-                'title' => 'Attendance'
+                'title' => 'Attendance',
+                'hidden' => 0
             ],
             [
-                'title' => 'Offline Requests'
+                'title' => 'Offline Requests',
+                'hidden' => 0
             ],
             [
-                'title' => 'Syal Website'
+                'title' => 'Syal Website',
+                'hidden' => 0
             ],
             [
-                'title' => 'Syal Tech Website'
+                'title' => 'Syal Tech Website',
+                'hidden' => 0
             ],
             [
-                'title' => 'Practice'
+                'title' => 'Reporting System',
+                'hidden' => 0
             ],
             [
-                'title' => 'Learning new stuff'
+                'title' => 'Practice',
+                'hidden' => 0
+            ],
+            [
+                'title' => 'Learning new stuff',
+                'hidden' => 0
+            ],
+            [
+                'title' => 'Dummy Project',
+                'hidden' => 1
             ],
         ]);
     }

@@ -4,19 +4,11 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card card-default">
-                    <div class="card-header">Good Morning</div>
+                    <div class="card-header">Hello, {{auth_user().name}}</div>
                     <div v-if="canWorkAnywhere">
                         <div class="card-body">
                             <div class="row justify-content-center">
                                 <div class="col-md-8">
-                                    <button v-for="flag in flags"
-                                            class="btn mr-2 mb-2"
-                                            :class="{'btn-primary': !flag.inUse,'btn-dark': flag.inUse}"
-                                            :disabled="status === 'off' || (flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit')"
-                                            @click.prevent="toggleFlag(flag.type)"
-                                    >
-                                        {{flag.type | capitalize}}
-                                    </button>
                                     <multiselect tag-placeholder="Project you are working on"
                                                  placeholder="Project you are working on"
                                                  label="title"
@@ -53,6 +45,20 @@
                                     </button>
                                 </div>
                             </div>
+                            <br>
+
+                            <div class="row justify-content-center" v-if="status === 'on'">
+                                <button v-for="flag in flags"
+                                        class="btn mr-2 mb-2"
+                                        :class="{'btn-default': !flag.inUse,'btn-dark': flag.inUse}"
+                                        @click.prevent="toggleFlag(flag.type)"
+                                        :disabled="flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit'"
+                                >
+                                    {{flag.type | capitalize}}
+                                </button>
+                            </div>
+
+
                             <hr>
                             <h5 class="text-center">You worked today</h5>
                             <h3 class="text-center"> {{workTime ? timePartitionsFormatted(workTime.partitions) :
