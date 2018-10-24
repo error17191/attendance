@@ -18,7 +18,7 @@
                     <q-r-code></q-r-code>
                 </b-tab>
                 <b-tab title="Statistics">
-                    <!--<statistics></statistics>-->
+                    <statistics></statistics>
                 </b-tab>
 
             </b-tabs>

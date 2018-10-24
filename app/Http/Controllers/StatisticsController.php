@@ -39,13 +39,12 @@ class StatisticsController extends Controller
             ],422);
         }
 
-        $id = $request->user_id;
+        $id = $request->userId;
         $month = $request->month;
         $year = $request->year ?: now()->year;
-        $monthStatistics = Statistics::monthReport($id,$month,$year);
 
         return response()->json([
-            'monthStatistics' => $monthStatistics
+            'monthStatistics' => Statistics::monthReport($id,$month,$year)
         ]);
     }
 
@@ -66,10 +65,9 @@ class StatisticsController extends Controller
         $id = auth()->user()->id;
         $month = $request->month;
         $year = $request->year ?: now()->year;
-        $monthStatistics = Statistics::monthReport($id,$month,$year);
 
         return response()->json([
-            'monthStatistics' => $monthStatistics
+            'monthStatistics' => Statistics::monthReport($id,$month,$year)
         ]);
     }
 }

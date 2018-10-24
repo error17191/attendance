@@ -69,6 +69,7 @@ Route::get('check/user/tracked/{user_id}','UserSettingsController@checkIfUserCan
 Route::get('check/user/work/{user_id}','UserSettingsController@checkIfUserCanWorkAnywhere');
 
 Route::get('month/report/admin','StatisticsController@monthReportAdmin');
+
 Route::post('me', 'HybridAuthController@me');
 
 

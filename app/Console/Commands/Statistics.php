@@ -17,7 +17,7 @@ class Statistics extends Command
      *
      * @var string
      */
-    protected $signature = 'statistics';
+    protected $signature = 'statistics {id=1} {month=10}';
 
     /**
      * The console command description.
@@ -43,20 +43,19 @@ class Statistics extends Command
      */
     public function handle()
     {
-        dd(\App\Utilities\Statistics::monthIdeal(1,10));
+        $id = $this->argument('id');
+        $month = $this->argument('month');
         Carbon::setWeekStartsAt(0);
         Carbon::setWeekendDays([5,6]);
-        $this->removeAttendance(1);
-        $this->createAttendance(1,10);
-        $actual = $this->getMonthWork(1,10);
-        $ideal = $this->getMonthIdeal(1,10);
+        $actual = $this->getMonthWork($id,$month);
+        $ideal = $this->getMonthIdeal($id,$month);
         $diffType = $actual < $ideal ? 'less' : 'more';
         $diff = abs($ideal - $actual);
-        $status =  $this->getMonthWorkStatusTimes(1,10);
-        $flags = $this->getMonthFlags(1,10);
-        $daysReport = $this->getAttendanceDaysReport(1,10,$this->getAttendanceDays(1,10));
-        $regularTome = $this->regularTimePercentage(1,10);
-        $workEfficiency = $this->workEfficiency(1,10);
+        $status =  $this->getMonthWorkStatusTimes($id,$month);
+        $flags = $this->getMonthFlags($id,$month);
+        $daysReport = $this->getAttendanceDaysReport($id,$month,$this->getAttendanceDays($id,$month));
+        $regularTome = $this->regularTimePercentage($id,$month);
+        $workEfficiency = $this->workEfficiency($id,$month);
         //the report
         $this->info('Total work time for ' . User::find(1)->name . ' for October 2018 is ' . $actual . ' seconds');
         $this->info('He worked ' . partition_seconds($actual)['hours'] . ' hours');
@@ -236,102 +235,5 @@ class Statistics extends Command
                 ->where('custom_vacations.global',0)
                 ->where('custom_vacations.date',$date)
                 ->first() != null;
-    }
-
-    public function removeAttendance(int $id)
-    {
-        DB::table('work_times')->where('user_id',$id)->delete();
-        DB::table('flags')->where('user_id',$id)->delete();
-    }
-
-    public function createAttendance(int $id,int $month)
-    {
-        $day = (new Carbon())->month($month)->firstOfMonth();
-        $monthLength = $day->diffInDays($day->copy()->lastOfMonth()) + 1;
-        $v = 0;
-        for($i = 0; $i < $monthLength; $i++){
-            $day = (new Carbon())->month($month)->firstOfMonth()->addDays($i);
-            if($day->isWeekend() || $this->isVacation(1,$day->toDateString())){
-                if(rand(0,1) && $v < 3){
-                    $this->createDayAttendance($id,$day);
-                    $v++;
-                }
-                continue;
-            }
-            if(rand(0,1) && $v < 3){
-                $v++;
-                continue;
-            }
-            $this->createDayAttendance($id,$day);
-        }
-    }
-
-    public function createDayAttendance(int $id,Carbon $day)
-    {
-        /** @var \App\User $user */
-        $user = User::find($id);
-        $workStatus = [
-            'writing code','refactoring code','designing','testing'
-        ];
-        $start = 8;
-        $stop = 23;
-        $begin = rand($start,$start + 5);
-        $end = rand($begin + 1,$begin + 5);
-        $daySeconds = 0;
-        while($end <= $stop || $daySeconds > (12 * 60 * 60)){
-            $flags = app('settings')->getFlags();
-            $flags = array_keys($flags);
-            $workTime = new WorkTime();
-            $workTime->user_id = $id;
-            $workTime->day = $day->toDateString();
-            $workTime->status = $workStatus[rand(0,3)];
-            $workTime->started_work_at = $day->copy()->hour($begin);
-            $workTime->stopped_work_at = $day->copy()->hour($end);
-            $workTime->seconds = $workTime->stopped_work_at->diffInSeconds($workTime->started_work_at);
-            $workTime->day_seconds = $daySeconds + $workTime->seconds;
-            $daySeconds = $workTime->day_seconds;
-            $workTime->save();
-            $workTime->refresh();
-            if(rand(0,1)){
-                $flag = $flags[rand(0,count($flags) - 1)];
-                $startFlag = $day->copy()->hour(rand($begin,$end));
-                $limit = (new Carbon($workTime->stopped_work_at))->diffInSeconds($startFlag);
-                if(gettype(app('settings')->getFlags()[$flag]) == 'integer'){
-                    $secondsTillNow = DB::table('flags')->where('user_id',$id)
-                        ->where('day',$day->toDateString())
-                        ->where('type',$flag)
-                        ->sum('seconds');
-                    if($secondsTillNow < app('settings')->getFlags()[$flag]){
-                        $remaining = app('settings')->getFlags()[$flag] - $secondsTillNow;
-                        $limit = $limit >= $remaining ? $remaining : $limit;
-                        if($limit >= 600){
-                            $f = new Flag();
-                            $f->user_id = $id;
-                            $f->type = $flag;
-                            $f->day = $day->toDateString();
-                            $f->work_time_id = $workTime->id;
-                            $f->started_at = $startFlag;
-                            $f->seconds = rand(300,$limit);
-                            $f->stopped_at = $f->started_at->copy()->addSeconds($f->seconds);
-                            $f->save();
-                        }
-                    }
-                }else{
-                    if($limit >= 600){
-                        $f = new Flag();
-                        $f->user_id = $id;
-                        $f->work_time_id = $workTime->id;
-                        $f->type = $flag;
-                        $f->day = $day->toDateString();
-                        $f->started_at = $startFlag;
-                        $f->seconds = rand(300,$limit);
-                        $f->stopped_at = $f->started_at->copy()->addSeconds($f->seconds);
-                        $f->save();
-                    }
-                }
-            }
-            $begin = rand($end + 1,$end + 2);
-            $end = rand($begin + 1,$begin + 5);
-        }
     }
 }
