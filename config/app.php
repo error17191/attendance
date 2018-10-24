@@ -18,6 +18,7 @@ return [
     'test_time' => env('TEST_TIME', now()->toDateTimeString()),
     'enable_fake_login' => env('ENABLE_FAKE_LOGIN', false),
     'fake_logged_user' => env('FAKE_LOGGED_USER', 1),
+    'echo_server_port' => env('LARAVEL_ECHO_SERVER_PORT'),
     /*
     |--------------------------------------------------------------------------
     | Application Environment
