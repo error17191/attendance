@@ -57,7 +57,7 @@ class SeedUsers extends Command
                 'is_admin' => false,
                 'password' => Hash::make('123456'),
                 'tracked' => rand(0,1),
-                'work_anywhere' => rand(0,1),
+                'work_anywhere' => 1,
                 'created_at' => now(),
                 'updated_at' => now()
             ];

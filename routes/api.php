@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 //    return $request->user();
 //});
 
+Route::post('update_password','ChangePasswordController@update');
 Route::post('api/login','HybridAuthController@login')->name('login');
 Route::post('api/logout','HybridAuthController@logout');
 
