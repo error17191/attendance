@@ -25,12 +25,14 @@
 <script>
     import Profile from './Profile';
     import Month from './Month';
+    import Calendar from './Calendar';
 
     export default {
         name: "Statistics",
         components : {
             Profile,
-            Month
+            Month,
+            Calendar
         }
     }
 

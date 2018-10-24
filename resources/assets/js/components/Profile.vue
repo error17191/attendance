@@ -1,23 +1,42 @@
 <template>
     <div class="card-body">
         <user-search placeHolder="Select Employee" @selected="userSelected"></user-search>
-        <div v-if="selected != null" class="container">
-            <span>Name: {{selected.name}}</span>
-            <br>
-            <span>UserName: {{selected.username}}</span>
-            <br>
-            <span>Email: {{selected.email}}</span>
-            <br>
-            <span>Mobile: {{selected.mobile}}</span>
-            <br>
-            <span>Tracked: {{selected.tracked | info}}</span>
-            <br>
-            <span>Can Work Anywhere: {{selected.work_anywhere | info}}</span>
-            <br>
-            <span>Is Working Now: {{selected.status | info}}</span>
-            <br>
-            <span>Is Using Work Flag: {{selected.flag | info}}</span>
-        </div>
+        <table v-if="selected != null" class="table table-hover table-responsive">
+            <tbody>
+                <tr>
+                    <td>Name</td>
+                    <td>{{selected.name}}</td>
+                </tr>
+                <tr>
+                    <td>Username</td>
+                    <td>{{selected.username}}</td>
+                </tr>
+                <tr>
+                    <td>Email</td>
+                    <td>{{selected.email}}</td>
+                </tr>
+                <tr>
+                    <td>Mobile</td>
+                    <td>{{selected.mobile}}</td>
+                </tr>
+                <tr>
+                    <td>Tracked</td>
+                    <td>{{selected.tracked | info}}</td>
+                </tr>
+                <tr>
+                    <td>Can Work Anywhere</td>
+                    <td>{{selected.work_anywhere | info}}</td>
+                </tr>
+                <tr>
+                    <td>Is Working</td>
+                    <td>{{selected.status | info}}</td>
+                </tr>
+                <tr>
+                    <td>Is Using Flag</td>
+                    <td>{{selected.flag | info}}</td>
+                </tr>
+            </tbody>
+        </table>
         <div v-else class="alert alert-info">
             Please Select An Employee
         </div>

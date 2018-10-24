@@ -69,13 +69,16 @@ class Statistics
     public static function monthFlags(int $id,int $month,int $year = 0):array
     {
         $flags = [];
+        $total = 0;
         $monthFlags = static::monthData($id,'flags',$month,$year);
         foreach ($monthFlags as $monthFlag) {
             if(!isset($flags[$monthFlag->type])){
                 $flags[$monthFlag->type] = 0;
             }
             $flags[$monthFlag->type] += $monthFlag->seconds;
+            $total += $monthFlag->seconds;
         }
+        $flags['total'] = $total;
         return $flags;
     }
 
