@@ -394,12 +394,12 @@
                 if (project.id == prevProject.id) {
                     return;
                 }
+                this.task = null;
+                this.tasks = [];
+                this.projectTasks = [];
+                this.updateProjectTasks();
                 if (this.status == 'on') {
                     this.stopWork();
-                    this.task = null;
-                    this.tasks = [];
-                    this.projectTasks = [];
-                    this.updateProjectTasks();
                 }
             }
         }
