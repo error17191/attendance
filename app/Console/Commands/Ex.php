@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Events\AdminChannel;
+use App\Events\FlagTimeExpired;
 use App\Events\TestEvent;
 use App\Notifications\WorkStart;
 use App\User;
@@ -41,6 +42,6 @@ class Ex extends Command
      */
     public function handle()
     {
-        broadcast(new TestEvent());
+        broadcast(new FlagTimeExpired(User::find(4)));
     }
 }

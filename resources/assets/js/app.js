@@ -152,6 +152,13 @@ const app = new Vue({
 import moment from 'moment';
 
 window.moment = moment;
+
+if(window.auth_user){
+    window.Echo.private(`App.User.${auth_user.id}`)
+        .listen('FlagTimeExpired', (e) => {
+        });
+}
+
 // import firebase from 'firebase/app';
 //
 // require('firebase/messaging');

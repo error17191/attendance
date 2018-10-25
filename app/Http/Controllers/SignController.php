@@ -29,8 +29,6 @@ class SignController extends Controller
     {
         //TODO: refactor this action
 
-//        $admin = User::where('username','admin')->first();
-//        $admin->notify(new WorkStart(Auth::user()));
 
         /** @var \App\User $user */
         $user = auth()->user();
