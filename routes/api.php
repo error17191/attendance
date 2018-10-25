@@ -50,8 +50,11 @@ Route::get('tasks','SearchTaskController@index')
 Route::post('flag/start','FlagsController@startFlag');
 Route::post('flag/end','FlagsController@endFlag');
 
-Route::get('tasks','SearchTasksController@index')
+Route::get('tasks','TasksController@index')
     ->name('tasks.index');
+
+Route::get('tasks/search','TasksController@search')
+    ->name('tasks.search');
 
 Route::post('machine/request','UserMachineController@requestWorkMachine');
 Route::post('machine/accept','UserMachineController@acceptWorkMachine');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Project;
+use App\Task;
 use App\WorkTime;
 use Carbon\Carbon;
 use App\Utilities\WorKTime as UW;
@@ -60,6 +61,7 @@ class StatsController extends Controller
                 'partitions' => $todayWorkTimePartitions,
                 'task' => optional($lastWorkTime)->task,
                 'project' => optional($lastWorkTime)->project,
+                'project_tasks' => optional($lastWorkTime)->project ? Task::where('user_id',auth()->id())->where('project_id', $lastWorkTime->project->id)->get() : [],
             ],
             'month_report' => [
                 'actual' => [

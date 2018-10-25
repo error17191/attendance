@@ -20,9 +20,10 @@
                                     ></multiselect>
                                     <multiselect tag-placeholder="Task you are working on"
                                                  placeholder="Task you are working on"
+                                                 :disabled="project == null"
                                                  @tag="addTask"
                                                  label="content"
-                                                 @search-change="getTasks"
+                                                 @search-change="filterTasks"
                                                  v-model="task"
                                                  :options="tasks"
                                                  :taggable="true"
@@ -31,7 +32,11 @@
                                                  :internal-search="false"
                                                  :loading="loadingSearch"
                                                  :multiple="false"
-                                    ></multiselect>
+                                    >
+                                        <template slot="option" slot-scope="props">
+                                            <span v-html="props.option.content ? mark(props.option.content) : props.search ">{props}</span>
+                                        </template>
+                                    </multiselect>
                                     <button v-if="status == 'on'"
                                             @click="stopWork()"
                                             class="btn btn-lg btn-block btn-danger"
@@ -114,10 +119,10 @@
                             Start and stop only from Desktop
                         </div>
                     </div>
-                    </div>
                 </div>
             </div>
         </div>
+    </div>
 </template>
 
 <script>
@@ -131,7 +136,9 @@
                 signs: null,
                 monthStats: null,
                 task: null,
+                projectTasks: [],
                 tasks: [],
+                taskQuery: '',
                 project: null,
                 projects: [],
                 loadingSearch: false,
@@ -143,7 +150,7 @@
         mounted() {
             this.getStats();
         },
-        created(){
+        created() {
             this.checkIfUserCanWorkAnyWhere();
         },
         filters: {
@@ -171,6 +178,7 @@
                     this.task = this.workTime.task;
                     this.projects = response.data.projects;
                     this.project = this.workTime.project;
+                    this.tasks = this.projectTasks = this.workTime.project_tasks;
                     this.signs = response.data.workTimeSigns;
                     this.monthStats = response.data.month_report;
                     this.flags = response.data.flags;
@@ -314,28 +322,19 @@
                     this.startCounterDown(this.monthStats.diff.partitions);
                 }
             },
-            getTasks(query) {
-                if(!query){
-                    this.tasks = [];
-                    return;
-                }
-                let url = '/tasks?q=' + query;
-                this.loadingSearch = true;
-                makeRequest({
-                    method: 'get',
-                    url: url
-                }).then((response) => {
-                    this.tasks = response.data.tasks;
-                    this.loadingSearch = false;
+            filterTasks(query) {
+                this.taskQuery = query;
+                this.tasks = this.projectTasks.filter((task) => {
+                    return task.content.includes(query);
                 });
             },
             addTask(tag) {
-                if(this.status == 'on'){
+                if (this.status == 'on') {
                     this.stopWork().then(() => {
                         this.task = {content: tag};
                         this.startWork();
                     });
-                }else{
+                } else {
                     this.task = {content: tag};
                 }
             },
@@ -356,7 +355,27 @@
             },
 
             checkIfUserCanWorkAnyWhere() {
-                this.canWorkAnywhere=auth_user.work_anywhere;
+                this.canWorkAnywhere = auth_user.work_anywhere;
+            },
+            updateProjectTasks() {
+                makeRequest({
+                    method: "GET",
+                    url: '/tasks?project=' + this.project.id
+                }).then(response => {
+                    this.projectTasks = response.data.tasks;
+                    this.tasks = response.data.tasks;
+                });
+            },
+            mark(content){
+                if(!this.taskQuery || !content){
+                    return content;
+                }
+                let startpos = content.indexOf(this.taskQuery);
+                let beforeMark = content.substr(0,startpos);
+                let afterMark = content.substr(startpos + this.taskQuery.length);
+                let toMark = content.substr(startpos, this.taskQuery.length);
+
+                return `${beforeMark}<span class="text-warning">${toMark}</span>${afterMark}`;
             }
         },
         watch: {
@@ -367,20 +386,20 @@
                     this.monthStats.diff.type = 'more';
                 }
             },
-            project: function(project,prevProject) {
-                if(!this.initialized){
+            project: function (project, prevProject) {
+                if (!this.initialized) {
                     this.initialized = true;
                     return;
                 }
-                if(project.id == prevProject.id){
+                if (project.id == prevProject.id) {
                     return;
                 }
-                if(this.status == 'on'){
-                    this.stopWork().then(() => {
-                        this.task = null;
-                    });
-                }else{
+                if (this.status == 'on') {
+                    this.stopWork();
                     this.task = null;
+                    this.tasks = [];
+                    this.projectTasks = [];
+                    this.updateProjectTasks();
                 }
             }
         }

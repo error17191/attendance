@@ -189,6 +189,7 @@ class WorKTime
             $newTask = new Task();
             $newTask->content = $task['content'];
             $newTask->project_id = $project_id;
+            $newTask->user_id = $id;
             $newTask->save();
             $workTime->task_id = $newTask->id;
         }
