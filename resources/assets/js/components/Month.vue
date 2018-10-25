@@ -255,7 +255,33 @@
                         </div>
                     </b-tab>
                     <b-tab no-body title="Charts">
-                        <chart></chart>
+                        <div class="card">
+                            <div class="card col-md-6">
+                                <div class="card-header text-center">
+                                    Regular Time
+                                </div>
+                                <div class="card-body">
+                                    <pie-chart :data="getRegularTimeChartData()"></pie-chart>
+                                </div>
+                            </div>
+                            <div class="card col-md-6">
+                                <div class="card-header text-center">
+                                    Flags
+                                </div>
+                                <div class="card-body">
+                                    <bar-chart :data="getFlagsChartData()"></bar-chart>
+                                </div>
+                            </div>
+                            <div class="card col-md-6">
+                                <div class="card-header text-center">
+                                    Work Efficiency
+                                </div>
+                                <div class="card-body">
+                                    <pie-chart :data="getWorkEfficiencyChartData()"></pie-chart>
+                                </div>
+                            </div>
+
+                        </div>
                     </b-tab>
                 </b-tabs>
             </b-card>
@@ -266,14 +292,16 @@
 <script>
     import UserSearch from './UserSearch';
     import Calendar from './Calendar';
-    import Chart from './Chart';
+    import BarChart from './BarChart';
+    import PieChart from './PieChart';
 
     export default {
         name: "Month",
         components: {
             UserSearch,
             Calendar,
-            Chart
+            BarChart,
+            PieChart
         },
         data(){
             return {
@@ -356,13 +384,69 @@
             partitionSeconds(seconds){
                 return partitionSeconds(seconds);
             },
-            getDays(daysArray){
+            getDays(datesArray){
                 let days = [];
-                for(let i in daysArray){
-                    days.push(daysArray[i].split('-')[2]);
+                for(let i in datesArray){
+                    days.push(datesArray[i].split('-')[2]);
                 }
                 return days;
+            },
+            getRegularTimeChartData(){
+                return {
+                    labels: ['on time','off time'],
+                    datasets: [
+                        {
+                            backgroundColor: [
+                                '#00D8FF',
+                                '#DD1B16'
+                            ],
+                            data: [
+                                this.statistics.regularTime.all - this.statistics.regularTime.offTimes,
+                                this.statistics.regularTime.offTimes
+                            ]
+                        }
+                    ]
+                };
+            },
+            getFlagsChartData(){
+                let labels = [];
+                let data = [];
+                for(let flag in this.statistics.flags){
+                    if(flag == 'total'){
+                        continue;
+                    }
+                    labels.push(flag);
+                    data.push(partitionSeconds(this.statistics.flags[flag]).hours);
+                }
+                return {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Flags',
+                            backgroundColor: '#f87979',
+                            data: data
+                        }
+                    ]
+                };
+            },
+            getWorkEfficiencyChartData(){
+                return {
+                    labels: ['wasted time','real work time'],
+                    datasets: [
+                        {
+                            backgroundColor: [
+                                '#DD1B16',
+                                '#00D8FF'
+                            ],
+                            data: [
+                                partitionSeconds(this.statistics.workEfficiency.attendedTime -  this.statistics.workEfficiency.actualWork).hours,
+                                partitionSeconds(this.statistics.workEfficiency.actualWork).hours
+                            ]
+                        }
+                    ]
+                };
             }
+
         }
     }
 </script>
