@@ -135,15 +135,7 @@
         },
         filters: {
             capitalize: function (value) {
-                if (!value) {
-                    return '';
-                }
-                value = value.toString();
-                let values = value.split('_');
-                for (let i in values) {
-                    values[i] = values[i].charAt(0).toUpperCase() + values[i].slice(1);
-                }
-                return values.join(' ');
+               return capitalize(value);
             }
         },
         methods: {

@@ -111,7 +111,7 @@
                                     </thead>
                                     <tbody>
                                         <tr v-for="value,name in statistics.status">
-                                            <td>{{name}}</td>
+                                            <td>{{name | capitalize}}</td>
                                             <td>
                                                 {{partitionSeconds(value).hours}}
                                             </td>
@@ -144,7 +144,7 @@
                                     </thead>
                                     <tbody>
                                         <tr v-for="value,name in statistics.flags">
-                                            <td>{{name}}</td>
+                                            <td>{{name | capitalize}}</td>
                                             <td>
                                                 {{partitionSeconds(value).hours}}
                                             </td>
@@ -155,37 +155,153 @@
                                                 {{partitionSeconds(value).seconds}}
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>to</td>
-                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </b-tab>
                     <b-tab no-body title="Absence">
+                        <div class="card">
+                            <div class="card-header">
+                                Month absence
+                            </div>
+                            <div class="card-body">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <span>Absence In Work Days</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <calendar class="m-2" :year="form.year" :month="month" :days="getDays(statistics.absence.workDaysAbsence)"></calendar>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <span>Attending In Vacations</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <calendar class="m-2" :year="form.year" :month="month" :days="getDays(statistics.absence.vacationsAttended)"></calendar>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                     </b-tab>
                     <b-tab no-body title="Regular Time">
-
+                        <div class="card">
+                            <div class="card-header">
+                                Month Work At Regular Time
+                            </div>
+                            <div class="card-body">
+                                <div class="card">
+                                    <div class="card-header">
+                                        Days Of Work Off The Regular Time
+                                    </div>
+                                    <div class="card-body">
+                                        <calendar :year="form.year" :month="month" :days="getDays(statistics.regularTime.offDays)"></calendar>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                {{user.name}} attended {{statistics.regularTime.percentage}} off the regular time
+                            </div>
+                        </div>
                     </b-tab>
                     <b-tab no-body title="Work Efficiency">
+                        <div class="card">
+                            <div class="card-header">
+                                Month Work Efficiency
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-responsive-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>hours</th>
+                                            <th>minuets</th>
+                                            <th>seconds</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Whole Time At Work</td>
+                                            <td>
+                                                {{partitionSeconds(statistics.workEfficiency.attendedTime).hours}}
+                                            </td>
+                                            <td>
+                                                {{partitionSeconds(statistics.workEfficiency.attendedTime).minutes}}
+                                            </td>
+                                            <td>
+                                                {{partitionSeconds(statistics.workEfficiency.attendedTime).seconds}}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Actual Worked Time</td>
+                                            <td>
+                                                {{partitionSeconds(statistics.workEfficiency.actualWork).hours}}
+                                            </td>
+                                            <td>
+                                                {{partitionSeconds(statistics.workEfficiency.actualWork).minutes}}
+                                            </td>
+                                            <td>
+                                                {{partitionSeconds(statistics.workEfficiency.actualWork).seconds}}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="card-footer">
+                                {{user.name}} work efficiency is {{statistics.workEfficiency.percentage}}
+                            </div>
+                        </div>
+                    </b-tab>
+                    <b-tab no-body title="Charts">
+                        <div class="card">
+                            <div class="card col-md-6">
+                                <div class="card-header text-center">
+                                    Regular Time
+                                </div>
+                                <div class="card-body">
+                                    <pie-chart :data="getRegularTimeChartData()"></pie-chart>
+                                </div>
+                            </div>
+                            <div class="card col-md-6">
+                                <div class="card-header text-center">
+                                    Flags
+                                </div>
+                                <div class="card-body">
+                                    <bar-chart :data="getFlagsChartData()"></bar-chart>
+                                </div>
+                            </div>
+                            <div class="card col-md-6">
+                                <div class="card-header text-center">
+                                    Work Efficiency
+                                </div>
+                                <div class="card-body">
+                                    <pie-chart :data="getWorkEfficiencyChartData()"></pie-chart>
+                                </div>
+                            </div>
 
+                        </div>
                     </b-tab>
                 </b-tabs>
             </b-card>
-
         </div>
     </div>
 </template>
 
 <script>
     import UserSearch from './UserSearch';
+    import Calendar from './Calendar';
+    import BarChart from './BarChart';
+    import PieChart from './PieChart';
 
     export default {
         name: "Month",
         components: {
-            UserSearch
+            UserSearch,
+            Calendar,
+            BarChart,
+            PieChart
         },
         data(){
             return {
@@ -216,6 +332,20 @@
                 user: null,
                 formReady: false,
                 showData: 'not ready'
+            }
+        },
+        computed: {
+            month: function () {
+                for(let i in this.months){
+                    if(this.months[i].value === this.form.month){
+                        return {name: this.months[i].text,number: this.months[i].value -1};
+                    }
+                }
+            }
+        },
+        filters: {
+            capitalize: function (value) {
+                return capitalize(value);
             }
         },
         mounted(){
@@ -253,7 +383,70 @@
             },
             partitionSeconds(seconds){
                 return partitionSeconds(seconds);
+            },
+            getDays(datesArray){
+                let days = [];
+                for(let i in datesArray){
+                    days.push(datesArray[i].split('-')[2]);
+                }
+                return days;
+            },
+            getRegularTimeChartData(){
+                return {
+                    labels: ['on time','off time'],
+                    datasets: [
+                        {
+                            backgroundColor: [
+                                '#00D8FF',
+                                '#DD1B16'
+                            ],
+                            data: [
+                                this.statistics.regularTime.all - this.statistics.regularTime.offTimes,
+                                this.statistics.regularTime.offTimes
+                            ]
+                        }
+                    ]
+                };
+            },
+            getFlagsChartData(){
+                let labels = [];
+                let data = [];
+                for(let flag in this.statistics.flags){
+                    if(flag == 'total'){
+                        continue;
+                    }
+                    labels.push(flag);
+                    data.push(partitionSeconds(this.statistics.flags[flag]).hours);
+                }
+                return {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Flags',
+                            backgroundColor: '#f87979',
+                            data: data
+                        }
+                    ]
+                };
+            },
+            getWorkEfficiencyChartData(){
+                return {
+                    labels: ['wasted time','real work time'],
+                    datasets: [
+                        {
+                            backgroundColor: [
+                                '#DD1B16',
+                                '#00D8FF'
+                            ],
+                            data: [
+                                partitionSeconds(this.statistics.workEfficiency.attendedTime -  this.statistics.workEfficiency.actualWork).hours,
+                                partitionSeconds(this.statistics.workEfficiency.actualWork).hours
+                            ]
+                        }
+                    ]
+                };
             }
+
         }
     }
 </script>
