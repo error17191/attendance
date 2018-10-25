@@ -62,7 +62,7 @@ class SeedDummyWork extends Command
             $task->save();
 
             $workTimes = [];
-            for ($i = 0; $i <= $days; $i++) {
+            for ($i = 0; $i < $days; $i++) {
                 $day = $firstDayOfMonth->copy()->addDays($i);
                 $startedAt = $day->copy()->setTime(10,0);
                 $stoppedAt = $day->copy()->setTime(18,0);
