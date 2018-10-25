@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\StopUserAfterFlagExpires;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -64,14 +65,19 @@ class FlagsController extends Controller
         }
 
         $type = $request->type;
-
-        if(Flag::hasTimeLimit($type) && Flag::timeLimit($type) <= Flag::daySeconds($id,$type,now()->toDateString())){
+        $flagDaySeconds = Flag::daySeconds($id,$type,now()->toDateString());
+        $flagHasTimeLimit = Flag::hasTimeLimit($type);
+        $flagTimeLimit = Flag::timeLimit($type);
+        if($flagHasTimeLimit && $flagTimeLimit <= $flagDaySeconds){
             return response()->json([
                 'status' => 'flag_passed_time_limit',
                 'message' => 'user has used the limit of this flag'
             ],422);
         }
-
+        if($flagHasTimeLimit){
+            $seconds = $flagTimeLimit - $flagDaySeconds;
+            StopUserAfterFlagExpires::dispatch($user->id)->delay(now()->addSeconds($seconds));
+        }
         $workTimeId = WorKTime::active($id,now()->toDateString())->id;
         $flag = Flag::start($id,$type,$workTimeId);
         $flag->save();

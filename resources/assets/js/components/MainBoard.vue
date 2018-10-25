@@ -123,6 +123,12 @@
         },
         mounted() {
             this.getStats();
+
+            window.Echo.private(`App.User.${auth_user.id}`)
+                .listen('FlagTimeExpired', (e) => {
+                    this.getStats();
+                });
+
         },
         created(){
             this.checkIfUserCanWorkAnyWhere();

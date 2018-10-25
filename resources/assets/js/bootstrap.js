@@ -49,12 +49,11 @@ window.Echo = new Echo({
 });
 
 
-
-window.Echo.private('Admin')
-    .listen('AdminChannel', (e) => {
-        console.log(e.data);
-        alert(e.data.data)
-    });
+// window.Echo.private('Admin')
+//     .listen('AdminChannel', (e) => {
+//         console.log(e.data);
+//         alert(e.data.data)
+//     });
 
 
 
