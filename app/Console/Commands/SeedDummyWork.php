@@ -49,16 +49,18 @@ class SeedDummyWork extends Command
 
         $dummyProject = Project::where('title', 'Not Listed')->first();
 
-        $task = new Task();
-        $task->content = 'Dummy Task';
-        $task->project_id = $dummyProject->id;
-        $task->save();
 
         $firstDayOfMonth = now()->firstOfMonth();
         $days = now()->diffInDays($firstDayOfMonth);
 
         $users = User::all();
         foreach ($users as $user) {
+            $task = new Task();
+            $task->content = 'Dummy Task';
+            $task->project_id = $dummyProject->id;
+            $task->user_id = $user->id;
+            $task->save();
+
             $workTimes = [];
             for ($i = 0; $i <= $days; $i++) {
                 $day = $firstDayOfMonth->copy()->addDays($i);
