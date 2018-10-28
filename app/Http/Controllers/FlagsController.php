@@ -138,7 +138,7 @@ class FlagsController extends Controller
 
             if(now()->diffInDays($flag->started_at) <= 1){
                 $start = today();
-                $secondWorkTime = WorKTime::start($id,$workTime->status,$start);
+                $secondWorkTime = WorKTime::start($id,$workTime->task,$workTime->task->project_id,$start);
                 $secondWorkTime->save();
             }
 
@@ -162,7 +162,7 @@ class FlagsController extends Controller
             $workTime = WorKTime::stop($workTime,now(),$seconds);
             $workTime->save();
 
-            $secondWorkTime = WorKTime::start($id,$workTime->status);
+            $secondWorkTime = WorKTime::start($id,$workTime->task,$workTime->task->project_id);
             $secondWorkTime->save();
         }
 

@@ -62,7 +62,7 @@ class SignController extends Controller
         }
 
         //start new work time
-        $workTime = WorKTime::start($id,$request->task,$request->project_id);
+        $workTime = WorKTime::start($id, json_decode(json_encode($request->task)),$request->project_id);
         $workTime->save();
 
         $user->status = 'on';
@@ -123,7 +123,7 @@ class SignController extends Controller
             $workTime->save();
 
             if(now()->diffInDays($workTime->started_work_at) <= 1){
-                $secondWorkTime = WorKTime::start($id,$workTime->task ,today());
+                $secondWorkTime = WorKTime::start($id,$workTime->task , $workTime->task->project_id ,today());
                 $secondWorkTime = WorKTime::stop($secondWorkTime);
                 $secondWorkTime->save();
             }

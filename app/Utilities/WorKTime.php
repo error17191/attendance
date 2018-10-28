@@ -184,10 +184,10 @@ class WorKTime
         $workTime->user_id = $id;
         $workTime->project_id = $project_id;
         if(isset($task['id'])){
-            $workTime->task_id = $task['id'];
+            $workTime->task_id = $task->id;
         }else{
             $newTask = new Task();
-            $newTask->content = $task['content'];
+            $newTask->content = $task->content;
             $newTask->project_id = $project_id;
             $newTask->user_id = $id;
             $newTask->save();
