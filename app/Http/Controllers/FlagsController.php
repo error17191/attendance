@@ -67,7 +67,9 @@ class FlagsController extends Controller
         $type = $request->type;
         $flagDaySeconds = Flag::daySeconds($id,$type,now()->toDateString());
         $flagHasTimeLimit = Flag::hasTimeLimit($type);
-        $flagTimeLimit = Flag::timeLimit($type);
+        if($flagHasTimeLimit){
+            $flagTimeLimit = Flag::timeLimit($type);
+        }
         if($flagHasTimeLimit && $flagTimeLimit <= $flagDaySeconds){
             return response()->json([
                 'status' => 'flag_passed_time_limit',

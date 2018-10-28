@@ -46,10 +46,23 @@ class SeedUsers extends Command
         ];
         $mobile = '0122159011';
         $users = [];
-        $count = 0;
+        $users[] = [
+            'id' => 1,
+            'name' => 'DevOps',
+            'username' => 'dev',
+            'mobile' => '00000000',
+            'email' => 'dev@ops.dev',
+            'is_admin' => true,
+            'password' => Hash::make('123456'),
+            'tracked' => 0,
+            'work_anywhere' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ];
+        $count = 2;
         foreach ($names as $name) {
             $users[] = [
-                'id' => $count + 1,
+                'id' => $count,
                 'name' => $name,
                 'username' => strtolower($name),
                 'mobile' => $mobile . $count,
@@ -65,7 +78,7 @@ class SeedUsers extends Command
         }
 
         $users[] = [
-            'id' => 11,
+            'id' => 12,
             'name' => 'ADMIN',
             'username' => 'admin',
             'mobile' => '000000000',

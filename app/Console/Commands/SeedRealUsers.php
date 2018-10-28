@@ -45,6 +45,20 @@ class SeedRealUsers extends Command
         Schema::enableForeignKeyConstraints();
         DB::table('users')->insert([
             [
+                'id' => 1,
+                'name' => 'DevOps',
+                'username' => 'dev',
+                'mobile' => '00000000',
+                'email' => 'dev@ops.dev',
+                'is_admin' => true,
+                'password' => Hash::make('123456'),
+                'tracked' => 0,
+                'work_anywhere' => 1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'id' => 2,
                 'name' => 'Mohamed Ahmed',
                 'username' => 'm.ahmed',
                 'mobile' => '01220179432',
@@ -57,6 +71,7 @@ class SeedRealUsers extends Command
                 'updated_at' => now()
             ],
             [
+                'id' => 3,
                 'name' => 'Mohamed Ibrahim',
                 'username' => 'm.ibrahim',
                 'mobile' => '01015287494',
@@ -69,6 +84,7 @@ class SeedRealUsers extends Command
                 'updated_at' => now()
             ],
             [
+                'id' => 4,
                 'name' => 'Mahmoud Ahmed',
                 'username' => 'mahmoud',
                 'mobile' => '01278734721',
@@ -81,6 +97,7 @@ class SeedRealUsers extends Command
                 'updated_at' => now()
             ],
             [
+                'id' => 5,
                 'name' => 'Ibrahim Ahmed',
                 'username' => 'ibrahim',
                 'mobile' => '01221590118',
@@ -93,6 +110,7 @@ class SeedRealUsers extends Command
                 'updated_at' => now()
             ],
             [
+                'id' => 6,
                 'name' => 'Karim Abd Elmegeed',
                 'username' => 'karim',
                 'mobile' => '01097378257',
@@ -105,6 +123,7 @@ class SeedRealUsers extends Command
                 'updated_at' => now()
             ],
             [
+                'id' => 7,
                 'name' => 'Basant Gamal',
                 'username' => 'basant',
                 'mobile' => '01097470653',

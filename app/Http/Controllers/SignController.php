@@ -123,7 +123,7 @@ class SignController extends Controller
             $workTime->save();
 
             if(now()->diffInDays($workTime->started_work_at) <= 1){
-                $secondWorkTime = WorKTime::start($id,$workTime->status,today());
+                $secondWorkTime = WorKTime::start($id,$workTime->task ,today());
                 $secondWorkTime = WorKTime::stop($secondWorkTime);
                 $secondWorkTime->save();
             }

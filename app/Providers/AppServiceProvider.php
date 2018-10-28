@@ -32,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton('settings',function (){
             return new Settings();
         });
+        $this->app->make('settings');
     }
 
     /**

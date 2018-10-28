@@ -4,6 +4,7 @@ namespace App\Http;
 
 use App\Http\Middleware\CanWorkAnywhere;
 use App\Http\Middleware\IsAdmin;
+use App\Http\Middleware\IsDevOps;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -64,5 +65,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'is_admin' => IsAdmin::class,
         'is_tracked' => CanWorkAnywhere::class,
+        'is_devops' => IsDevOps::class,
     ];
 }
