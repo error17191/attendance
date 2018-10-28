@@ -30,7 +30,7 @@ class SignController extends Controller
         //TODO: refactor this action
 
         $admin = User::where('username','admin')->first();
-        $admin->notify(new WorkStart(Auth::user()));
+//        $admin->notify(new WorkStart(Auth::user()));
 
         /** @var \App\User $user */
         $user = auth()->user();
@@ -84,7 +84,7 @@ class SignController extends Controller
         //TODO: refactor this action
 
         $admin =User::where('username','admin')->first();
-        $admin->notify(new WorkStop(Auth::user()));
+//        $admin->notify(new WorkStop(Auth::user()));
 
         /** @var \App\User $user */
         $user = auth()->user();
