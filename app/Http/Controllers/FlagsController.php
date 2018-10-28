@@ -6,7 +6,7 @@ use App\Jobs\StopUserAfterFlagExpires;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use App\Utilities\WorKTime;
 use App\Utilities\Flag;
 
@@ -87,7 +87,7 @@ class FlagsController extends Controller
 
 
         return response()->json([
-            'status' => 'flag_started',
+            'status' => 'success',
             'message' => 'user started using ' . $type . ' flag'
         ]);
     }
@@ -150,6 +150,9 @@ class FlagsController extends Controller
         }
 
         $flag = Flag::stop($flag);
+        $flag->save();
+        $user->flag = 'off';
+        $user->save();
 
         if(Flag::hasTimeLimit($flag->type) && Flag::passedTimeLimit($id,$type,$flag->day,$flag->stopped_at)){
             $workTime = $flag->workTime;
@@ -160,13 +163,10 @@ class FlagsController extends Controller
             $secondWorkTime = WorKTime::start($id,$workTime->status);
             $secondWorkTime->save();
         }
-        $flag->save();
 
-        $user->flag = 'off';
-        $user->save();
 
         return response()->json([
-            'status' => 'flag_stopped',
+            'status' => 'success',
             'message' => 'user stopped using ' . $type  . ' flag'
         ]);
 

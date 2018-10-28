@@ -34,6 +34,7 @@ class Flag
     public static function current(int $id):FlagModel
     {
         return FlagModel::where('user_id',$id)
+            ->whereNull('stopped_at')
             ->orderBy('started_at','desc')
             ->first();
     }

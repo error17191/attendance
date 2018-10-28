@@ -39,12 +39,13 @@
                                     </multiselect>
                                     <button v-if="status == 'on'"
                                             @click="stopWork()"
+                                            :disabled="stopping"
                                             class="btn btn-lg btn-block btn-danger"
                                     >Stop Work
                                     </button>
                                     <button v-else
                                             @click="startWork()"
-                                            :disabled="task == null || project == null"
+                                            :disabled="starting || task == null || project == null"
                                             class="btn btn-lg btn-block btn-success"
                                     >Start Work
                                     </button>
@@ -55,9 +56,9 @@
                             <div class="row justify-content-center" v-if="status === 'on'">
                                 <button v-for="flag in flags"
                                         class="btn mr-2 mb-2"
-                                        :class="{'btn-default': !flag.inUse,'btn-dark': flag.inUse}"
+                                        :class="{'btn-default': !flagInUse,'btn-dark': flagInUse == flag.type}"
                                         @click.prevent="toggleFlag(flag.type)"
-                                        :disabled="(flagInUse != '' && flag.type != flagInUse)|| flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit'"
+                                        :disabled="togglingFlag || (flagInUse != null && flag.type != flagInUse)|| flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit'"
                                 >
                                     {{flag.type | capitalize}}
                                 </button>
@@ -142,9 +143,12 @@
                 project: null,
                 projects: [],
                 loadingSearch: false,
-                flagInUse: '',
+                flagInUse: null,
                 canWorkAnywhere: true,
                 initialized: false,
+                starting: false,
+                stopping: false,
+                togglingFlag: false,
             }
         },
         mounted() {
@@ -180,7 +184,7 @@
                     this.signs = response.data.workTimeSigns;
                     this.monthStats = response.data.month_report;
                     this.flags = response.data.flags;
-                    this.flagInUse = '';
+                    this.flagInUse = null;
                     for (let i in this.flags) {
                         if (this.flags[i].inUse === true) {
                             this.flagInUse = this.flags[i].type;
@@ -196,6 +200,7 @@
                 });
             },
             startWork() {
+                this.starting = true;
                 let data = {task: this.task, project_id: this.project.id};
                 return makeRequest({
                     method: 'post',
@@ -207,60 +212,55 @@
                     this.startCounter(this.workTime.partitions);
                     this.startCounter(this.monthStats.actual.partitions);
                     this.startDiffCounter();
+                    this.starting = false;
                 });
             },
             stopWork() {
+                this.stopping = true;
                 return makeRequest({
                     method: 'post',
                     url: '/stop_work'
                 }).then((response) => {
-                    if (this.flagInUse !== '') {
+                    if (this.flagInUse !== null) {
                         this.getStats();
                     }
                     this.status = 'off';
-                    this.flagInUse = '';
+                    this.flagInUse = null;
                     this.updateSign(response.data.workTimeSign);
                     this.workTime = response.data.today_time;
                     this.stopCounter(this.workTime.partitions.counterInterval);
                     this.stopCounter(this.monthStats.actual.partitions.counterInterval);
                     this.stopCounter(this.monthStats.diff.partitions.counterInterval);
+                    this.stopping = false;
                 });
             },
             toggleFlag(type) {
-                if (this.flagInUse !== '') {
+                this.togglingFlag = true;
+                if (this.flagInUse) {
                     this.endFlag();
-                    if (this.flagInUse === type) {
-                        this.flagInUse = '';
-                        return;
-                    }
+                }else{
+                    this.startFlag(type);
                 }
-                this.flagInUse = type;
-                this.startFlag();
             },
-            startFlag() {
-                let data = {type: this.flagInUse};
-                makeRequest({
+            startFlag(type) {
+                let data = {type: type};
+                return makeRequest({
                     method: 'post',
                     url: '/flag/start',
                     data: data
                 }).then((response) => {
-                    this.updateFlags();
-                    console.log(response.data.message);
+                    this.flagInUse = type;
+                    this.togglingFlag = false;
                 });
             },
             endFlag() {
-                makeRequest({
+                return makeRequest({
                     method: 'post',
                     url: '/flag/end'
                 }).then((response) => {
-                    this.updateFlags();
-                    console.log(response.data.message);
+                    this.flagInUse = null;
+                    this.togglingFlag = false;
                 });
-            },
-            updateFlags() {
-                for (let i in this.flags) {
-                    this.flags[i].inUse = this.flagInUse === this.flags[i].type;
-                }
             },
             timePartitionsFormatted(partitions) {
                 return this.padWithZero(partitions.hours) + ":" +
