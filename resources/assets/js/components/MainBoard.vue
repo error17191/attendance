@@ -330,10 +330,14 @@
                 if (this.status == 'on') {
                     this.stopWork().then(() => {
                         this.task = {content: tag};
+                        this.projectTasks.push({content: tag});
+                        this.tasks.push({content: tag});
                         this.startWork();
                     });
                 } else {
                     this.task = {content: tag};
+                    this.projectTasks.push({content: tag});
+                    this.tasks.push({content: tag});
                 }
             },
             getSignIndex(startTime) {
