@@ -183,7 +183,7 @@ class WorKTime
         $workTime = new WorkTimeModel();
         $workTime->user_id = $id;
         $workTime->project_id = $project_id;
-        if(isset($task['id'])){
+        if(isset($task->id)){
             $workTime->task_id = $task->id;
         }else{
             $newTask = new Task();
