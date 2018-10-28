@@ -12,31 +12,10 @@
             </div>
             <div v-if="target == 'specific'">
                 <br>
-                <multiselect
-                    placeholder="Search for employees"
-                    @search-change="updateEmployees"
-                    :close-on-select="false"
-                    :searchable="true"
-                    :internal-search="false"
-                    :show-labels="false"
-                    track-by="id"
-                    :hide-selected="true"
-                    label="username"
-                    :loading="loadingSearch"
-                    :multiple="true"
-                    v-model="selectedEmployees"
-                    :options="employees"
-                >
-                    <template slot="option" slot-scope="props">
-                        <div>
-                            <h5>{{props.option.name}}</h5>
-                            <h6>{{props.option.email}}</h6>
-                            <h6>{{props.option.username}}</h6>
-                            <h6>{{props.option.mobile}}</h6>
-                        </div>
-                    </template>
-                </multiselect>
-
+                <user-search :multi="true"
+                             placeHolder="Select Employees"
+                             @selected="updateSelectedEmployees"
+                ></user-search>
             </div>
             <hr>
             <div class="form-check form-check-inline">
@@ -114,10 +93,12 @@
 <script>
     import flatPickr from 'vue-flatpickr-component';
     import 'flatpickr/dist/flatpickr.css';
+    import UserSearch from './UserSearch';
 
     export default {
         components: {
-            flatPickr
+            flatPickr,
+            UserSearch
         },
         data() {
             return {
@@ -133,9 +114,7 @@
                 highlightedVacations: [],
                 lastHighlighted: null,
                 selectAll: false,
-                employees: [],
                 selectedEmployees: [],
-                loadingSearch: false
             }
         },
         computed: {
@@ -301,16 +280,8 @@
                     this.dateConfig.disable.push(el.date);
                 });
             },
-            updateEmployees(query){
-                let url = '/users?q=' + query;
-                this.loadingSearch = true;
-                makeRequest({
-                    method: 'get',
-                    url: url
-                }).then((response)=>{
-                    this.loadingSearch = false;
-                    this.employees = response.data.users;
-                });
+            updateSelectedEmployees(employees){
+                this.selectedEmployees = employees;
             }
         },
         watch: {

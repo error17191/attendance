@@ -2,6 +2,7 @@
 
 namespace App\Utilities;
 
+use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
@@ -27,6 +28,50 @@ class Statistics
         $regularTime = static::monthRegularTime($id,$month,$year);
         $workEfficiency = static::monthWorkEfficiency($id,$month,$year);
         return compact('actualTime','idealTime','diffType','diff','status','flags','absence','regularTime','workEfficiency');
+    }
+
+    public static function dayReport(int $id,string $date)
+    {
+        $dayWorkTimes = static::dayData($id,'work_times',$date)->sortBy('started_work_at');
+        if($dayWorkTimes->count() <= 0){
+            $attended = false;
+            $weekend = static::isWeekend(new Carbon($date));
+            $vacation = static::isVacation($id,$date);
+            return compact('attended','weekend','vacation');
+        }
+        $attended = true;
+        $weekend = static::isWeekend(new Carbon($date));
+        $vacation = static::isVacation($id,$date);
+        $actualWork = $dayWorkTimes->sum('seconds');
+        $timeAtWork = (new Carbon($dayWorkTimes->first()->started_work_at))->diffInSeconds($dayWorkTimes->last()->stopped_work_at);
+        $workTimeLog = [];
+        foreach ($dayWorkTimes as $dayWorkTime) {
+            $workTimeLog[] = [
+                'start' => (new Carbon($dayWorkTime->started_work_at))->toTimeString(),
+                'stop' => (new Carbon($dayWorkTime->stopped_work_at))->toTimeString(),
+                'duration' => $dayWorkTime->seconds
+            ];
+        }
+        $flagsData = static::dayData($id,'flags',$date);
+        $flags = [];
+        $total = 0;
+        foreach ($flagsData as $flagsDatum) {
+            if(!isset($flags[$flagsDatum->type])){
+                $flags[$flagsDatum->type] = 0;
+            }
+            $flags[$flagsDatum->type] += $flagsDatum->seconds;
+            $total += $flagsDatum->seconds;
+        }
+        $flags['total'] = $total;
+        $regularTimeFrom = app('settings')->getRegularTime()['from'] * 60 * 60;
+        $regularTimeFrom = partition_seconds($regularTimeFrom);
+        $regularTimeTo = app('settings')->getRegularTime()['to'] * 60 * 60;
+        $regularTimeTo = partition_seconds($regularTimeTo);
+        $regularTime = (new Carbon($dayWorkTimes->first()->started_work_at)) >= (new Carbon($dayWorkTimes->first()->day))->hour($regularTimeFrom['hours'])->minute($regularTimeFrom['minutes']) &&
+            (new Carbon($dayWorkTimes->first()->started_work_at)) <= (new Carbon($dayWorkTimes->first()->day))->hour($regularTimeTo['hours'])->minute($regularTimeTo['minutes']);
+        $regularHours = $actualWork >= app('settings')->getRegularTime()['regularHours'] * 60 * 60;
+        $workEfficiency = round($actualWork / $timeAtWork * 100,2);
+        return compact('attended','weekend','vacation','actualWork','timeAtWork','workTimeLog','flags','workEfficiency','regularTime','regularHours');
     }
 
     public static function monthIdeal(int $id,int $month,int $year = 0):int
