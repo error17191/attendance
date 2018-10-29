@@ -19,7 +19,7 @@ class CreateFlagsTable extends Migration
             $table->unsignedInteger('work_time_id');
             $table->string('type');
             $table->string('day');
-            $table->timestamp('started_at');
+            $table->timestamp('started_at')->nullable();
             $table->timestamp('stopped_at')->nullable();
             $table->unsignedInteger('seconds')->default(0);
             $table->timestamps();

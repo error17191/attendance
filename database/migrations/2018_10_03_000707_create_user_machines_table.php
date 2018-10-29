@@ -17,7 +17,7 @@ class CreateUserMachinesTable extends Migration
             $table->string('machine_id');
             $table->integer('user_id')->index();
             $table->boolean('pending')->default(true);
-            $table->timestamp('created_at');
+            $table->timestamp('created_at')->nullable();
         });
     }
 

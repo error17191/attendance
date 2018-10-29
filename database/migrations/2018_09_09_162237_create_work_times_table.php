@@ -19,7 +19,7 @@ class CreateWorkTimesTable extends Migration
             $table->integer('task_id');
             $table->integer('project_id');
             $table->date('day');
-            $table->timestamp('started_work_at');
+            $table->timestamp('started_work_at')->nullable();
             $table->timestamp('stopped_work_at')->nullable();
             $table->integer('seconds')->default(0);
             $table->unsignedInteger('day_seconds')->default(0);
