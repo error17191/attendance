@@ -60,7 +60,9 @@ class SignController extends Controller
                 'errors' => $v->errors()->toArray()
             ],422);
         }
+        if(isset($task['id'])){
 
+        }
         //start new work time
         $workTime = WorKTime::start($id, json_decode(json_encode($request->task)),$request->project_id);
         $workTime->save();
@@ -70,6 +72,8 @@ class SignController extends Controller
 
         return response()->json([
             'workTimeSign' => WorKTime::sign($workTime),
+            // TODO: Try to eliminate this unnecessary additional query
+            'task_id' => $workTime->task->id,
             'today_time' => [
                 'seconds' => $workTime->day_seconds,
                 'partitions' => partition_seconds($workTime->day_seconds)

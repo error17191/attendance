@@ -9,7 +9,7 @@
                         <div class="card-body">
                             <div class="row justify-content-center">
                                 <div class="col-md-8">
-                                    <multiselect tag-placeholder="Project you are working on"
+                                    <multiselect  tag-placeholder="Project you are working on"
                                                  placeholder="Project you are working on"
                                                  label="title"
                                                  v-model="project"
@@ -17,9 +17,11 @@
                                                  :close-on-select="true"
                                                  :multiple="false"
                                                  :searchable="false"
+                                                 :trackBy="'id'"
                                     ></multiselect>
                                     <multiselect tag-placeholder="Task you are working on"
                                                  placeholder="Task you are working on"
+                                                 :value="task"
                                                  :disabled="project == null"
                                                  @tag="addTask"
                                                  label="content"
@@ -32,19 +34,20 @@
                                                  :internal-search="false"
                                                  :loading="loadingSearch"
                                                  :multiple="false"
+                                                 :trackBy="'content'"
                                     >
                                         <template slot="option" slot-scope="props">
                                             <span v-html="props.option.content ? mark(props.option.content) : props.search ">{props}</span>
                                         </template>
                                     </multiselect>
                                     <button v-if="status == 'on'"
-                                            @click="stopWork()"
+                                            @click="stopWork"
                                             :disabled="stopping"
                                             class="btn btn-lg btn-block btn-danger"
                                     >Stop Work
                                     </button>
                                     <button v-else
-                                            @click="startWork()"
+                                            @click="startWork"
                                             :disabled="starting || task == null || project == null"
                                             class="btn btn-lg btn-block btn-success"
                                     >Start Work
@@ -140,12 +143,13 @@
                 projectTasks: [],
                 tasks: [],
                 taskQuery: '',
-                project: null,
+                project: {title: 'hamada'},
                 projects: [],
                 loadingSearch: false,
                 flagInUse: null,
                 canWorkAnywhere: true,
-                initialized: false,
+                projectInitialized: false,
+                taskInitialized: false,
                 starting: false,
                 stopping: false,
                 togglingFlag: false,
@@ -212,6 +216,7 @@
                     this.startCounter(this.workTime.partitions);
                     this.startCounter(this.monthStats.actual.partitions);
                     this.startDiffCounter();
+                    this.addIdToTask(response.data.task_id);
                     this.starting = false;
                 });
             },
@@ -326,19 +331,12 @@
                     return task.content.includes(query);
                 });
             },
-            addTask(tag) {
-                if (this.status == 'on') {
-                    this.stopWork().then(() => {
-                        this.task = {content: tag};
-                        this.projectTasks.push({content: tag});
-                        this.tasks.push({content: tag});
-                        this.startWork();
-                    });
-                } else {
-                    this.task = {content: tag};
-                    this.projectTasks.push({content: tag});
-                    this.tasks.push({content: tag});
-                }
+            addTask(taskContent) {
+                this.task = {
+                    content: taskContent,
+                };
+                this.projectTasks.push(this.task);
+                this.tasks.push(this.task);
             },
             getSignIndex(startTime) {
                 for (let i in this.signs) {
@@ -378,6 +376,15 @@
                 let toMark = content.substr(startpos, this.taskQuery.length);
 
                 return `${beforeMark}<span class="text-warning">${toMark}</span>${afterMark}`;
+            },
+            addIdToTask(id){
+                this.projectTasks.forEach((task,index) => {
+                    if(task.content == this.task.content){
+                        this.projectTasks[index].id = id;
+                        this.tasks = this.projectTasks;
+                        return;
+                    }
+                });
             }
         },
         watch: {
@@ -389,19 +396,30 @@
                 }
             },
             project: function (project, prevProject) {
-                if (!this.initialized) {
-                    this.initialized = true;
-                    return;
-                }
-                if (project.id == prevProject.id) {
+                if (!this.projectInitialized) {
+                    this.projectInitialized = true;
                     return;
                 }
                 this.task = null;
                 this.tasks = [];
                 this.projectTasks = [];
-                this.updateProjectTasks();
-                if (this.status == 'on') {
+                if(project){
+                    this.updateProjectTasks();
+                }
+            },
+            task: function (task, prevTask) {
+                if (!this.taskInitialized) {
+                    this.taskInitialized = true;
+                    return;
+                }
+                if(!task && this.status == 'on'){
                     this.stopWork();
+                    return;
+                }
+                if (this.status == 'on') {
+                    this.stopWork().then(() => {
+                        this.startWork();
+                    });
                 }
             }
         }
