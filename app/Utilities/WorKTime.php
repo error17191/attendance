@@ -92,7 +92,7 @@ class WorKTime
             'started_at' => (new Carbon($workTime->started_work_at))->toTimeString(),
             'stopped_at' => $workTime->stopped_work_at != null ?
                 (new Carbon($workTime->stopped_work_at))->toTimeString() : null,
-            'status' => $workTime->status
+            'task' => $workTime->task
         ];
     }
 

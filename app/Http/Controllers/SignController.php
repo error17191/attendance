@@ -93,7 +93,7 @@ class SignController extends Controller
 
         //TODO: see if this check is necessary
         //check if the status is wrong
-        WorKTime::fixStatus($user);
+//        WorKTime::fixStatus($user);
 
         //validate if user is working
         if(!$user->isWorking()){
@@ -103,47 +103,47 @@ class SignController extends Controller
             ],422);
         }
 
-        if(WorKTime::noActive($id,now()->toDateString())){
-            $workTime = WorKTime::active($id,now()->toDateString(),true);
-            $stop = (new Carbon($workTime->day))->hour(23)->minute(59)->second(59);
-
-            //handle flags
-            if($user->isUsingFlag()){
-                $flag = Flag::current($id);
-                $flag = Flag::stop($flag,$stop);
-                if(Flag::hasTimeLimit($flag->type) && Flag::passedTimeLimit($id,$flag->type,$flag->day,$stop)){
-                    $seconds = (new Carbon($flag->started_at))->diffInSeconds($workTime->started_at) + $flag->seconds;
-                }
-                $flag->save();
-            }
-            if(empty($seconds)){
-                $seconds = 0;
-            }
-            $workTime = WorKTime::stop($workTime,$stop,$seconds);
-            $workTime->save();
-
-            if(now()->diffInDays($workTime->started_work_at) <= 1){
-                $secondWorkTime = WorKTime::start($id,$workTime->task , $workTime->task->project_id ,today());
-                $secondWorkTime = WorKTime::stop($secondWorkTime);
-                $secondWorkTime->save();
-            }
-
-            $user->flag = 'off';
-            $user->status = 'off';
-            $user->save();
-
-            return response()->json([
-                'workTimeSign' => !empty($secondWorkTime) ?
-                    WorKTime::sign($secondWorkTime) : WorKTime::sign($workTime),
-                'today_time' => [
-                    'seconds' => !empty($secondWorkTime) ?
-                        $secondWorkTime->day_seconds : $workTime->day_seconds,
-                    'partitions' => !empty($secondWorkTime) ?
-                        partition_seconds($secondWorkTime->day_seconds) :
-                        partition_seconds($workTime->day_seconds)
-                ]
-            ]);
-        }
+//        if(WorKTime::noActive($id,now()->toDateString())){
+//            $workTime = WorKTime::active($id,now()->toDateString(),true);
+//            $stop = (new Carbon($workTime->day))->hour(23)->minute(59)->second(59);
+//
+//            //handle flags
+//            if($user->isUsingFlag()){
+//                $flag = Flag::current($id);
+//                $flag = Flag::stop($flag,$stop);
+//                if(Flag::hasTimeLimit($flag->type) && Flag::passedTimeLimit($id,$flag->type,$flag->day,$stop)){
+//                    $seconds = (new Carbon($flag->started_at))->diffInSeconds($workTime->started_at) + $flag->seconds;
+//                }
+//                $flag->save();
+//            }
+//            if(empty($seconds)){
+//                $seconds = 0;
+//            }
+//            $workTime = WorKTime::stop($workTime,$stop,$seconds);
+//            $workTime->save();
+//
+//            if(now()->diffInDays($workTime->started_work_at) <= 1){
+//                $secondWorkTime = WorKTime::start($id,$workTime->task , $workTime->task->project_id ,today());
+//                $secondWorkTime = WorKTime::stop($secondWorkTime);
+//                $secondWorkTime->save();
+//            }
+//
+//            $user->flag = 'off';
+//            $user->status = 'off';
+//            $user->save();
+//
+//            return response()->json([
+//                'workTimeSign' => !empty($secondWorkTime) ?
+//                    WorKTime::sign($secondWorkTime) : WorKTime::sign($workTime),
+//                'today_time' => [
+//                    'seconds' => !empty($secondWorkTime) ?
+//                        $secondWorkTime->day_seconds : $workTime->day_seconds,
+//                    'partitions' => !empty($secondWorkTime) ?
+//                        partition_seconds($secondWorkTime->day_seconds) :
+//                        partition_seconds($workTime->day_seconds)
+//                ]
+//            ]);
+//        }
 
         $workTime = WorKTime::active($id,now()->toDateString());
 
