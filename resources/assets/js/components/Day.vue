@@ -127,7 +127,7 @@
                                 </thead>
                                 <tbody>
                                     <tr v-for="log,index in statistics.workTimeLog">
-                                        <td>{{index}}</td>
+                                        <td>{{index + 1}}</td>
                                         <td>{{log.start}}</td>
                                         <td>{{log.stop}}</td>
                                         <td>{{partitionSeconds(log.duration).hours | zeroPrefix}}:{{partitionSeconds(log.duration).minutes | zeroPrefix}}:{{partitionSeconds(log.duration).seconds | zeroPrefix}}</td>
@@ -136,7 +136,6 @@
                             </table>
                         </div>
                     </b-tab>
-
                 </b-tabs>
             </b-card>
         </div>
@@ -147,12 +146,14 @@
     import UserSearch from './UserSearch';
     import flatPickr from 'vue-flatpickr-component';
     import 'flatpickr/dist/flatpickr.css';
+    import PieChart from './PieChart';
 
     export default {
         name: "Day",
         components: {
             UserSearch,
-            flatPickr
+            flatPickr,
+            PieChart
         },
         data(){
             return {

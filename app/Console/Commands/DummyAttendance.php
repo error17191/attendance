@@ -59,11 +59,11 @@ class DummyAttendance extends Command
 
     public function createAttendance(int $id,int $month)
     {
-        $day = (new Carbon())->month($month)->firstOfMonth();
+        $day = (new Carbon())->day(1)->month($month)->firstOfMonth();
         $monthLength = $day->diffInDays($day->copy()->lastOfMonth()) + 1;
         $v = 0;
         for($i = 0; $i < $monthLength; $i++){
-            $day = (new Carbon())->month($month)->firstOfMonth()->addDays($i);
+            $day = (new Carbon())->day($i + 1)->month($month);
             if(Statistics::isWeekend($day) || Statistics::isVacation($id,$day->toDateString())){
                 if(rand(0,1) && $v < 3){
                     $this->createDayAttendance($id,$day);

@@ -38,6 +38,6 @@ class TestFunctions extends Command
      */
     public function handle()
     {
-        dd(Statistics::dayReport(1,15,10,2018));
+        dd(Statistics::yearReport(1,2018));
     }
 }
