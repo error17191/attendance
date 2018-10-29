@@ -18,7 +18,7 @@ class SignController extends Controller
 {
     public function __construct()
     {
-//        $this->middleware(['auth','is_tracked']);
+        $this->middleware(['auth','is_tracked']);
     }
 
     /**
