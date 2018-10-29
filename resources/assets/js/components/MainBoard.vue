@@ -211,6 +211,9 @@
                     url: '/start_work',
                     data: data
                 }).then((response) => {
+                    console.log("starting back");
+                    console.log(response.data.workTimeSign.started_at);
+                    console.log("---------------");
                     this.status = 'on';
                     this.signs.push(response.data.workTimeSign);
                     this.startCounter(this.workTime.partitions);
@@ -226,12 +229,16 @@
                     method: 'post',
                     url: '/stop_work'
                 }).then((response) => {
+                    console.log("stopping back");
+                    console.log(response.data.workTimeSign.stopped_at);
+                    console.log("---------------");
                     if (this.flagInUse !== null) {
                         this.getStats();
                     }
                     this.status = 'off';
                     this.flagInUse = null;
-                    this.updateSign(response.data.workTimeSign);
+                    // this.updateSign(response.data.workTimeSign);
+                    this.signs[this.signs.length - 1].stopped_at = response.data.workTimeSign.stopped_at;
                     this.workTime = response.data.today_time;
                     this.stopCounter(this.workTime.partitions.counterInterval);
                     this.stopCounter(this.monthStats.actual.partitions.counterInterval);
