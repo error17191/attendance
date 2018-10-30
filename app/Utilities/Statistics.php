@@ -2,6 +2,7 @@
 
 namespace App\Utilities;
 
+use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
@@ -27,6 +28,167 @@ class Statistics
         $regularTime = static::monthRegularTime($id,$month,$year);
         $workEfficiency = static::monthWorkEfficiency($id,$month,$year);
         return compact('actualTime','idealTime','diffType','diff','status','flags','absence','regularTime','workEfficiency');
+    }
+
+    public static function dayReport(int $id,string $date)
+    {
+        $dayWorkTimes = static::dayData($id,'work_times',$date)->sortBy('started_work_at');
+        if($dayWorkTimes->count() <= 0){
+            $attended = false;
+            $weekend = static::isWeekend(new Carbon($date));
+            $vacation = static::isVacation($id,$date);
+            return compact('attended','weekend','vacation');
+        }
+        $attended = true;
+        $weekend = static::isWeekend(new Carbon($date));
+        $vacation = static::isVacation($id,$date);
+        $actualWork = $dayWorkTimes->sum('seconds');
+        $timeAtWork = (new Carbon($dayWorkTimes->first()->started_work_at))->diffInSeconds($dayWorkTimes->last()->stopped_work_at);
+        $workTimeLog = [];
+        foreach ($dayWorkTimes as $dayWorkTime) {
+            $workTimeLog[] = [
+                'start' => (new Carbon($dayWorkTime->started_work_at))->toTimeString(),
+                'stop' => (new Carbon($dayWorkTime->stopped_work_at))->toTimeString(),
+                'duration' => $dayWorkTime->seconds
+            ];
+        }
+        $flagsData = static::dayData($id,'flags',$date);
+        $flags = [];
+        $total = 0;
+        foreach ($flagsData as $flagsDatum) {
+            if(!isset($flags[$flagsDatum->type])){
+                $flags[$flagsDatum->type] = 0;
+            }
+            $flags[$flagsDatum->type] += $flagsDatum->seconds;
+            $total += $flagsDatum->seconds;
+        }
+        $flags['total'] = $total;
+        $regularTimeFrom = app('settings')->getRegularTime()['from'] * 60 * 60;
+        $regularTimeFrom = partition_seconds($regularTimeFrom);
+        $regularTimeTo = app('settings')->getRegularTime()['to'] * 60 * 60;
+        $regularTimeTo = partition_seconds($regularTimeTo);
+        $regularTime = (new Carbon($dayWorkTimes->first()->started_work_at)) >= (new Carbon($dayWorkTimes->first()->day))->hour($regularTimeFrom['hours'])->minute($regularTimeFrom['minutes']) &&
+            (new Carbon($dayWorkTimes->first()->started_work_at)) <= (new Carbon($dayWorkTimes->first()->day))->hour($regularTimeTo['hours'])->minute($regularTimeTo['minutes']);
+        $regularHours = $actualWork >= app('settings')->getRegularTime()['regularHours'] * 60 * 60;
+        $workEfficiency = round($actualWork / $timeAtWork * 100,2);
+        return compact('attended','weekend','vacation','actualWork','timeAtWork','workTimeLog','flags','workEfficiency','regularTime','regularHours');
+    }
+
+    public static function yearReport(int $id,int $year):array
+    {
+        $workTime = static::yearWorkTime($id,$year);
+        $flags = static::yearFlags($id,$year);
+        $absence = static::yearAbsence($id,$year);
+        $regularTime = static::yearRegularTime($id,$year);
+        $workEfficiency = static::yearWorkEfficiency($id,$year);
+        return compact('workEfficiency');
+    }
+
+    public static function yearWorkTime(int $id,int $year):array
+    {
+        $yearWork = [];
+        $total = [
+            'ideal' => 0,
+            'actual' => 0,
+            'diff' => 0
+        ];
+        $months = months();
+        foreach ($months as $month) {
+            $yearWork[$month['name']] =[
+                'ideal' => static::monthIdeal($id,$month['index'],$year),
+                'actual' => static::monthWork($id,$month['index'],$year)
+            ];
+            $yearWork[$month['name']]['diff'] = $yearWork[$month['name']]['actual'] - $yearWork[$month['name']]['ideal'];
+            $yearWork[$month['name']]['diffType'] = $yearWork[$month['name']]['actual']['diff'] > 0 ? 'more' : 'less';
+            if($yearWork[$month['name']]['diff'] === 0){
+                $yearWork[$month['name']]['diffType'] = 'exact';
+            }
+            $total['ideal'] += $yearWork[$month['name']]['ideal'];
+            $total['actual'] += $yearWork[$month['name']]['actual'];
+            $total['diff'] += $yearWork[$month['name']]['diff'];
+            $yearWork[$month['name']]['diff'] = abs($yearWork[$month['name']]['diff']);
+        }
+        $total['diffType'] = $total['diff'] > 0 ? 'more' : 'less';
+        if($total['diff'] === 0){
+            $total['diffType'] = 'exact';
+        }
+        $total['diff'] = abs($total['diff']);
+        $yearWork['total'] = $total;
+        return $yearWork;
+    }
+
+    public static function yearFlags(int $id,int $year):array
+    {
+        $yearFlags = [];
+        $months = months();
+        $total = [];
+        foreach ($months as $month) {
+            $monthFlags = static::monthFlags($id,$month['index'],$year);
+            $yearFlags[$month['name']] = $monthFlags;
+            foreach ($monthFlags as $key => $value) {
+                if(!isset($total[$key])){
+                    $total[$key] = 0;
+                }
+                $total[$key] += $value;
+            }
+        }
+        $yearFlags['total'] = $total;
+        return $yearFlags;
+    }
+
+    public static function yearAbsence(int $id,int $year):array
+    {
+        $yearAbsence = [];
+        $months = months();
+        $total = [
+            'workDaysAbsence' => 0,
+            'vacationsAttended' => 0
+        ];
+        foreach ($months as $month) {
+            $yearAbsence[$month['name']] = static::monthAttendanceDays($id,$month['index'],$year);
+            $total['workDaysAbsence'] += count($yearAbsence[$month['name']]['workDaysAbsence']);
+            $total['vacationsAttended'] += count($yearAbsence[$month['name']]['vacationsAttended']);
+        }
+        $yearAbsence['total'] = $total;
+        return $yearAbsence;
+    }
+
+    public static function yearRegularTime(int $id,int $year):array
+    {
+        $yearRegularTime = [];
+        $total = [
+            'all' => 0,
+            'offTimes' => 0,
+            'percentage' => 0
+        ];
+        $months = months();
+        foreach ($months as $month) {
+            $yearRegularTime[$month['name']] = static::monthRegularTime($id,$month['index'],$year);
+            $total['all'] += $yearRegularTime[$month['name']]['all'];
+            $total['offTimes'] += $yearRegularTime[$month['name']]['offTimes'];
+        }
+        $total['percentage'] = round(($total['all'] - $total['offTimes']) / $total['all'] * 100 ,2);
+        $yearRegularTime['total'] = $total;
+        return $yearRegularTime;
+    }
+
+    public static function yearWorkEfficiency(int $id,int $year)
+    {
+        $yearWorkEfficiency = [];
+        $total = [
+            'attendedTime' => 0,
+            'actualWork' => 0,
+            'percentage' => 0
+        ];
+        $months = months();
+        foreach ($months as $month) {
+            $yearWorkEfficiency[$month['name']] = static::monthWorkEfficiency($id,$month['index'],$year);
+            $total['attendedTime'] += $yearWorkEfficiency[$month['name']]['attendedTime'];
+            $total['actualWork'] += $yearWorkEfficiency[$month['name']]['actualWork'];
+        }
+        $total['percentage'] = round($total['actualWork'] / $total['attendedTime'] * 100 , 2);
+        $yearWorkEfficiency['total'] = $total;
+        return $yearWorkEfficiency;
     }
 
     public static function monthIdeal(int $id,int $month,int $year = 0):int

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Utilities\Statistics;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 
 class StatisticsController extends Controller
 {
@@ -14,9 +14,13 @@ class StatisticsController extends Controller
         $this->middleware('auth');
     }
 
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function monthReportAdmin(Request $request):JsonResponse
     {
-        $v = Validator::make($request->only(['month','year','user_id']),[
+        $v = Validator::make($request->only(['month','year']),[
             'month' => 'required|integer|min:1|max:12',
             'year' => 'nullable|integer',
         ]);
@@ -44,13 +48,18 @@ class StatisticsController extends Controller
         $year = $request->year ?: now()->year;
 
         return response()->json([
-            'monthStatistics' => Statistics::monthReport($id,$month,$year)
+            'monthStatistics' => Statistics::monthReport($id,$month,$year),
+            'status' => 'success'
         ]);
     }
 
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function monthReportUser(Request $request):JsonResponse
     {
-        $v = Validator::make($request->only(['month','year','user_id']),[
+        $v = Validator::make($request->only(['month','year']),[
             'month' => 'required|integer|min:1|max:12',
             'year' => 'nullable|integer',
         ]);
@@ -67,7 +76,42 @@ class StatisticsController extends Controller
         $year = $request->year ?: now()->year;
 
         return response()->json([
-            'monthStatistics' => Statistics::monthReport($id,$month,$year)
+            'monthStatistics' => Statistics::monthReport($id,$month,$year),
+            'status' => 'success'
+        ]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function dayReportAdmin(Request $request):JsonResponse
+    {
+        $v = Validator::make($request->only('date'),[
+            'date' => 'required|date|date_format:Y-m-d'
+        ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'invalid_date',
+                'message' => 'no date or wrong format'
+            ],422);
+        }
+
+        $v = Validator::make($request->only('userId'),[
+            'userId' => 'required|integer|exists:users,id'
+        ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'invalid_user',
+                'message' => 'user does not exist'
+            ],422);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'statistics' => Statistics::dayReport($request->userId,$request->date)
         ]);
     }
 }

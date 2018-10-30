@@ -6,7 +6,7 @@
                     <profile></profile>
                 </b-tab>
                 <b-tab no-body title="Day">
-
+                    <day></day>
                 </b-tab>
                 <b-tab no-body title="Month">
                     <month></month>
@@ -25,14 +25,14 @@
 <script>
     import Profile from './Profile';
     import Month from './Month';
-    import Calendar from './Calendar';
+    import Day from './Day';
 
     export default {
         name: "Statistics",
         components : {
             Profile,
             Month,
-            Calendar
+            Day
         }
     }
 

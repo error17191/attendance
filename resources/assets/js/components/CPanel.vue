@@ -20,7 +20,6 @@
                 <b-tab title="Statistics">
                     <statistics></statistics>
                 </b-tab>
-
             </b-tabs>
         </b-card>
     </div>
