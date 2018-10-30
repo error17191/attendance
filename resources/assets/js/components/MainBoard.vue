@@ -18,11 +18,12 @@
                                                  :multiple="false"
                                                  :searchable="false"
                                                  :trackBy="'id'"
+                                                  :disabled="!!flagInUse"
                                     ></multiselect>
                                     <multiselect tag-placeholder="Task you are working on"
                                                  placeholder="Task you are working on"
                                                  :value="task"
-                                                 :disabled="project == null"
+                                                 :disabled="!!flagInUse || project == null"
                                                  @tag="addTask"
                                                  label="content"
                                                  @search-change="filterTasks"
@@ -42,7 +43,7 @@
                                     </multiselect>
                                     <button v-if="status == 'on'"
                                             @click="stopWork"
-                                            :disabled="stopping"
+                                            :disabled="!!flagInUse || stopping"
                                             class="btn btn-lg btn-block btn-danger"
                                     >Stop Work
                                     </button>
@@ -211,9 +212,6 @@
                     url: '/start_work',
                     data: data
                 }).then((response) => {
-                    console.log("starting back");
-                    console.log(response.data.workTimeSign.started_at);
-                    console.log("---------------");
                     this.status = 'on';
                     this.signs.push(response.data.workTimeSign);
                     this.startCounter(this.workTime.partitions);
@@ -229,9 +227,6 @@
                     method: 'post',
                     url: '/stop_work'
                 }).then((response) => {
-                    console.log("stopping back");
-                    console.log(response.data.workTimeSign.stopped_at);
-                    console.log("---------------");
                     if (this.flagInUse !== null) {
                         this.getStats();
                     }
