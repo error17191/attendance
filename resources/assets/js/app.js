@@ -26,10 +26,14 @@ if (userMetaTag) {
     window.auth_user = JSON.parse(userMetaTag.content);
 }
 
-require('./echo_stuff');
+
 require('./helpers');
 require('./vue_stuff');
+loadScript('/js/echo_stuff.js',() => {
+    bus.$emit('echoLoaded');
+});
 
-window.moment = require('moment');
+
+// window.moment = require('moment');
 
 

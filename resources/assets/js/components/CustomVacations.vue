@@ -206,7 +206,7 @@
                 }).then((response) => {
                     this.adding = false;
                     this.date = null;
-                    this.$snotify.success('Vacation Added Successfully');
+                    this.snotifyLoaded && this.$snotify.success('Vacation Added Successfully');
                     let specific = this.target === 'specific';
                     this.getCustomVacations(specific);
                     this.updateDisabledDates();
@@ -242,7 +242,7 @@
                     this.customVacations.splice(index, 1);
                     this.updateDisabledDates();
                     this.deleting = false;
-                    this.$snotify.success('Vacation Deleted Successfully');
+                    this.snotifyLoaded && this.$snotify.success('Vacation Deleted Successfully');
                 });
             },
             deleteVacations(){
@@ -258,7 +258,7 @@
                     this.getCustomVacations(specific);
                     this.updateDisabledDates();
                     this.deleting = false;
-                    this.$snotify.success('Vacation Deleted Successfully');
+                    this.snotifyLoaded && this.$snotify.success('Vacation Deleted Successfully');
                 });
             },
             sortVacations() {

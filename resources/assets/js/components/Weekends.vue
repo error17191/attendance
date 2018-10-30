@@ -36,7 +36,7 @@
                 this.updating = true;
                 axios.post('/vacations/weekends', {weekends: this.weekends}).then(() => {
                     this.updating = false;
-                    this.$snotify.success('Weekends Updated Successfully');
+                    this.snotifyLoaded && this.$snotify.success('Weekends Updated Successfully');
                 });
             }
         }

@@ -89,7 +89,7 @@
                         for (let prop in this.values) {
                             this.values[prop] = null;
                         }
-                        this.$snotify.success('Password Updated Successfuly');
+                        this.snotifyLoaded && this.$snotify.success('Password Updated Successfuly');
                     }
                 }).catch(error => {
                     if (error.response && error.response.status == 422 && error.response.data.status == 'incorrect_old_password') {
@@ -97,7 +97,7 @@
                         return;
                     }
                     // General message in case something unexpected happened
-                    this.$snotify.error('Something went wrong');
+                    this.snotifyLoaded && this.$snotify.error('Something went wrong');
                 });
             }
         }

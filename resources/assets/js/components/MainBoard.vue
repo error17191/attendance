@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <vue-element-loading :active="!show" spinner="bar-fade-scale" color="#FF6700"/>
+        <!--<vue-element-loading :active="!show" spinner="bar-fade-scale" color="#FF6700"/>-->
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card card-default">
@@ -9,7 +9,7 @@
                         <div class="card-body">
                             <div class="row justify-content-center">
                                 <div class="col-md-8">
-                                    <multiselect  tag-placeholder="Project you are working on"
+                                    <multiselect v-if="multiselectLoaded"  tag-placeholder="Project you are working on"
                                                  placeholder="Project you are working on"
                                                  label="title"
                                                  v-model="project"
@@ -20,7 +20,7 @@
                                                  :trackBy="'id'"
                                                   :disabled="!!flagInUse"
                                     ></multiselect>
-                                    <multiselect tag-placeholder="Task you are working on"
+                                    <multiselect v-if="multiselectLoaded" tag-placeholder="Task you are working on"
                                                  placeholder="Task you are working on"
                                                  :value="task"
                                                  :disabled="!!flagInUse || project == null"
@@ -158,12 +158,12 @@
         },
         mounted() {
             this.getStats();
-
-            window.Echo.private(`App.User.${auth_user.id}`)
-                .listen('FlagTimeExpired', (e) => {
-                    this.getStats();
-                });
-
+            bus.$on('echoLoaded',() => {
+                window.Echo.private(`App.User.${auth_user.id}`)
+                    .listen('FlagTimeExpired', (e) => {
+                        this.getStats();
+                    });
+            });
         },
         created() {
             this.checkIfUserCanWorkAnyWhere();
@@ -219,6 +219,7 @@
                     this.startDiffCounter();
                     this.addIdToTask(response.data.task_id);
                     this.starting = false;
+                    this.$snotify.success('saba7 el zeft');
                 });
             },
             stopWork() {

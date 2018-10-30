@@ -1,26 +1,28 @@
 window.Vue = require('vue');
 window.bus = new Vue();
 
-
 loadScript('/js/bootstrap-vue.js',() => {
     Vue.use(BootstrapVue);
     bus.$emit('bootstrapVueLoaded');
 });
 
-import VueElementLoading from 'vue-element-loading';
-Vue.component('VueElementLoading', VueElementLoading);
-
-import 'vue-snotify/styles/material.css';
-import Snotify from 'vue-snotify';
-Vue.use(Snotify, {
-    toast: {
-        showProgressBar: false,
-        position: 'centerTop'
-    }
+loadScript('/js/snotify.js', () => {
+    Vue.use(window.Snotify, {
+        toast: {
+            showProgressBar: false,
+            position: 'centerTop'
+        }
+    });
+    bus.$emit('snotifyLoaded');
 });
 
-import Multiselect from 'vue-multiselect';
-Vue.component('multiselect', Multiselect)
+loadScript('/js/multiselect.js', () => {
+    bus.$emit('multiselectLoaded');
+});
+
+// import VueElementLoading from 'vue-element-loading';
+// Vue.component('VueElementLoading', VueElementLoading);
+
 
 
 
@@ -28,6 +30,12 @@ Vue.mixin({
     mounted(){
         bus.$on('bootstrapVueLoaded', () => {
             this.bootstrapVueLoaded = true;
+        });
+        bus.$on('snotifyLoaded', () => {
+            this.snotifyLoaded = true;
+        });
+        bus.$on('multiselectLoaded', () => {
+            this.multiselectLoaded = true;
         });
     },
     methods: {
@@ -38,6 +46,8 @@ Vue.mixin({
     data: function () {
         return {
             bootstrapVueLoaded: false,
+            snotifyLoaded: false,
+            multiselectLoaded: false,
         }
     }
 
@@ -64,7 +74,7 @@ window.app = new Vue({
                 window.location.href = response.data.url;
             }).catch(error => {
                 if (!error.response || !error.response.data || error.response.status != 422) {
-                    this.$snotify.error('Something went worng');
+                    this.snotifyLoaded && this.$snotify.error('Something went worng');
                     return;
                 }
                 let responseData = error.response.data;

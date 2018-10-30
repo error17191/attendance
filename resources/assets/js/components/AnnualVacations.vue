@@ -89,7 +89,7 @@
                 this.adding = true;
                 axios.post('vacations/annual/add', {month: this.month.index, day: this.day})
                     .then(response => {
-                        this.$snotify.success('Annual Vacation Added Successfully');
+                        this.snotifyLoaded && this.$snotify.success('Annual Vacation Added Successfully');
                         this.adding = false;
                         this.annualVacations.push(response.data.annual_vacation);
                         this.sortVacations();
@@ -119,7 +119,7 @@
                         }
 
                         this.deleting = false;
-                        this.$snotify.success('Annual Vacation Deleted Successfully');
+                        this.snotifyLoaded && this.$snotify.success('Annual Vacation Deleted Successfully');
                     });
             },
             sortVacations(){

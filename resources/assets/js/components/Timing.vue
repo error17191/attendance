@@ -157,7 +157,7 @@
                     data: this.form
                 }).then((response)=>{
                     this.saving = false;
-                    this.$snotify.success('Settings Saved Successfully');
+                    this.snotifyLoaded && this.$snotify.success('Settings Saved Successfully');
                 });
             }
         },
