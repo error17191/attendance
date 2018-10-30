@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Flag;
+use App\Project;
+use App\Task;
 use App\User;
 use App\WorkTime;
 use Tests\TestCase;
@@ -46,7 +48,7 @@ class AttendanceTest extends TestCase
 
         //test that response succeeded
         $this->assertEquals(200, $response->status());
-        $this->assertCount(5, $content);
+        $this->assertCount(6, $content);
 
         //test the flags field
         $flags = $content['flags'];
@@ -68,7 +70,7 @@ class AttendanceTest extends TestCase
         //test the today time field
         $todayTime = $content['today_time'];
         $this->assertEquals(0, $todayTime['seconds']);
-        $this->assertEquals('', $todayTime['workStatus']);
+        $this->assertEquals(null , $todayTime['task']);
 
         //test the month report
         $monthReport = $content['month_report'];
@@ -83,7 +85,8 @@ class AttendanceTest extends TestCase
         Artisan::call('seed:settings');
         app('settings')->refreshData();
         Artisan::call('seed:users');
-
+        Artisan::call('seed:projects');
+        $project = Project::first();
         //fake login
         $this->loginUser(1);
 
@@ -91,19 +94,19 @@ class AttendanceTest extends TestCase
         Carbon::setTestNow($test);
 
         //make the test request to to start_work
-        $response = $this->json('POST', 'start_work', ['workStatus' => 'work']);
+        $response = $this->json('POST', 'start_work', ['task' => ['content' => 'work'] , 'project_id' => $project->id]);
         $content = json_decode($response->content(), true);
 
         //test that response succeeded
         $this->assertEquals(200,$response->status());
-        $this->assertCount(2,$content);
-
+        $this->assertCount(3,$content);
         //test the work time sign field
         $workTimeSign = $content['workTimeSign'];
+        $task = $workTimeSign['task'];
         $this->assertCount(3,$workTimeSign);
         $this->assertEquals($test->toTimeString(),$workTimeSign['started_at']);
         $this->assertEquals(null,$workTimeSign['stopped_at']);
-        $this->assertEquals('work',$workTimeSign['status']);
+        $this->assertEquals('work',$task['content']);
 
         //test the today time field
         $todayTime = $content['today_time'];
@@ -117,6 +120,8 @@ class AttendanceTest extends TestCase
         Artisan::call('seed:settings');
         app('settings')->refreshData();
         Artisan::call('seed:users');
+        Artisan::call('seed:projects');
+        $project = Project::first();
 
         //fake login
         $this->loginUser(1);
@@ -126,19 +131,20 @@ class AttendanceTest extends TestCase
         Carbon::setTestNow($start);
 
         //make the test request to to start_work
-        $response = $this->json('POST', 'start_work', ['workStatus' => 'work']);
+        $response = $this->json('POST', 'start_work', ['task' => ['content' => 'work'] , 'project_id' => $project->id]);
         $content = json_decode($response->content(), true);
 
         //test that response succeeded
         $this->assertEquals(200,$response->status());
-        $this->assertCount(2,$content);
+        $this->assertCount(3,$content);
 
         //test the work time sign field
         $workTimeSign = $content['workTimeSign'];
+        $task = $workTimeSign['task'];
         $this->assertCount(3,$workTimeSign);
         $this->assertEquals($start->toTimeString(),$workTimeSign['started_at']);
         $this->assertEquals(null,$workTimeSign['stopped_at']);
-        $this->assertEquals('work',$workTimeSign['status']);
+        $this->assertEquals('work',$task['content']);
 
         //test the today time field
         $todayTime = $content['today_time'];
@@ -159,10 +165,11 @@ class AttendanceTest extends TestCase
 
         //test the work time sign field
         $workTimeSign = $content['workTimeSign'];
+        $task = $workTimeSign['task'];
         $this->assertCount(3,$workTimeSign);
         $this->assertEquals($start->toTimeString(),$workTimeSign['started_at']);
         $this->assertEquals($stop->toTimeString(),$workTimeSign['stopped_at']);
-        $this->assertEquals('work',$workTimeSign['status']);
+        $this->assertEquals('work',$task['content']);
 
         //test the today time field
         $todayTime = $content['today_time'];
@@ -181,28 +188,31 @@ class AttendanceTest extends TestCase
         Artisan::call('seed:settings');
         app('settings')->refreshData();
         Artisan::call('seed:users');
+        Artisan::call('seed:projects');
+        $project = Project::first();
 
         //fake login
         $this->loginUser(1);
 
-        //set start work time
+        //set start time
         $startWork = (new Carbon())->hour(12);
         Carbon::setTestNow($startWork);
 
         //make the test request to to start_work
-        $response = $this->json('POST', 'start_work', ['workStatus' => 'work']);
+        $response = $this->json('POST', 'start_work', ['task' => ['content' => 'work'] , 'project_id' => $project->id]);
         $content = json_decode($response->content(), true);
 
         //test that response succeeded
         $this->assertEquals(200,$response->status());
-        $this->assertCount(2,$content);
+        $this->assertCount(3,$content);
 
         //test the work time sign field
         $workTimeSign = $content['workTimeSign'];
+        $task = $workTimeSign['task'];
         $this->assertCount(3,$workTimeSign);
         $this->assertEquals($startWork->toTimeString(),$workTimeSign['started_at']);
         $this->assertEquals(null,$workTimeSign['stopped_at']);
-        $this->assertEquals('work',$workTimeSign['status']);
+        $this->assertEquals('work',$task['content']);
 
         //test the today time field
         $todayTime = $content['today_time'];
@@ -268,10 +278,11 @@ class AttendanceTest extends TestCase
 
         //test the work time sign field
         $workTimeSign = $content['workTimeSign'];
+        $task = $workTimeSign['task'];
         $this->assertCount(3,$workTimeSign);
         $this->assertEquals($startWork->toTimeString(),$workTimeSign['started_at']);
         $this->assertEquals($stopWork->toTimeString(),$workTimeSign['stopped_at']);
-        $this->assertEquals('work',$workTimeSign['status']);
+        $this->assertEquals('work',$task['content']);
 
         //test the today time field
         $todayTime = $content['today_time'];
@@ -284,7 +295,7 @@ class AttendanceTest extends TestCase
 
         //test that response succeeded
         $this->assertEquals(200, $response->status());
-        $this->assertCount(5, $content);
+        $this->assertCount(6, $content);
 
         //test the flags field
         $flag = $content['flags'][0];
@@ -295,10 +306,11 @@ class AttendanceTest extends TestCase
 
         //test the work time signs field
         $workTimeSigns = $content['workTimeSigns'];
+        $task1 = $workTimeSigns[0]['task'];
         $this->assertCount(1, $workTimeSigns);
         $this->assertEquals($startWork->toTimeString(),$workTimeSigns[0]['started_at']);
         $this->assertEquals($stopWork->toTimeString(),$workTimeSigns[0]['stopped_at']);
-        $this->assertEquals('work',$workTimeSigns[0]['status']);
+        $this->assertEquals('work',$task1['content']);
 
         //test the status field
         $this->assertEquals('off', $content['status']);
@@ -306,7 +318,7 @@ class AttendanceTest extends TestCase
         //test the today time field
         $todayTime = $content['today_time'];
         $this->assertEquals(5 * 60 *60, $todayTime['seconds']);
-        $this->assertEquals('work', $todayTime['workStatus']);
+        $this->assertEquals('work',$task1['content']);
 
         //test the month report
         $monthReport = $content['month_report'];
@@ -326,28 +338,31 @@ class AttendanceTest extends TestCase
         Artisan::call('seed:settings');
         app('settings')->refreshData();
         Artisan::call('seed:users');
+        Artisan::call('seed:projects');
+        $project = Project::first();
 
         //fake login
         $this->loginUser(1);
 
-        //set start work time
+        //set start time
         $startWork = (new Carbon())->hour(12);
         Carbon::setTestNow($startWork);
 
         //make the test request to to start_work
-        $response = $this->json('POST', 'start_work', ['workStatus' => 'work']);
+        $response = $this->json('POST', 'start_work', ['task' => ['content' => 'work'] , 'project_id' => $project->id]);
         $content = json_decode($response->content(), true);
 
         //test that response succeeded
         $this->assertEquals(200,$response->status());
-        $this->assertCount(2,$content);
+        $this->assertCount(3,$content);
 
         //test the work time sign field
         $workTimeSign = $content['workTimeSign'];
+        $task = $workTimeSign['task'];
         $this->assertCount(3,$workTimeSign);
         $this->assertEquals($startWork->toTimeString(),$workTimeSign['started_at']);
         $this->assertEquals(null,$workTimeSign['stopped_at']);
-        $this->assertEquals('work',$workTimeSign['status']);
+        $this->assertEquals('work',$task['content']);
 
         //test the today time field
         $todayTime = $content['today_time'];
@@ -405,7 +420,7 @@ class AttendanceTest extends TestCase
 
         //test that response succeeded
         $this->assertEquals(200, $response->status());
-        $this->assertCount(5, $content);
+        $this->assertCount(6, $content);
 
         //test the flags field
         $flag = $content['flags'][0];
@@ -417,6 +432,7 @@ class AttendanceTest extends TestCase
 
         //test the work time signs field
         $workTimeSigns = $content['workTimeSigns'];
+        dd($content);
         $this->assertCount(2, $workTimeSigns);
         $this->assertEquals($startWork->toTimeString(),$workTimeSigns[0]['started_at']);
         $this->assertEquals($startWork->copy()->addHours(2)->addMinute(90)->toTimeString(),$workTimeSigns[0]['stopped_at']);
@@ -451,28 +467,31 @@ class AttendanceTest extends TestCase
         Artisan::call('seed:settings');
         app('settings')->refreshData();
         Artisan::call('seed:users');
+        Artisan::call('seed:projects');
+        $project = Project::first();
 
         //fake login
         $this->loginUser(1);
 
-        //set start work time
+        //set start time
         $startWork = (new Carbon())->hour(12);
         Carbon::setTestNow($startWork);
 
         //make the test request to to start_work
-        $response = $this->json('POST', 'start_work', ['workStatus' => 'work']);
+        $response = $this->json('POST', 'start_work', ['task' => ['content' => 'work'] , 'project_id' => $project->id]);
         $content = json_decode($response->content(), true);
 
         //test that response succeeded
         $this->assertEquals(200,$response->status());
-        $this->assertCount(2,$content);
+        $this->assertCount(3,$content);
 
         //test the work time sign field
         $workTimeSign = $content['workTimeSign'];
+        $task = $workTimeSign['task'];
         $this->assertCount(3,$workTimeSign);
-        $this->assertEquals($startWork->toTimeString(),$workTimeSign['started_at']);
+        $this->assertEquals($start->toTimeString(),$workTimeSign['started_at']);
         $this->assertEquals(null,$workTimeSign['stopped_at']);
-        $this->assertEquals('work',$workTimeSign['status']);
+        $this->assertEquals('work',$task['content']);
 
         //test the today time field
         $todayTime = $content['today_time'];
@@ -577,28 +596,31 @@ class AttendanceTest extends TestCase
         Artisan::call('seed:settings');
         app('settings')->refreshData();
         Artisan::call('seed:users');
+        Artisan::call('seed:projects');
+        $project = Project::first();
 
         //fake login
         $this->loginUser(1);
 
-        //set start work time
-        $startWork = (new Carbon())->hour(20)->minute(0)->second(0);
+        //set start time
+        $startWork = (new Carbon())->hour(12);
         Carbon::setTestNow($startWork);
 
         //make the test request to to start_work
-        $response = $this->json('POST', 'start_work', ['workStatus' => 'work']);
+        $response = $this->json('POST', 'start_work', ['task' => ['content' => 'work'] , 'project_id' => $project->id]);
         $content = json_decode($response->content(), true);
 
         //test that response succeeded
         $this->assertEquals(200,$response->status());
-        $this->assertCount(2,$content);
+        $this->assertCount(3,$content);
 
         //test the work time sign field
         $workTimeSign = $content['workTimeSign'];
+        $task = $workTimeSign['task'];
         $this->assertCount(3,$workTimeSign);
-        $this->assertEquals($startWork->toTimeString(),$workTimeSign['started_at']);
+        $this->assertEquals($start->toTimeString(),$workTimeSign['started_at']);
         $this->assertEquals(null,$workTimeSign['stopped_at']);
-        $this->assertEquals('work',$workTimeSign['status']);
+        $this->assertEquals('work',$task['content']);
 
         //test the today time field
         $todayTime = $content['today_time'];
