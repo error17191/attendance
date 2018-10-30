@@ -13,7 +13,7 @@
     <meta name="echo-port" content="{{config('app.echo_server_port')}}">
     <meta name="url" content="{{config('app.url')}}">
     <title>{{ config('app.name', 'Laravel') }}</title>
-    <script src="{{asset('vendor/instascan.min.js')}}"></script>
+{{--    <script src="{{asset('vendor/instascan.min.js')}}"></script>--}}
     <!-- Scripts -->
 {{--    <script defer src="{{asset('vendor/fontawesome/js/all.js')}}"></script>--}}
     <script src="{{ mix('js/app.js') }}" defer></script>
