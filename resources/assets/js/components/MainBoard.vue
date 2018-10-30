@@ -73,7 +73,7 @@
                             <h5 class="text-center">You worked today</h5>
                             <h3 class="text-center"> {{workTime ? timePartitionsFormatted(workTime.partitions) :
                                 null}}</h3>
-                            <div>
+                            <div v-if="bootstrapVueLoaded">
                                 <b-card no-body class="mb-1">
                                     <b-card-header header-tag="header" class="p-0" role="tab">
                                         <b-btn block v-b-toggle.today_report variant="default">Today Log</b-btn>

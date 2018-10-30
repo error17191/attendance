@@ -46,7 +46,7 @@
     </div>
     <div id="app">
         <vue-snotify></vue-snotify>
-        <b-navbar toggleable="md" type="light" variant="light">
+        <b-navbar toggleable="md" type="light" variant="light" v-if="bootstrapVueLoaded">
 
             <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
 

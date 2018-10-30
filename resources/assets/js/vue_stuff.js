@@ -1,7 +1,11 @@
 window.Vue = require('vue');
+window.bus = new Vue();
 
-import BootstrapVue from 'bootstrap-vue';
-Vue.use(BootstrapVue);
+
+loadScript('/js/bootstrap-vue.js',() => {
+    Vue.use(BootstrapVue);
+    bus.$emit('bootstrapVueLoaded');
+});
 
 import VueElementLoading from 'vue-element-loading';
 Vue.component('VueElementLoading', VueElementLoading);
@@ -19,14 +23,24 @@ import Multiselect from 'vue-multiselect';
 Vue.component('multiselect', Multiselect)
 
 
-window.bus = new Vue();
 
 Vue.mixin({
+    mounted(){
+        bus.$on('bootstrapVueLoaded', () => {
+            this.bootstrapVueLoaded = true;
+        });
+    },
     methods: {
         goToRoute: name => router.push({name: name}),
         currentRouteIs: name => router.currentRoute.name == name,
-        auth_user: () => window.auth_user
+        auth_user: () => window.auth_user,
+    },
+    data: function () {
+        return {
+            bootstrapVueLoaded: false,
+        }
     }
+
 });
 
 require('./routes');
