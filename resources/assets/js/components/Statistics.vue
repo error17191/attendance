@@ -12,7 +12,7 @@
                     <month></month>
                 </b-tab>
                 <b-tab no-body title="Year">
-
+                    <year></year>
                 </b-tab>
                 <b-tab no-body title="Summary">
 
@@ -26,13 +26,15 @@
     import Profile from './Profile';
     import Month from './Month';
     import Day from './Day';
+    import Year from './Year';
 
     export default {
         name: "Statistics",
         components : {
             Profile,
             Month,
-            Day
+            Day,
+            Year
         }
     }
 

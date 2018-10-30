@@ -2,7 +2,6 @@
 
 namespace App\Utilities;
 
-use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
@@ -81,7 +80,7 @@ class Statistics
         $absence = static::yearAbsence($id,$year);
         $regularTime = static::yearRegularTime($id,$year);
         $workEfficiency = static::yearWorkEfficiency($id,$year);
-        return compact('workEfficiency');
+        return compact('workTime','flags','absence','regularTime','workEfficiency');
     }
 
     public static function yearWorkTime(int $id,int $year):array
