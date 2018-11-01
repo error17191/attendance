@@ -133,9 +133,8 @@ class WorKTime
      * @param int $id
      * @param string $day
      * @param bool|false $before
-     * @return \App\WorkTime
      */
-    public static function active(int $id,string $day,bool $before = false):WorkTimeModel
+    public static function active(int $id,string $day,bool $before = false)
     {
         $sign = $before ? '<' : '=';
         return WorkTimeModel::where('user_id',$id)
