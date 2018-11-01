@@ -97,7 +97,7 @@
                     <b-tab no-body title="Work Status">
                         <div class="card">
                             <div class="card-header">
-                                Month work status
+                                Month Work Status
                             </div>
                             <div class="card-body">
                                 <table class="table table-hover table-responsive">
@@ -412,7 +412,7 @@
                 let labels = [];
                 let data = [];
                 for(let flag in this.statistics.flags){
-                    if(flag == 'total'){
+                    if(flag === 'total'){
                         continue;
                     }
                     labels.push(flag);

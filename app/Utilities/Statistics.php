@@ -2,7 +2,6 @@
 
 namespace App\Utilities;
 
-use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
@@ -12,6 +11,7 @@ class Statistics
 
     public static function monthReport(int $id,int $month,int $year = 0)
     {
+        //TODO: better handling for month without work
         if(static::monthData($id,'work_times',$month,$year)->count() <= 0){
             return null;
         }
@@ -76,12 +76,13 @@ class Statistics
 
     public static function yearReport(int $id,int $year):array
     {
+        //TODO: handle months without work and year without work
         $workTime = static::yearWorkTime($id,$year);
         $flags = static::yearFlags($id,$year);
         $absence = static::yearAbsence($id,$year);
         $regularTime = static::yearRegularTime($id,$year);
         $workEfficiency = static::yearWorkEfficiency($id,$year);
-        return compact('workEfficiency');
+        return compact('workTime','flags','absence','regularTime','workEfficiency');
     }
 
     public static function yearWorkTime(int $id,int $year):array

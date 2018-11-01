@@ -114,4 +114,38 @@ class StatisticsController extends Controller
             'statistics' => Statistics::dayReport($request->userId,$request->date)
         ]);
     }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function yearReportAdmin(Request $request):JsonResponse
+    {
+        $v = Validator::make($request->only('year'),[
+            'year' => 'required|integer|min:2010|max:now()->year'
+        ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'invalid_year',
+                'message' => 'year is missing or not available'
+            ],422);
+        }
+
+        $v = Validator::make($request->only('userId'),[
+            'userId' => 'required|integer|exists:users,id'
+        ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'invalid_user_id',
+                'message' => 'user does not exist'
+            ],422);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'statistics' => Statistics::yearReport($request->userId,$request->year)
+        ]);
+    }
 }
