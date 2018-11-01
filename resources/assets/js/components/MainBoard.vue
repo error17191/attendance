@@ -175,6 +175,8 @@
         },
         methods: {
             getStats() {
+                this.projectInitialized = false;
+                this.taskInitialized = false;
                 let url = '/init_state?t=' + new Date().getTime();
                 makeRequest({
                     method: 'get',
