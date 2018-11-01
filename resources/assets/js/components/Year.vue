@@ -18,17 +18,27 @@
                 Get Statistics
             </button>
         </div>
+        <div v-if="showAlert" class="alert alert-info">
+            Please Choose Employee And Year
+        </div>
+        <div v-else>
+            <div class="card col-md-10">
+                <line-chart :data="workEfficiencyLine"></line-chart>
 
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
     import UserSearch from './UserSearch';
+    import LineChart from './charts/LineChart';
 
     export default {
         name: "Year",
         components: {
-            UserSearch
+            UserSearch,
+            LineChart
         },
         data(){
             return {
@@ -41,7 +51,31 @@
                     {value: null,text: 'Year',selected: true,disabled:true}
                 ],
                 user: null,
-                statistics: null
+                statistics: null,
+                showAlert: true
+            }
+        },
+        computed: {
+            workEfficiencyLine: function () {
+                let labels = [];
+                let data = [];
+                for(let month in this.statistics.workEfficiency){
+                    if(month === 'total'){
+                        continue;
+                    }
+                    labels.push(month);
+                    data.push(this.statistics.workEfficiency[month].percentage);
+                }
+                return {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Work Time',
+                            backgroundColor: '#f87979',
+                            data: data
+                        }
+                    ]
+                };
             }
         },
         mounted(){
@@ -69,17 +103,13 @@
                     method: 'get',
                     url: url
                 }).then((response) => {
-                    if(response.data.monthStatistics == null){
-                        this.showData = 'no work';
-                    }else{
-                        this.showData = 'show statistics';
-                    }
-                    this.statistics = response.data.monthStatistics;
+                    this.statistics = response.data.statistics;
+                    this.showAlert = false;
                 });
             },
             partitionSeconds(seconds){
                 return partitionSeconds(seconds);
-            },
+            }
         }
     }
 </script>

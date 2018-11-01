@@ -32,6 +32,7 @@ Vue.component('VueElementLoading', VueElementLoading);
 import MainBoard from './components/MainBoard';
 import CPanel from './components/CPanel';
 import ChangePassword from './components/ChangePassword';
+import Statistics from './components/Statistics';
 
 const routes = [
     {
@@ -84,7 +85,14 @@ Vue.mixin({
     methods: {
         goToRoute: name => router.push({name: name}),
         currentRouteIs : name => router.currentRoute.name == name,
-        auth_user : () => window.auth_user
+        auth_user : () => window.auth_user,
+        partitionSeconds: (seconds) => {
+            let hours = Math.floor(seconds / 60 / 60);
+            seconds -= hours * 60 * 60;
+            let minutes = Math.floor(seconds / 60);
+            seconds -= minutes * 60;
+            return {hours,minutes,seconds};
+        }
     }
 });
 

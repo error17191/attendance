@@ -1,45 +1,46 @@
 <template>
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-5">
-                    <user-search @selected="updateSelectedUser"></user-search>
-                </div>
-                <div class="col-md-4">
-                    <flat-pickr
-                            class="form-control bg-white"
-                            v-model="form.date"
-                            :config="dateConfig"
-                    ></flat-pickr>
-                </div>
-                <div class="col-md-3">
-                    <button :disabled="!formReady"
-                            @click="getStatistics"
-                            class="btn btn-primary"
-                    >Get Statistics</button>
-                </div>
+    <!--TODO: add charts-->
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-5">
+                <user-search @selected="updateSelectedUser"></user-search>
             </div>
-            <div v-if="showAlert" class="alert alert-info">
-                Please Select An Employee And A Day
+            <div class="col-md-4">
+                <flat-pickr
+                        class="form-control bg-white"
+                        v-model="form.date"
+                        :config="dateConfig"
+                ></flat-pickr>
             </div>
-            <b-card v-else no-body>
+            <div class="col-md-3">
+                <button :disabled="!formReady"
+                        @click="getStatistics"
+                        class="btn btn-primary"
+                >Get Statistics</button>
+            </div>
+        </div>
+        <div v-if="showAlert" class="alert alert-info">
+            Please Select An Employee And A Day
+        </div>
+        <div v-else>
+            <b-card no-body>
                 <b-tabs card>
                     <b-tab no-body title="Attendance" active>
                         <div class="card">
                             <table class="table table-responsive table-hover">
                                 <tbody>
-                                    <tr>
-                                        <td>Attended</td>
-                                        <td>{{statistics.attended | info}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Day is Weekend</td>
-                                        <td>{{statistics.weekend | info}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Day is Vacation</td>
-                                        <td>{{statistics.vacation | info}}</td>
-                                    </tr>
+                                <tr>
+                                    <td>Attended</td>
+                                    <td>{{statistics.attended | info}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Day is Weekend</td>
+                                    <td>{{statistics.weekend | info}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Day is Vacation</td>
+                                    <td>{{statistics.vacation | info}}</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -48,30 +49,30 @@
                         <div class="card">
                             <table class="table table-responsive table-hover">
                                 <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>hours</th>
-                                        <th>minutes</th>
-                                        <th>seconds</th>
-                                    </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>hours</th>
+                                    <th>minutes</th>
+                                    <th>seconds</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Time At Work</td>
-                                        <td>{{partitionSeconds(statistics.timeAtWork).hours}}</td>
-                                        <td>{{partitionSeconds(statistics.timeAtWork).minutes}}</td>
-                                        <td>{{partitionSeconds(statistics.timeAtWork).seconds}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Actual Worked Time</td>
-                                        <td>{{partitionSeconds(statistics.actualWork).hours}}</td>
-                                        <td>{{partitionSeconds(statistics.actualWork).minutes}}</td>
-                                        <td>{{partitionSeconds(statistics.actualWork).seconds}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Work Efficiency</td>
-                                        <td colspan="3" class="text-center">{{statistics.workEfficiency}}&percnt;</td>
-                                    </tr>
+                                <tr>
+                                    <td>Time At Work</td>
+                                    <td>{{partitionSeconds(statistics.timeAtWork).hours}}</td>
+                                    <td>{{partitionSeconds(statistics.timeAtWork).minutes}}</td>
+                                    <td>{{partitionSeconds(statistics.timeAtWork).seconds}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Actual Worked Time</td>
+                                    <td>{{partitionSeconds(statistics.actualWork).hours}}</td>
+                                    <td>{{partitionSeconds(statistics.actualWork).minutes}}</td>
+                                    <td>{{partitionSeconds(statistics.actualWork).seconds}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Work Efficiency</td>
+                                    <td colspan="3" class="text-center">{{statistics.workEfficiency}}&percnt;</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -80,20 +81,20 @@
                         <div class="card">
                             <table class="table table-responsive table-hover">
                                 <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>hours</th>
-                                        <th>minutes</th>
-                                        <th>seconds</th>
-                                    </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>hours</th>
+                                    <th>minutes</th>
+                                    <th>seconds</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="value,name in statistics.flags">
-                                        <td>{{name | capitalize}}</td>
-                                        <td>{{partitionSeconds(value).hours}}</td>
-                                        <td>{{partitionSeconds(value).minutes}}</td>
-                                        <td>{{partitionSeconds(value).seconds}}</td>
-                                    </tr>
+                                <tr v-for="value,name in statistics.flags">
+                                    <td>{{name | capitalize}}</td>
+                                    <td>{{partitionSeconds(value).hours}}</td>
+                                    <td>{{partitionSeconds(value).minutes}}</td>
+                                    <td>{{partitionSeconds(value).seconds}}</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -102,14 +103,14 @@
                         <div class="card">
                             <table class="table table-responsive table-hover">
                                 <tbody>
-                                    <tr>
-                                        <td>Attending In Regular Time</td>
-                                        <td>{{statistics.regularTime | info}}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Completed Day Regular Hours</td>
-                                        <td>{{statistics.regularHours | info}}</td>
-                                    </tr>
+                                <tr>
+                                    <td>Attending In Regular Time</td>
+                                    <td>{{statistics.regularTime | info}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Completed Day Regular Hours</td>
+                                    <td>{{statistics.regularHours | info}}</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -118,20 +119,20 @@
                         <div class="card">
                             <table class="table table-responsive table-hover">
                                 <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Start Time</th>
-                                        <th>Stop Time</th>
-                                        <th>Duration</th>
-                                    </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>Start Time</th>
+                                    <th>Stop Time</th>
+                                    <th>Duration</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="log,index in statistics.workTimeLog">
-                                        <td>{{index + 1}}</td>
-                                        <td>{{log.start}}</td>
-                                        <td>{{log.stop}}</td>
-                                        <td>{{partitionSeconds(log.duration).hours | zeroPrefix}}:{{partitionSeconds(log.duration).minutes | zeroPrefix}}:{{partitionSeconds(log.duration).seconds | zeroPrefix}}</td>
-                                    </tr>
+                                <tr v-for="log,index in statistics.workTimeLog">
+                                    <td>{{index + 1}}</td>
+                                    <td>{{log.start}}</td>
+                                    <td>{{log.stop}}</td>
+                                    <td>{{partitionSeconds(log.duration).hours | zeroPrefix}}:{{partitionSeconds(log.duration).minutes | zeroPrefix}}:{{partitionSeconds(log.duration).seconds | zeroPrefix}}</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
