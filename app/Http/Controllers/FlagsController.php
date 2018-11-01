@@ -152,9 +152,6 @@ class FlagsController extends Controller
         }
 
         $flag = Flag::stop($flag);
-        $flag->save();
-        $user->flag = 'off';
-        $user->save();
 
         if(Flag::hasTimeLimit($flag->type) && Flag::passedTimeLimit($id,$type,$flag->day,$flag->stopped_at)){
             $workTime = $flag->workTime;
@@ -165,6 +162,10 @@ class FlagsController extends Controller
             $secondWorkTime = WorKTime::start($id,$workTime->task,$workTime->task->project_id);
             $secondWorkTime->save();
         }
+        $flag->save();
+
+        $user->flag = 'off';
+        $user->save();
 
 
         return response()->json([
