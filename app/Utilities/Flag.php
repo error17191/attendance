@@ -104,12 +104,11 @@ class Flag
     {
         $builder = FlagModel::where('user_id',$id)
             ->where('stopped_at',null)
-            ->where('seconds',0)
-            ->first();
+            ->where('seconds',0);
         if($day){
-            return $builder->where('day',$day) != null;
+            $builder->where('day',$day);
         }
-        return  $builder != null;
+        return  $builder->first() != null;
     }
 
     /**
