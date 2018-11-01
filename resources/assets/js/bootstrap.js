@@ -104,13 +104,7 @@ window.makeRequest = (params) => {
 //     encrypted: true
 // });
 
-window.partitionSeconds = function (seconds) {
-    let hours = Math.floor(seconds / 60 / 60);
-    seconds -= hours * 60 * 60;
-    let minutes = Math.floor(seconds / 60);
-    seconds -= minutes * 60;
-    return {hours,minutes,seconds};
-};
+
 
 window.capitalize = function(inputString){
     if (!inputString) {

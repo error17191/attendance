@@ -307,19 +307,7 @@
             return {
                 statistics: null,
                 months: [
-                    {value: null,text: 'Month',selected: true,disabled: true},
-                    {value: 1,text: 'January'},
-                    {value: 2,text: 'february'},
-                    {value: 3,text: 'March'},
-                    {value: 4,text: 'April'},
-                    {value: 5,text: 'May'},
-                    {value: 6,text: 'June'},
-                    {value: 7,text: 'July'},
-                    {value: 8,text: 'August'},
-                    {value: 9,text: 'September'},
-                    {value: 10,text: 'October'},
-                    {value: 11,text: 'November'},
-                    {value: 12,text: 'December'}
+                    {value: null,text: 'Month',selected: true,disabled: true}
                 ],
                 years: [
                     {value: null,text: 'Year',selected: true,disabled:true}
@@ -350,6 +338,7 @@
         },
         mounted(){
            this.setYears();
+           this.months = this.months.concat(this.setMonths());
         },
         methods: {
             userSelected(user){
@@ -380,9 +369,6 @@
                     }
                     this.statistics = response.data.monthStatistics;
                 });
-            },
-            partitionSeconds(seconds){
-                return partitionSeconds(seconds);
             },
             getDays(datesArray){
                 let days = [];
@@ -416,7 +402,7 @@
                         continue;
                     }
                     labels.push(flag);
-                    data.push(partitionSeconds(this.statistics.flags[flag]).hours);
+                    data.push(this.partitionSeconds(this.statistics.flags[flag]).hours);
                 }
                 return {
                     labels: labels,
@@ -439,8 +425,8 @@
                                 '#00D8FF'
                             ],
                             data: [
-                                partitionSeconds(this.statistics.workEfficiency.attendedTime -  this.statistics.workEfficiency.actualWork).hours,
-                                partitionSeconds(this.statistics.workEfficiency.actualWork).hours
+                                this.partitionSeconds(this.statistics.workEfficiency.attendedTime -  this.statistics.workEfficiency.actualWork).hours,
+                                this.partitionSeconds(this.statistics.workEfficiency.actualWork).hours
                             ]
                         }
                     ]

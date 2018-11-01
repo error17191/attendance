@@ -86,12 +86,45 @@ Vue.mixin({
         goToRoute: name => router.push({name: name}),
         currentRouteIs : name => router.currentRoute.name == name,
         auth_user : () => window.auth_user,
+        //TODO: remove all functions that i added here from the components
         partitionSeconds: (seconds) => {
             let hours = Math.floor(seconds / 60 / 60);
             seconds -= hours * 60 * 60;
             let minutes = Math.floor(seconds / 60);
             seconds -= minutes * 60;
             return {hours,minutes,seconds};
+        },
+        setYears: () => {
+            let years = [
+                {
+                    value: null,
+                    text: 'year',
+                    selected: true,
+                    disabled: true
+                }
+            ];
+            let year = 2010;
+            while(year <= moment().format('YYYY')){
+                years.push({value: year,text: year});
+                year++;
+            }
+            return years;
+        },
+        setMonths: () => {
+            return [
+                {value: 1,text: 'January'},
+                {value: 2,text: 'february'},
+                {value: 3,text: 'March'},
+                {value: 4,text: 'April'},
+                {value: 5,text: 'May'},
+                {value: 6,text: 'June'},
+                {value: 7,text: 'July'},
+                {value: 8,text: 'August'},
+                {value: 9,text: 'September'},
+                {value: 10,text: 'October'},
+                {value: 11,text: 'November'},
+                {value: 12,text: 'December'}
+            ];
         }
     }
 });

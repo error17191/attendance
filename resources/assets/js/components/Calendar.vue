@@ -28,12 +28,14 @@
         props: ['month','year','days'],
         computed: {
             calendarDays: function () {
-                let monthFirst = moment().month(this.month.number).year(this.year).date(1);
-                let day = moment().month(this.month.number).year(this.year).date(1).subtract(monthFirst.day(),'days');
+                let monthFirst = moment().month(this.month.number).year(this.year).startOf('month');
+                let day = moment().month(this.month.number).year(this.year).startOf('month').subtract(monthFirst.day(),'days');
+                let monthLast = moment().month(this.month.number).year(this.year).endOf('month');
+                let endDay = moment().month(this.month.number).year(this.year).startOf('month').add(6 - monthLast.day(),'days');
                 let days = [];
                 let counter = 1;
                 let week = [];
-                while (!(day.month() > this.month.number && day.day() === 0)){
+                while (true){
                     if(counter > 7){
                         counter = 1;
                         days.push(week);
@@ -44,6 +46,7 @@
                         text: text,
                         active: this.days.indexOf(text) >= 0 && day.month() === this.month.number
                     });
+                
                     counter++;
                     day.add(1,'days');
                 }

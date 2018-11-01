@@ -89,32 +89,34 @@ class Statistics
     {
         $yearWork = [];
         $total = [
+            'name' => 'Total',
             'ideal' => 0,
             'actual' => 0,
             'diff' => 0
         ];
         $months = months();
         foreach ($months as $month) {
-            $yearWork[$month['name']] =[
+            $yearWork[$month['index']] =[
+                'name' => $month['name'],
                 'ideal' => static::monthIdeal($id,$month['index'],$year),
                 'actual' => static::monthWork($id,$month['index'],$year)
             ];
-            $yearWork[$month['name']]['diff'] = $yearWork[$month['name']]['actual'] - $yearWork[$month['name']]['ideal'];
-            $yearWork[$month['name']]['diffType'] = $yearWork[$month['name']]['actual']['diff'] > 0 ? 'more' : 'less';
-            if($yearWork[$month['name']]['diff'] === 0){
-                $yearWork[$month['name']]['diffType'] = 'exact';
+            $yearWork[$month['index']]['diff'] = $yearWork[$month['index']]['actual'] - $yearWork[$month['index']]['ideal'];
+            $yearWork[$month['index']]['diffType'] = $yearWork[$month['index']]['actual']['diff'] > 0 ? 'more' : 'less';
+            if($yearWork[$month['index']]['diff'] === 0){
+                $yearWork[$month['index']]['diffType'] = 'exact';
             }
-            $total['ideal'] += $yearWork[$month['name']]['ideal'];
-            $total['actual'] += $yearWork[$month['name']]['actual'];
-            $total['diff'] += $yearWork[$month['name']]['diff'];
-            $yearWork[$month['name']]['diff'] = abs($yearWork[$month['name']]['diff']);
+            $total['ideal'] += $yearWork[$month['index']]['ideal'];
+            $total['actual'] += $yearWork[$month['index']]['actual'];
+            $total['diff'] += $yearWork[$month['index']]['diff'];
+            $yearWork[$month['index']]['diff'] = abs($yearWork[$month['index']]['diff']);
         }
         $total['diffType'] = $total['diff'] > 0 ? 'more' : 'less';
         if($total['diff'] === 0){
             $total['diffType'] = 'exact';
         }
         $total['diff'] = abs($total['diff']);
-        $yearWork['total'] = $total;
+        $yearWork[] = $total;
         return $yearWork;
     }
 
@@ -122,10 +124,11 @@ class Statistics
     {
         $yearFlags = [];
         $months = months();
-        $total = [];
+        $total = ['name' => 'Total'];
         foreach ($months as $month) {
             $monthFlags = static::monthFlags($id,$month['index'],$year);
-            $yearFlags[$month['name']] = $monthFlags;
+            $yearFlags[$month['index']] = $monthFlags;
+            $yearFlags[$month['index']]['name'] = $month['name'];
             foreach ($monthFlags as $key => $value) {
                 if(!isset($total[$key])){
                     $total[$key] = 0;
@@ -133,7 +136,7 @@ class Statistics
                 $total[$key] += $value;
             }
         }
-        $yearFlags['total'] = $total;
+        $yearFlags[] = $total;
         return $yearFlags;
     }
 
@@ -142,15 +145,17 @@ class Statistics
         $yearAbsence = [];
         $months = months();
         $total = [
+            'name' => 'Total',
             'workDaysAbsence' => 0,
             'vacationsAttended' => 0
         ];
         foreach ($months as $month) {
-            $yearAbsence[$month['name']] = static::monthAttendanceDays($id,$month['index'],$year);
-            $total['workDaysAbsence'] += count($yearAbsence[$month['name']]['workDaysAbsence']);
-            $total['vacationsAttended'] += count($yearAbsence[$month['name']]['vacationsAttended']);
+            $yearAbsence[$month['index']] = static::monthAttendanceDays($id,$month['index'],$year);
+            $yearAbsence[$month['index']]['name'] = $month['name'];
+            $total['workDaysAbsence'] += count($yearAbsence[$month['index']]['workDaysAbsence']);
+            $total['vacationsAttended'] += count($yearAbsence[$month['index']]['vacationsAttended']);
         }
-        $yearAbsence['total'] = $total;
+        $yearAbsence[] = $total;
         return $yearAbsence;
     }
 
@@ -158,18 +163,20 @@ class Statistics
     {
         $yearRegularTime = [];
         $total = [
+            'name' => 'Total',
             'all' => 0,
             'offTimes' => 0,
             'percentage' => 0
         ];
         $months = months();
         foreach ($months as $month) {
-            $yearRegularTime[$month['name']] = static::monthRegularTime($id,$month['index'],$year);
-            $total['all'] += $yearRegularTime[$month['name']]['all'];
-            $total['offTimes'] += $yearRegularTime[$month['name']]['offTimes'];
+            $yearRegularTime[$month['index']] = static::monthRegularTime($id,$month['index'],$year);
+            $yearRegularTime[$month['index']]['name'] = $month['name'];
+            $total['all'] += $yearRegularTime[$month['index']]['all'];
+            $total['offTimes'] += $yearRegularTime[$month['index']]['offTimes'];
         }
         $total['percentage'] = round(($total['all'] - $total['offTimes']) / $total['all'] * 100 ,2);
-        $yearRegularTime['total'] = $total;
+        $yearRegularTime[] = $total;
         return $yearRegularTime;
     }
 
@@ -177,18 +184,20 @@ class Statistics
     {
         $yearWorkEfficiency = [];
         $total = [
+            'name' => 'Total',
             'attendedTime' => 0,
             'actualWork' => 0,
             'percentage' => 0
         ];
         $months = months();
         foreach ($months as $month) {
-            $yearWorkEfficiency[$month['name']] = static::monthWorkEfficiency($id,$month['index'],$year);
-            $total['attendedTime'] += $yearWorkEfficiency[$month['name']]['attendedTime'];
-            $total['actualWork'] += $yearWorkEfficiency[$month['name']]['actualWork'];
+            $yearWorkEfficiency[$month['index']] = static::monthWorkEfficiency($id,$month['index'],$year);
+            $yearWorkEfficiency[$month['index']]['name'] = $month['name'];
+            $total['attendedTime'] += $yearWorkEfficiency[$month['index']]['attendedTime'];
+            $total['actualWork'] += $yearWorkEfficiency[$month['index']]['actualWork'];
         }
         $total['percentage'] = round($total['actualWork'] / $total['attendedTime'] * 100 , 2);
-        $yearWorkEfficiency['total'] = $total;
+        $yearWorkEfficiency[] = $total;
         return $yearWorkEfficiency;
     }
 
