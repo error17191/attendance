@@ -432,14 +432,15 @@ class AttendanceTest extends TestCase
 
         //test the work time signs field
         $workTimeSigns = $content['workTimeSigns'];
-        dd($content);
+        $task0 = $workTimeSigns[0]['task'];
+        $task1 = $workTimeSigns[1]['task'];
         $this->assertCount(2, $workTimeSigns);
         $this->assertEquals($startWork->toTimeString(),$workTimeSigns[0]['started_at']);
         $this->assertEquals($startWork->copy()->addHours(2)->addMinute(90)->toTimeString(),$workTimeSigns[0]['stopped_at']);
-        $this->assertEquals('work',$workTimeSigns[0]['status']);
+        $this->assertEquals('work',$task['content']);
         $this->assertEquals($startWork->copy()->addHours(2)->addMinute(90)->toTimeString(),$workTimeSigns[1]['started_at']);
         $this->assertEquals(null,$workTimeSigns[1]['stopped_at']);
-        $this->assertEquals('work',$workTimeSigns[1]['status']);
+        $this->assertEquals('work',$task1['content']);
 
         //test the status field
         $this->assertEquals('on', $content['status']);
@@ -448,7 +449,7 @@ class AttendanceTest extends TestCase
         $todayTime = $content['today_time'];
         $todaySeconds = $stopFlag->diffInSeconds($startWork) + app('settings')->getFlags()['lost_time'] - $stopFlag->diffInSeconds($startFlag);
         $this->assertEquals($todaySeconds, $todayTime['seconds']);
-        $this->assertEquals('work', $todayTime['workStatus']);
+        $this->assertEquals('work', $todayTime['task']['content']);
 
         //test the month report
         $monthReport = $content['month_report'];
@@ -489,7 +490,7 @@ class AttendanceTest extends TestCase
         $workTimeSign = $content['workTimeSign'];
         $task = $workTimeSign['task'];
         $this->assertCount(3,$workTimeSign);
-        $this->assertEquals($start->toTimeString(),$workTimeSign['started_at']);
+        $this->assertEquals($startWork->toTimeString(),$workTimeSign['started_at']);
         $this->assertEquals(null,$workTimeSign['stopped_at']);
         $this->assertEquals('work',$task['content']);
 
@@ -540,7 +541,7 @@ class AttendanceTest extends TestCase
         $this->assertCount(3,$workTimeSign);
         $this->assertEquals($startWork->toTimeString(),$workTimeSign['started_at']);
         $this->assertEquals($stopWork->toTimeString(),$workTimeSign['stopped_at']);
-        $this->assertEquals('work',$workTimeSign['status']);
+        $this->assertEquals('work',$workTimeSign['task']['content']);
 
         //test the today time field
         $todayTime = $content['today_time'];
@@ -554,7 +555,7 @@ class AttendanceTest extends TestCase
 
         //test that response succeeded
         $this->assertEquals(200, $response->status());
-        $this->assertCount(5, $content);
+        $this->assertCount(6, $content);
 
         //test the flags field
         $flag = $content['flags'][0];
@@ -568,7 +569,7 @@ class AttendanceTest extends TestCase
         $this->assertCount(1, $workTimeSigns);
         $this->assertEquals($startWork->toTimeString(),$workTimeSigns[0]['started_at']);
         $this->assertEquals($stopWork->toTimeString(),$workTimeSigns[0]['stopped_at']);
-        $this->assertEquals('work',$workTimeSigns[0]['status']);
+        $this->assertEquals('work',$workTimeSigns[0]['task']['content']);
 
         //test the status field
         $this->assertEquals('off', $content['status']);
@@ -577,7 +578,7 @@ class AttendanceTest extends TestCase
         $todayTime = $content['today_time'];
         $todaySeconds = $startFlag->diffInSeconds($startWork) + app('settings')->getFlags()['lost_time'];
         $this->assertEquals($todaySeconds, $todayTime['seconds']);
-        $this->assertEquals('work', $todayTime['workStatus']);
+        $this->assertEquals('work', $todayTime['task']['content']);
 
         //test the month report
         $monthReport = $content['month_report'];
@@ -618,7 +619,7 @@ class AttendanceTest extends TestCase
         $workTimeSign = $content['workTimeSign'];
         $task = $workTimeSign['task'];
         $this->assertCount(3,$workTimeSign);
-        $this->assertEquals($start->toTimeString(),$workTimeSign['started_at']);
+        $this->assertEquals($startWork->toTimeString(),$workTimeSign['started_at']);
         $this->assertEquals(null,$workTimeSign['stopped_at']);
         $this->assertEquals('work',$task['content']);
 
