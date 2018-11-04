@@ -20,7 +20,11 @@
         </thead>
         <tbody>
             <tr v-for="week in calendarDays">
-                <td v-for="day in week" :class="{'btn-primary': day.active}">{{day.text}}</td>
+                <td v-for="day in week"
+                    :class="{'btn-primary': day.first,'btn-success': day.second}"
+                >
+                    {{day.text}}
+                </td>
             </tr>
         </tbody>
     </table>
@@ -29,26 +33,44 @@
 <script>
     export default {
         name: "Calendar",
-        props: ['month','year','days'],
+        props: {
+            month: {
+                type: Object,
+                required: true
+            },
+            year: {
+                type: Number,
+                required: true
+            },
+            days: {
+                type: Array,
+                default: ()=> []
+            },
+            secondDays: {
+                type: Array,
+                default: ()=> []
+            }
+        },
         computed: {
             calendarDays: function () {
                 let monthFirst = moment().year(this.year).month(this.month.number).startOf('month');
-                let start = monthFirst.subtract(monthFirst.day(),'days');
+                let day = monthFirst.subtract(monthFirst.day(),'days');
                 let monthLast = moment().year(this.year).month(this.month.number).endOf('month');
                 let end = monthLast.add(6 - monthLast.day(),'days');
                 let calendarDays = [];
                 let week = [];
-                while (start <= end){
+                while (day <= end){
                     if(week.length >= 7){
                         calendarDays.push(week);
                         week = [];
                     }
-                    let text = start.date() < 10 ? `0${start.date()}` : start.date().toString();
+                    let text = day.date() < 10 ? `0${day.date()}` : day.date().toString();
                     week.push({
                         text: text,
-                        active: this.days.indexOf(text) >= 0 && start.month() === this.month.number
+                        first: this.days.indexOf(text) >= 0 && day.month() === this.month.number,
+                        second: this.secondDays.indexOf(text) >= 0 && day.month() === this.month.number,
                     });
-                    start.add(1,'days');
+                    day.add(1,'days');
                 }
                 if(week.length){
                     calendarDays.push(week);

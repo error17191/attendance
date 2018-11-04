@@ -125,7 +125,31 @@
                         </div>
                     </b-tab>
                     <b-tab no-body title="Absence">
-
+                        <div class="card">
+                            <div class="card-header text-center">
+                                Absence
+                            </div>
+                            <div class="card-body">
+                                <calendar :month="month('absenceIndex')"
+                                          :year="form.year"
+                                          :days="getDays(statistics.absence[absenceIndex + 1].workDaysAbsence)"
+                                          :secondDays="getDays(statistics.absence[absenceIndex + 1].vacationsAttended)"
+                                >
+                                    <button slot="before" class="btn btn-primary float-left"
+                                            :disabled="absenceIndex <= 0"
+                                            @click.prevent="changeMonth('absenceIndex')"
+                                    >
+                                        <i class="fa fa-angle-double-left"></i>
+                                    </button>
+                                    <button slot="after" class="btn btn-primary float-right"
+                                            :disabled="absenceIndex >= 11"
+                                            @click.prevent="changeMonth('absenceIndex',true)"
+                                    >
+                                        <i class="fa fa-angle-double-right"></i>
+                                    </button>
+                                </calendar>
+                            </div>
+                        </div>
                     </b-tab>
                     <b-tab no-body title="Regular Time">
                         <div class="card">
@@ -147,6 +171,22 @@
                                         <i class="fa fa-angle-double-right"></i>
                                     </button>
                                 </calendar>
+                            </div>
+                        </div>
+                        <div class="card col-md-10">
+                            <div class="card-header text-center">
+                                Months Work At Regular Time Percentage
+                            </div>
+                            <div class="card-body">
+                                <line-chart :data="regularTimeLine"></line-chart>
+                            </div>
+                        </div>
+                        <div class="card col-md-10">
+                            <div class="card-header text-center">
+                                Days Of Work At Regular Time
+                            </div>
+                            <div class="card-body">
+                                <pie-chart :data="regularTimePie"></pie-chart>
                             </div>
                         </div>
                     </b-tab>
@@ -281,7 +321,6 @@
                         }
                     ]
                 };
-
             },
             workTimeLine: function () {
                 let labels = [];
@@ -346,6 +385,45 @@
                         }
                     ]
                 };
+            },
+            regularTimeLine: function () {
+                let labels = [];
+                let data = [];
+                for(let month in this.statistics.regularTime){
+                    if(month > 12){
+                        continue;
+                    }
+                    labels.push(this.statistics.regularTime[month].name);
+                    data.push(this.statistics.regularTime[month].percentage);
+                }
+                return {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Month Work At Regular Time Percentage',
+                            backgroundColor: '#f87979',
+                            data: data
+                        }
+                    ]
+                };
+            },
+            regularTimePie: function () {
+                return {
+                    labels: ['Days At Regular Time','Days Off Regular Time'],
+                    datasets: [
+                        {
+                            backgroundColor: [
+                                '#00D8FF',
+                                '#DD1B16'
+                            ],
+                            data: [
+                                this.statistics.regularTime[13].all - this.statistics.regularTime[13].offTimes,
+                                this.statistics.regularTime[13].offTimes
+                            ]
+                        }
+                    ]
+                };
+
             }
         },
         filters: {
