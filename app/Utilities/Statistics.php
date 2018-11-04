@@ -35,13 +35,13 @@ class Statistics
         $dayWorkTimes = static::dayData($id,'work_times',$date)->sortBy('started_work_at');
         if($dayWorkTimes->count() <= 0){
             $attended = false;
-            $weekend = static::isWeekend(new Carbon($date));
-            $vacation = static::isVacation($id,$date);
+            $weekend = WorkDay::isWeekend(new Carbon($date));
+            $vacation = WorkDay::isVacation($id,$date);
             return compact('attended','weekend','vacation');
         }
         $attended = true;
-        $weekend = static::isWeekend(new Carbon($date));
-        $vacation = static::isVacation($id,$date);
+        $weekend = WorkDay::isWeekend(new Carbon($date));
+        $vacation = WorkDay::isVacation($id,$date);
         $actualWork = $dayWorkTimes->sum('seconds');
         $timeAtWork = (new Carbon($dayWorkTimes->first()->started_work_at))->diffInSeconds($dayWorkTimes->last()->stopped_work_at);
         $workTimeLog = [];
@@ -212,7 +212,7 @@ class Statistics
         $ideal = 0;
         for($i = 0; $i < $monthLength; $i++){
             $day = (new Carbon())->year($year)->month($month)->firstOfMonth()->addDays($i);
-            if(static::isWeekend($day) || static::isVacation($id,$day->toDateString())){
+            if(WorkDay::isNotAWorkDay($id,$day)){
                 continue;
             }
             $ideal += $regularHours;
@@ -261,7 +261,7 @@ class Statistics
         $workDaysAbsence = [];
         $monthDays = static::monthDays($month);
         foreach ($monthDays as $monthDay) {
-            if(static::isWeekend(new Carbon($monthDay))|| static::isVacation($id,$monthDay)){
+            if(WorkDay::isNotAWorkDay($id,(new Carbon($monthDay)))){
                 if(in_array($monthDay,$days)){
                     $vacationsAttended[] = $monthDay;
                 }
@@ -356,32 +356,4 @@ class Statistics
             ->get();
     }
 
-    public static function isWeekend(Carbon $date):bool
-    {
-        Carbon::setWeekStartsAt(0);
-        Carbon::setWeekendDays(app('settings')->getWeekends());
-        return $date->isWeekend();
-    }
-
-    public static function isVacation(int $id,string $date):bool
-    {
-        return static::isGlobalVacation($date) || static::isUserVacation($id,$date);
-    }
-
-    public static function isGlobalVacation(string $date):bool
-    {
-        return DB::table('custom_vacations')->where('date',$date)->first() != null;
-    }
-
-    public static function isUserVacation(int $id,string $date):bool
-    {
-        return DB::table('users')
-                ->leftJoin('users_custom_vacations','users.id','users_custom_vacations.user_id')
-                ->leftJoin('custom_vacations','users_custom_vacations.vacation_id','custom_vacations.id')
-                ->select('custom_vacations.*')
-                ->where('users.id',$id)
-                ->where('custom_vacations.global',0)
-                ->where('custom_vacations.date',$date)
-                ->first() != null;
-    }
 }
