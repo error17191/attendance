@@ -1,4 +1,5 @@
 <template>
+    <!--TODO: fix bug with changing months in calendar-->
     <div class="card-body">
         <div class="row">
             <div class="col-md-5">

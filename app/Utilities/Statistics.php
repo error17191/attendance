@@ -8,7 +8,12 @@ use Carbon\Carbon;
 
 class Statistics
 {
-
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array|null
+     */
     public static function monthReport(int $id,int $month,int $year = 0)
     {
         //TODO: better handling for month without work
@@ -30,6 +35,11 @@ class Statistics
         return compact('actualTime','idealTime','diffType','diff','status','flags','absence','regularTime','workEfficiency');
     }
 
+    /**
+     * @param int $id
+     * @param string $date
+     * @return array
+     */
     public static function dayReport(int $id,string $date)
     {
         $dayWorkTimes = static::dayData($id,'work_times',$date)->sortBy('started_work_at');
@@ -74,6 +84,11 @@ class Statistics
         return compact('attended','weekend','vacation','actualWork','timeAtWork','workTimeLog','flags','workEfficiency','regularTime','regularHours');
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearReport(int $id,int $year):array
     {
         //TODO: handle months without work and year without work
@@ -85,6 +100,11 @@ class Statistics
         return compact('workTime','flags','absence','regularTime','workEfficiency');
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearWorkTime(int $id,int $year):array
     {
         $yearWork = [];
@@ -120,6 +140,11 @@ class Statistics
         return $yearWork;
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearFlags(int $id,int $year):array
     {
         $yearFlags = [];
@@ -140,6 +165,11 @@ class Statistics
         return $yearFlags;
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearAbsence(int $id,int $year):array
     {
         $yearAbsence = [];
@@ -159,6 +189,11 @@ class Statistics
         return $yearAbsence;
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearRegularTime(int $id,int $year):array
     {
         $yearRegularTime = [];
@@ -180,6 +215,11 @@ class Statistics
         return $yearRegularTime;
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearWorkEfficiency(int $id,int $year)
     {
         $yearWorkEfficiency = [];
@@ -201,6 +241,12 @@ class Statistics
         return $yearWorkEfficiency;
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return int
+     */
     public static function monthIdeal(int $id,int $month,int $year = 0):int
     {
         if(!$year){
@@ -220,11 +266,23 @@ class Statistics
         return $ideal * 60 * 60;
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return int
+     */
     public static function monthWork(int $id,int $month,int $year = 0):int
     {
         return static::monthData($id,'work_times',$month,$year)->sum('seconds');
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array
+     */
     public static function monthWorkStatusTimes(int $id,int $month,int $year = 0):array
     {
         $status = [];
@@ -238,6 +296,12 @@ class Statistics
         return $status;
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array
+     */
     public static function monthFlags(int $id,int $month,int $year = 0):array
     {
         $flags = [];
@@ -254,6 +318,12 @@ class Statistics
         return $flags;
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array
+     */
     public static function monthAttendanceDays(int $id,int $month,int $year = 0):array
     {
         $days = static::monthData($id,'work_times',$month,$year)->groupBy('day')->keys()->toArray();
@@ -274,6 +344,12 @@ class Statistics
         return compact('vacationsAttended','workDaysAbsence');
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array
+     */
     public static function monthRegularTime(int $id,int $month,int $year = 0):array
     {
         $regularTimeFrom = app('settings')->getRegularTime()['from'] * 60 * 60;
@@ -299,6 +375,12 @@ class Statistics
         return compact('all','offDays','offTimes','percentage');
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array
+     */
     public static function monthWorkEfficiency(int $id,int $month,int $year = 0):array
     {
         $workTimes = static::monthData($id,'work_times',$month,$year)->groupBy('day');
@@ -314,6 +396,10 @@ class Statistics
         return compact('attendedTime','actualWork','percentage');
     }
 
+    /**
+     * @param int $month
+     * @return array
+     */
     public static function monthDays(int $month):array
     {
         $monthLength = (new Carbon())->month($month)->firstOfMonth()->diffInDays((new Carbon())->month($month)->lastOfMonth()) + 1;
@@ -324,6 +410,12 @@ class Statistics
         return $days;
     }
 
+    /**
+     * @param int $id
+     * @param string $table
+     * @param string $date
+     * @return Collection
+     */
     public static function dayData(int $id,string $table,string $date):Collection
     {
         return DB::table($table)->where('user_id',$id)
@@ -331,6 +423,13 @@ class Statistics
             ->get();
     }
 
+    /**
+     * @param int $id
+     * @param string $table
+     * @param int $month
+     * @param int $year
+     * @return Collection
+     */
     public static function monthData(int $id,string $table,int $month,int $year = 0):Collection
     {
         if(!$year){
@@ -345,6 +444,12 @@ class Statistics
             ->get();
     }
 
+    /**
+     * @param int $id
+     * @param string $table
+     * @param int $year
+     * @return Collection
+     */
     public static function yearData(int $id,string $table,int $year):Collection
     {
         return DB::table($table)->where('user_id',$id)
@@ -356,4 +461,16 @@ class Statistics
             ->get();
     }
 
+    /**
+     * @param array $ids
+     * @param string $type
+     * @param int $year
+     * @param int|null $month
+     * @param int|null $day
+     * @return array
+     */
+    public static function workTimeSummary(array $ids,string $type,int $year,int $month = null,int $day = null):array
+    {
+
+    }
 }
