@@ -129,27 +129,24 @@
                     </b-tab>
                     <b-tab no-body title="Regular Time">
                         <div class="card">
-                            <div class="card-header">
-                                <button class="btn btn-primary"
-                                        :disabled="regularTimeIndex <= 0"
-                                        @click.prevent="changeMonth('regularTimeIndex')"
-                                >
-                                    Previous
-                                </button>
-                            </div>
                             <div class="card-body">
                                 <calendar :year="form.year"
                                           :month="month('regularTimeIndex')"
                                           :days="getDays(statistics.regularTime[regularTimeIndex + 1].offDays)"
-                                ></calendar>
-                            </div>
-                            <div class="card-footer">
-                                <button class="btn btn-primary"
-                                        :disabled="regularTimeIndex >= 11"
-                                        @click.prevent="changeMonth('regularTimeIndex',true)"
                                 >
-                                    Next
-                                </button>
+                                    <button slot="before" class="btn btn-primary float-left"
+                                            :disabled="regularTimeIndex <= 0"
+                                            @click.prevent="changeMonth('regularTimeIndex')"
+                                    >
+                                        <i class="fa fa-angle-double-left"></i>
+                                    </button>
+                                    <button slot="after" class="btn btn-primary float-right"
+                                            :disabled="regularTimeIndex >= 11"
+                                            @click.prevent="changeMonth('regularTimeIndex',true)"
+                                    >
+                                        <i class="fa fa-angle-double-right"></i>
+                                    </button>
+                                </calendar>
                             </div>
                         </div>
                     </b-tab>
@@ -392,7 +389,17 @@
                 return {name: this.setMonths()[this[type]].text,number: this.setMonths()[this[type]].value -1};
             },
             changeMonth(type,next){
-
+                if(next){
+                    if(this[type] >= 12){
+                        return;
+                    }
+                    this[type]++;
+                }else{
+                    if(this[type] <= 0){
+                        return;
+                    }
+                    this[type]--;
+                }
             }
         }
     }

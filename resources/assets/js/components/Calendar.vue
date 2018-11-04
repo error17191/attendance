@@ -2,7 +2,11 @@
     <table class="table table-striped table-bordered sm col-md-1">
         <thead>
             <tr class="table-primary">
-                <th colspan="7" class="text-center">{{month.name}} {{year}}</th>
+                <th colspan="7" class="text-center">
+                    <slot name="before"></slot>
+                    {{month.name}} {{year}}
+                    <slot name="after"></slot>
+                </th>
             </tr>
             <tr class="table-dark">
                 <th>Sun</th>
@@ -28,32 +32,28 @@
         props: ['month','year','days'],
         computed: {
             calendarDays: function () {
-                let monthFirst = moment().month(this.month.number).year(this.year).startOf('month');
-                let day = moment().month(this.month.number).year(this.year).startOf('month').subtract(monthFirst.day(),'days');
-                let monthLast = moment().month(this.month.number).year(this.year).endOf('month');
-                let endDay = moment().month(this.month.number).year(this.year).startOf('month').add(6 - monthLast.day(),'days');
-                let days = [];
-                let counter = 1;
+                let monthFirst = moment().year(this.year).month(this.month.number).startOf('month');
+                let start = monthFirst.subtract(monthFirst.day(),'days');
+                let monthLast = moment().year(this.year).month(this.month.number).endOf('month');
+                let end = monthLast.add(6 - monthLast.day(),'days');
+                let calendarDays = [];
                 let week = [];
-                while (true){
-                    if(counter > 7){
-                        counter = 1;
-                        days.push(week);
+                while (start <= end){
+                    if(week.length >= 7){
+                        calendarDays.push(week);
                         week = [];
                     }
-                    let text = day.date() < 10 ? `0${day.date()}` : day.date().toString();
+                    let text = start.date() < 10 ? `0${start.date()}` : start.date().toString();
                     week.push({
                         text: text,
-                        active: this.days.indexOf(text) >= 0 && day.month() === this.month.number
+                        active: this.days.indexOf(text) >= 0 && start.month() === this.month.number
                     });
-                
-                    counter++;
-                    day.add(1,'days');
+                    start.add(1,'days');
                 }
                 if(week.length){
-                    days.push(week);
+                    calendarDays.push(week);
                 }
-                return days;
+                return calendarDays;
             }
         }
     }
