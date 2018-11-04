@@ -18,11 +18,7 @@ class WorkDay
 
     public static function isAWorkDay(int $id,Carbon $date):bool
     {
-        app('settings');
-        return !static::isAnnualVacation($date->toDateString()) ||
-            !static::isGlobalCustomVacation($date->toDateString()) ||
-            !static::isUserCustomVacation($id,$date->toDateString()) ||
-            !static::isWeekend($date);
+        return !static::isNotAWorkDay($id,$date);
     }
 
     public static function isAnnualVacation(string $date):bool
