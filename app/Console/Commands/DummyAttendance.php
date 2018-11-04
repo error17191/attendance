@@ -55,6 +55,7 @@ class DummyAttendance extends Command
     {
         DB::table('work_times')->where('user_id',$id)->delete();
         DB::table('flags')->where('user_id',$id)->delete();
+        DB::table('users')->where('id',$id)->update(['flag' => 'off','status' => 'off']);
     }
 
     public function createAttendance(int $id,int $month)

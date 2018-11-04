@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Utilities\WorkDay;
 use App\WorkTime;
 use Carbon\Carbon;
 use App\Utilities\WorKTime as UW;
@@ -35,7 +36,7 @@ class StatsController extends Controller
         $workHoursIdeal = 0;
         for ($i = 0; $i <= $daysPassed; $i++) {
             $day = (new Carbon($firstOfMonth))->addDays($i);
-            if (!$day->isWeekend()) {
+            if (WorkDay::isAWorkDay($id,$day)) {
                 $workHoursIdeal += app('settings')->getRegularTime()['regularHours'];
             }
         }
