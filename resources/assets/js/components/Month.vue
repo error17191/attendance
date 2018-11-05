@@ -1,5 +1,4 @@
 <template>
-    <!--TODO: fix bug with changing months in calendar-->
     <div class="card-body">
         <div class="row">
             <div class="col-md-5">
@@ -172,7 +171,7 @@
                                         <span>Absence In Work Days</span>
                                     </div>
                                     <div class="card-body">
-                                        <calendar class="m-2" :year="form.year" :month="month" :days="getDays(statistics.absence.workDaysAbsence)"></calendar>
+                                        <calendar class="m-2" :year="selected.year" :month="month" :days="getDays(statistics.absence.workDaysAbsence)"></calendar>
                                     </div>
                                 </div>
                                 <div class="card">
@@ -180,7 +179,7 @@
                                         <span>Attending In Vacations</span>
                                     </div>
                                     <div class="card-body">
-                                        <calendar class="m-2" :year="form.year" :month="month" :days="getDays(statistics.absence.vacationsAttended)"></calendar>
+                                        <calendar class="m-2" :year="selected.year" :month="month" :days="getDays(statistics.absence.vacationsAttended)"></calendar>
                                     </div>
                                 </div>
                             </div>
@@ -198,7 +197,7 @@
                                         Days Of Work Off The Regular Time
                                     </div>
                                     <div class="card-body">
-                                        <calendar :year="form.year" :month="month" :days="getDays(statistics.regularTime.offDays)"></calendar>
+                                        <calendar :year="selected.year" :month="month" :days="getDays(statistics.regularTime.offDays)"></calendar>
                                     </div>
                                 </div>
                             </div>
@@ -318,6 +317,10 @@
                     month: null,
                     year: null
                 },
+                selected: {
+                    month: null,
+                    year: null
+                },
                 user: null,
                 formReady: false,
                 showData: 'not ready'
@@ -326,7 +329,7 @@
         computed: {
             month: function () {
                 for(let i in this.months){
-                    if(this.months[i].value === this.form.month){
+                    if(this.months[i].value === this.selected.month){
                         return {name: this.months[i].text,number: this.months[i].value -1};
                     }
                 }
@@ -366,6 +369,8 @@
                     if(response.data.monthStatistics == null){
                         this.showData = 'no work';
                     }else{
+                        this.selected.year = this.form.year;
+                        this.selected.month = this.form.month;
                         this.showData = 'show statistics';
                     }
                     this.statistics = response.data.monthStatistics;

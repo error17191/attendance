@@ -131,7 +131,7 @@
                             </div>
                             <div class="card-body">
                                 <calendar :month="month('absenceIndex')"
-                                          :year="form.year"
+                                          :year="selected.year"
                                           :days="getDays(statistics.absence[absenceIndex + 1].workDaysAbsence)"
                                           :secondDays="getDays(statistics.absence[absenceIndex + 1].vacationsAttended)"
                                 >
@@ -154,7 +154,7 @@
                     <b-tab no-body title="Regular Time">
                         <div class="card">
                             <div class="card-body">
-                                <calendar :year="form.year"
+                                <calendar :year="selected.year"
                                           :month="month('regularTimeIndex')"
                                           :days="getDays(statistics.regularTime[regularTimeIndex + 1].offDays)"
                                 >
@@ -272,6 +272,9 @@
             return {
                 form: {
                     userId: null,
+                    year: null
+                },
+                selected: {
                     year: null
                 },
                 years: [],
@@ -452,6 +455,7 @@
                     method: 'get',
                     url: url
                 }).then((response) => {
+                    this.selected.year = this.form.year;
                     this.statistics = response.data.statistics;
                     this.showAlert = false;
                 });

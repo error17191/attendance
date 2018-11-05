@@ -55,7 +55,10 @@ class WorkDay
      */
     public static function isGlobalCustomVacation(string $date):bool
     {
-        return DB::table('custom_vacations')->where('date',$date)->first() != null;
+        return DB::table('custom_vacations')
+                ->where('date',$date)
+                ->where('global',1)
+                ->first() != null;
     }
 
     /**

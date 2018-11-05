@@ -461,16 +461,5 @@ class Statistics
             ->get();
     }
 
-    /**
-     * @param array $ids
-     * @param string $type
-     * @param int $year
-     * @param int|null $month
-     * @param int|null $day
-     * @return array
-     */
-    public static function workTimeSummary(array $ids,string $type,int $year,int $month = null,int $day = null):array
-    {
 
-    }
 }
