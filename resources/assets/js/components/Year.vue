@@ -18,10 +18,13 @@
                 Get Statistics
             </button>
         </div>
-        <div v-if="showAlert" class="alert alert-info">
+        <div v-if="showAlert === 'choose'" class="alert alert-info">
             Please Choose Employee And Year
         </div>
-        <div v-else>
+        <div v-if="showAlert === 'no_work'" class="alert alert-info">
+            No Work
+        </div>
+        <div v-if="!showAlert">
             <b-card no-body>
                 <b-tabs card>
                     <b-tab no-body title="Time" active>
@@ -281,7 +284,7 @@
                 formReady: false,
                 user: null,
                 statistics: null,
-                showAlert: true,
+                showAlert: 'choose',
                 regularTimeIndex: 0,
                 absenceIndex: 0
             }
@@ -455,9 +458,13 @@
                     method: 'get',
                     url: url
                 }).then((response) => {
-                    this.selected.year = this.form.year;
+                    if(!response.data.statistics.work_status){
+                        this.showAlert = 'no_work';
+                    }else{
+                        this.selected.year = this.form.year;
+                        this.showAlert = false;
+                    }
                     this.statistics = response.data.statistics;
-                    this.showAlert = false;
                 });
             },
             getDays(datesArray){

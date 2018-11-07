@@ -2,6 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\WorkTime;
+use Carbon\Carbon;
+use App\Utilities\Statistics;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -38,11 +41,8 @@ class IbrahimExperiments extends Command
      */
     public function handle()
     {
-        dd(
-            DB::table('work_times')
-                ->where('user_id',1)
-                ->get()
-                ->groupBy('day')->first()
-        );
+        dd(Statistics::dayReport(1,now()->toDateString()));
+        return;
     }
+
 }

@@ -25,14 +25,13 @@
                 Get Statistics
             </button>
         </div>
-        <div v-if="showData === 'not ready'" class="alert alert-info">
+        <div v-if="showAlert === 'choose'" class="alert alert-info">
             Please select an employee a month and a year
         </div>
-        <div v-if="showData === 'no work'"  class="alert alert-info">
+        <div v-if="showAlert === 'no_work'"  class="alert alert-info">
             No work in {{form.month < 10 ? `0${form.month}` : form.month}}-{{form.year}} for {{user.username}}
         </div>
-        <div v-if="showData === 'show statistics'">
-            <b-card no-body>
+        <div v-if="!showAlert">
                 <b-tabs card>
                     <b-tab no-body title="Time" active>
                         <div class="card">
@@ -323,7 +322,7 @@
                 },
                 user: null,
                 formReady: false,
-                showData: 'not ready'
+                showAlert: 'choose'
             }
         },
         computed: {
@@ -366,12 +365,12 @@
                     method: 'get',
                     url: url
                 }).then((response) => {
-                    if(response.data.monthStatistics == null){
-                        this.showData = 'no work';
+                    if(!response.data.monthStatistics.work_status){
+                        this.showAlert = 'no_work';
                     }else{
                         this.selected.year = this.form.year;
                         this.selected.month = this.form.month;
-                        this.showData = 'show statistics';
+                        this.showAlert = false;
                     }
                     this.statistics = response.data.monthStatistics;
                 });
