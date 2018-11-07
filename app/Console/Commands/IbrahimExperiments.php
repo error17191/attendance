@@ -41,7 +41,7 @@ class IbrahimExperiments extends Command
      */
     public function handle()
     {
-        dd(Statistics::dayReport(1,now()->toDateString()));
+        dd(Statistics::yearSummary(2018));
         return;
     }
 

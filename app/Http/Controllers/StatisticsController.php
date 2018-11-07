@@ -148,4 +148,110 @@ class StatisticsController extends Controller
             'statistics' => Statistics::yearReport($request->userId,$request->year)
         ]);
     }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function daySummary(Request $request):JsonResponse
+    {
+        $v = Validator::make($request->only('date'),[
+            'date' => 'required|date|date_format:Y-m-d'
+        ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'invalid_date',
+                'message' => 'no date given or wrong formatted'
+            ],422);
+        }
+
+        $v = Validator::make($request->only('users'),[
+            'users' => 'nullable|array',
+            'users.*' => 'nullable|integer|exists:users,id'
+        ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'invalid_users',
+                'message' => 'users contains invalid users'
+            ],422);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'statistics' => Statistics::daySummary($request->date,$request->users)
+        ]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function monthSummary(Request $request):JsonResponse
+    {
+        $v = Validator::make($request->only(['month','year']),[
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2010|max:now()->year'
+        ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'invalid_date',
+                'message' => 'invalid or missing month or year'
+            ],422);
+        }
+
+        $v = Validator::make($request->only('users'),[
+            'users' => 'nullable|array',
+            'users.*' => 'nullable|integer|exists:users,id'
+        ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'invalid_users',
+                'message' => 'users contains invalid users'
+            ],422);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'statistics' => Statistics::monthSummary($request->month,$request->year,$request->users)
+        ]);
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function yearSummary(Request $request):JsonResponse
+    {
+        $v = Validator::make($request->only('year'),[
+            'year' => 'required|integer|min:2010|max:now()->year'
+        ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'invalid_year',
+                'message' => 'year is invalid or missing'
+            ],422);
+        }
+
+        $v = Validator::make($request->only('users'),[
+            'users' => 'nullable|array',
+            'users.*' => 'nullable|integer|exists:users,id'
+        ]);
+
+        if($v->fails()){
+            return response()->json([
+                'status' => 'invalid_users',
+                'message' => 'users contains invalid users'
+            ],422);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'statistics' => Statistics::yearSummary($request->year,$request->users)
+        ]);
+    }
 }

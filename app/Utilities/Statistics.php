@@ -511,14 +511,11 @@ class Statistics
         foreach ($ids as $id) {
             $name = DB::table('users')->find($id)->name;
             $report[$name] = static::monthReport($id,$month,$year);
-            if($report[$name] == null){
-                $report[$name] = 'never worked this month';
-            }
         }
         return $report;
     }
 
-    public static function yearSummary(int $year,array $ids):array
+    public static function yearSummary(int $year,array $ids = null):array
     {
         $report = [];
         if(!$ids){
@@ -526,10 +523,7 @@ class Statistics
         }
         foreach ($ids as $id) {
             $name = DB::table('users')->find($id)->name;
-            $report[$name] = static::monthReport($id,$month,$year);
-            if($report[$name] == null){
-                $report[$name] = 'never worked this month';
-            }
+            $report[$name] = static::yearReport($id,$year);
         }
         return $report;
     }
