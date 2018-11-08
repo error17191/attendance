@@ -96,7 +96,9 @@
             </button>
         </div>
         <hr>
-
+        <day :summary="summary.data"
+             v-if="summary.type === 'day' && summary.show === 'day'"
+        ></day>
     </div>
 </template>
 
@@ -104,12 +106,14 @@
     import UserSearch from './UserSearch';
     import flatPickr from 'vue-flatpickr-component';
     import 'flatpickr/dist/flatpickr.css';
+    import Day from './summary/Day';
 
     export default {
         name: "SummaryPage",
         components: {
             UserSearch,
-            flatPickr
+            flatPickr,
+            Day
         },
         data(){
             return {
@@ -134,7 +138,11 @@
                 formReady: 'none',
                 users: null,
                 usersIds: null,
-                summary: null
+                summary: {
+                    data: null,
+                    show: 'none',
+                    type: 'none'
+                }
             }
         },
         computed: {
@@ -197,7 +205,9 @@
                     url: url,
                     data: this[form]
                 }).then((response) => {
-                    this.summary = response.data.summary;
+                    this.summary.data = response.data.summary;
+                    this.summary.show = this.summaryType;
+                    this.summary.type = response.data.summaryType;
                     console.log(this.summary);
                     this.formReady = this.summaryType;
                 });
@@ -216,6 +226,7 @@
             },
             summaryType(){
                 this.validate();
+                this.summary.show = this.summaryType;
             },
             "dayForm.date": function () {
                 this.validate();

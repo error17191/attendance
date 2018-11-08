@@ -180,6 +180,7 @@ class StatisticsController extends Controller
 
         return response()->json([
             'status' => 'success',
+            'summaryType' => 'day',
             'summary' => Statistics::daySummary($request->date,$request->users)
         ]);
     }
@@ -216,6 +217,7 @@ class StatisticsController extends Controller
 
         return response()->json([
             'status' => 'success',
+            'summaryType' => 'month',
             'summary' => Statistics::monthSummary($request->month,$request->year,$request->users)
         ]);
     }
@@ -251,6 +253,7 @@ class StatisticsController extends Controller
 
         return response()->json([
             'status' => 'success',
+            'summaryType' => 'year',
             'summary' => Statistics::yearSummary($request->year,$request->users)
         ]);
     }
