@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Project;
+use App\Task;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -9,6 +11,7 @@ use App\WorkTime;
 use App\Flag;
 use App\User;
 use App\Utilities\Statistics;
+use Faker\Factory;
 
 class DummyAttendance extends Command
 {
@@ -84,9 +87,22 @@ class DummyAttendance extends Command
         echo $day->toDateString() . "\n";
         /** @var \App\User $user */
         $user = User::find($id);
-        $workStatus = [
-            'writing code','refactoring code','designing','testing'
-        ];
+        $projects = Project::all();
+        $faker = Factory::create();
+        foreach ($projects as $project){
+            $projectTasks = [];
+            $tasksCount = rand(2,7);
+            for ($i = 0; $i <= $tasksCount; $i++){
+                $projectTasks[] = [
+                    'content' => $faker->sentence,
+                    'user_id' => $id,
+                    'project_id' => $project->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            Task::query()->insert($projectTasks);
+        }
         $start = 8;
         $stop = 23;
         $begin = rand($start,$start + 5);
@@ -98,7 +114,9 @@ class DummyAttendance extends Command
             $workTime = new WorkTime();
             $workTime->user_id = $id;
             $workTime->day = $day->toDateString();
-            $workTime->status = $workStatus[rand(0,3)];
+            $project = $projects->random();
+            $workTime->project_id = $project->id;
+            $workTime->task_id = $project->userTasks($id)->random()->id;
             $workTime->started_work_at = $day->copy()->hour($begin);
             $workTime->stopped_work_at = $day->copy()->hour($end);
             $workTime->seconds = $workTime->stopped_work_at->diffInSeconds($workTime->started_work_at);

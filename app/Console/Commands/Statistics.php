@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Flag;
+use App\Project;
 use App\User;
 use Illuminate\Console\Command;
 use Carbon\Carbon;
@@ -51,7 +52,7 @@ class Statistics extends Command
         $ideal = $this->getMonthIdeal($id,$month);
         $diffType = $actual < $ideal ? 'less' : 'more';
         $diff = abs($ideal - $actual);
-        $status =  $this->getMonthWorkStatusTimes($id,$month);
+        $projectsWithtime =  $this->getMonthProjectTimes($id,$month);
         $flags = $this->getMonthFlags($id,$month);
         $daysReport = $this->getAttendanceDaysReport($id,$month,$this->getAttendanceDays($id,$month));
         $regularTome = $this->regularTimePercentage($id,$month);
@@ -61,10 +62,11 @@ class Statistics extends Command
         $this->info('He worked ' . partition_seconds($actual)['hours'] . ' hours');
         $this->info('The ideal work time for this month is ' . $ideal / 60 / 60 . ' hours');
         $this->info('He worked ' . $diffType . ' than the ideal work time by ' . $diff / 60 / 60 . ' hours');
-        foreach ($status as $name => $value) {
-            $this->info('He worked at ' .$name . ' for ' . partition_seconds($value)['hours'] . ' hours ' .
-                partition_seconds($value)['minutes'] . ' minutes ' .
-                partition_seconds($value)['seconds'] . ' seconds');
+        foreach ($projectsWithtime as $projWithTime) {
+            $timePartitions = partition_seconds($projWithTime['time']);
+            $this->info('He worked at ' .$projWithTime['project']->title . ' for ' . $timePartitions['hours'] . ' hours ' .
+                $timePartitions['minutes'] . ' minutes ' .
+                $timePartitions['seconds'] . ' seconds');
         }
         foreach ($flags as $name => $value) {
             $this->info('He used the ' .$name . ' flag for ' . partition_seconds($value)['hours'] . ' hours ' .
@@ -126,17 +128,20 @@ class Statistics extends Command
         return $this->getMonthData($id,$month,'work_times')->sum('seconds');
     }
 
-    public function getMonthWorkStatusTimes(int $id,int $month)
+    public function getMonthProjectTimes(int $id,int $month)
     {
-        $status = [];
         $workTimes = $this->getMonthData($id,$month,'work_times');
-        foreach ($workTimes as $workTime) {
-            if(!isset($status[$workTime->status])){
-                $status[$workTime->status] = 0;
-            }
-            $status[$workTime->status] += $workTime->seconds;
+        $projectIds = $workTimes->pluck('project_id');
+        $groups = $workTimes->groupBy('project_id');
+        $projects = Project::whereIn('id',$projectIds)->get()->keyBy('id');
+        $projectsWithTime = [];
+        foreach ($groups as $projectId => $group){
+            $projectsWithTime[] = [
+                'time' => $group->sum('seconds'),
+                'project' => $projects->get($projectId)
+            ];
         }
-        return $status;
+        return $projectsWithTime;
     }
 
     public function getMonthFlags(int $id,int $month)

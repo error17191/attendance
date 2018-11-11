@@ -10,4 +10,14 @@ class Project extends Model
     {
         return $builder->where('hidden', 0);
     }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    public function userTasks($id)
+    {
+        return $this->tasks()->where('user_id', $id)->get();
+    }
 }
