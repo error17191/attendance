@@ -99,8 +99,16 @@
             </tbody>
         </table>
         <div v-for="value,name in usedFlags" class="card col-md-6">
-            <div class="card-header">{{name | capitalize}}</div>
+            <div class="card-header text-center">{{name | capitalize}}</div>
             <div class="card-body"><bar-chart :data="getFlagBarData(name)"></bar-chart></div>
+        </div>
+        <div class="card col-md-8">
+            <div class="card-header text-center">Total Flags Usage</div>
+            <div class="card-body"><bar-chart :data="getTotalFlagsBarData()"></bar-chart></div>
+        </div>
+        <div class="card col-md-6">
+            <div class="card-header text-center">Work Efficiency</div>
+            <div class="card-body"><bar-chart :data="getWorkEfficiencyBarData()"></bar-chart></div>
         </div>
     </div>
 </template>
@@ -144,7 +152,7 @@
                         if(!flags.hasOwnProperty(flag)){
                             flags[flag] = 0;
                         }
-                        flags[flag] += this.summary[employee][flag];
+                        flags[flag] += Math.floor(this.summary[employee].flags[flag] / 60);
                     }
                 }
                 return flags;
@@ -160,6 +168,7 @@
                     }
                     labels.push(employee);
                     let value = this.summary[employee].flags[flag] || 0;
+                    value = Math.floor(value / 60);
                     data.push(value);
                 }
                 return {
@@ -167,6 +176,45 @@
                     datasets: [
                         {
                             label: capitalize(flag),
+                            backgroundColor: '#f87979',
+                            data: data
+                        }
+                    ]
+                };
+            },
+            getTotalFlagsBarData(){
+                let labels = [];
+                let data = [];
+                for(let flag in this.usedFlags){
+                    labels.push(capitalize(flag));
+                    data.push(this.usedFlags[flag]);
+                }
+                return {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Flags Usage',
+                            backgroundColor: '#f87979',
+                            data: data
+                        }
+                    ]
+                };
+            },
+            getWorkEfficiencyBarData(){
+                let labels = [];
+                let data = [];
+                for(let employee in this.summary){
+                    if(!this.summary[employee].work_status){
+                        continue;
+                    }
+                    labels.push(employee);
+                    data.push(this.summary[employee].workEfficiency)
+                }
+                return {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Work Efficiency',
                             backgroundColor: '#f87979',
                             data: data
                         }

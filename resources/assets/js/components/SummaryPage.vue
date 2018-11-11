@@ -99,6 +99,12 @@
         <day :summary="summary.data"
              v-if="summary.type === 'day' && summary.show === 'day'"
         ></day>
+        <month :summary="summary.data"
+             v-if="summary.type === 'month' && summary.show === 'month'"
+        ></month>
+        <year :summary="summary.data"
+               v-if="summary.type === 'year' && summary.show === 'year'"
+        ></year>
     </div>
 </template>
 
@@ -107,13 +113,17 @@
     import flatPickr from 'vue-flatpickr-component';
     import 'flatpickr/dist/flatpickr.css';
     import Day from './summary/Day';
+    import Month from './summary/Month';
+    import Year from './summary/Year';
 
     export default {
         name: "SummaryPage",
         components: {
             UserSearch,
             flatPickr,
-            Day
+            Day,
+            Month,
+            Year
         },
         data(){
             return {
@@ -208,7 +218,6 @@
                     this.summary.data = response.data.summary;
                     this.summary.show = this.summaryType;
                     this.summary.type = response.data.summaryType;
-                    console.log(this.summary);
                     this.formReady = this.summaryType;
                 });
             }

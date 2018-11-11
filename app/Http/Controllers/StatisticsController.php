@@ -193,7 +193,7 @@ class StatisticsController extends Controller
     {
         $v = Validator::make($request->only(['month','year']),[
             'month' => 'required|integer|min:1|max:12',
-            'year' => 'required|integer|min:2010|max:now()->year'
+            'year' => 'required|integer'
         ]);
 
         if($v->fails()){
@@ -229,7 +229,7 @@ class StatisticsController extends Controller
     public function yearSummary(Request $request):JsonResponse
     {
         $v = Validator::make($request->only('year'),[
-            'year' => 'required|integer|min:2010|max:now()->year'
+            'year' => 'required|integer'
         ]);
 
         if($v->fails()){
