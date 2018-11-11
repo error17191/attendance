@@ -26,10 +26,10 @@ if (userMetaTag) {
     window.auth_user = JSON.parse(userMetaTag.content);
 }
 
-require('./echo_stuff');
-require('./helpers');
-require('./vue_stuff');
-
 window.moment = require('moment');
+
+require('./helpers');
+require('./echo_stuff');
+require('./vue_stuff');
 
 

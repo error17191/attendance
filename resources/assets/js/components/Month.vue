@@ -94,32 +94,32 @@
                             </div>
                         </div>
                     </b-tab>
-                    <b-tab no-body title="Work Status">
+                    <b-tab no-body title="Projects">
                         <div class="card">
                             <div class="card-header">
-                                Month Work Status
+                                Month Projects
                             </div>
                             <div class="card-body">
                                 <table class="table table-hover table-responsive">
                                     <thead>
                                         <tr>
-                                            <th>status</th>
+                                            <th>Project</th>
                                             <th>hours</th>
                                             <th>minutes</th>
                                             <th>seconds</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="value,name in statistics.status">
-                                            <td>{{name | capitalize}}</td>
+                                        <tr v-for="projWithTime in statistics.projectsWithTime">
+                                            <td>{{projWithTime.project.title | capitalize}}</td>
                                             <td>
-                                                {{partitionSeconds(value).hours}}
+                                                {{partitionSeconds(projWithTime.time).hours}}
                                             </td>
                                             <td>
-                                                {{partitionSeconds(value).minutes}}
+                                                {{partitionSeconds(projWithTime.time).minutes}}
                                             </td>
                                             <td>
-                                                {{partitionSeconds(value).seconds}}
+                                                {{partitionSeconds(projWithTime.time).seconds}}
                                             </td>
                                         </tr>
                                     </tbody>

@@ -5,6 +5,7 @@ namespace App\Utilities;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
+use App\Project;
 
 class Statistics
 {
@@ -22,12 +23,12 @@ class Statistics
             $diffType = 'exact';
         }
         $diff = abs($actualTime - $idealTime);
-        $status = static::monthWorkStatusTimes($id,$month,$year);
+        $projectsWithTime = static::monthProjectTimes($id,$month,$year);
         $flags = static::monthFlags($id,$month,$year);
         $absence = static::monthAttendanceDays($id,$month,$year);
         $regularTime = static::monthRegularTime($id,$month,$year);
         $workEfficiency = static::monthWorkEfficiency($id,$month,$year);
-        return compact('actualTime','idealTime','diffType','diff','status','flags','absence','regularTime','workEfficiency');
+        return compact('actualTime','idealTime','diffType','diff','status','flags','projectsWithTime','absence','regularTime','workEfficiency');
     }
 
     public static function dayReport(int $id,string $date)
@@ -216,17 +217,20 @@ class Statistics
         return static::monthData($id,'work_times',$month,$year)->sum('seconds');
     }
 
-    public static function monthWorkStatusTimes(int $id,int $month,int $year = 0):array
+    public static function monthProjectTimes(int $id,int $month,int $year = 0):array
     {
-        $status = [];
         $workTimes = static::monthData($id,'work_times',$month,$year);
-        foreach ($workTimes as $workTime) {
-            if(!isset($status[$workTime->status])){
-                $status[$workTime->status] = 0;
-            }
-            $status[$workTime->status] += $workTime->seconds;
+        $projectIds = $workTimes->pluck('project_id');
+        $groups = $workTimes->groupBy('project_id');
+        $projects = Project::whereIn('id',$projectIds)->get()->keyBy('id');
+        $projectsWithTime = [];
+        foreach ($groups as $projectId => $group){
+            $projectsWithTime[] = [
+                'time' => $group->sum('seconds'),
+                'project' => $projects->get($projectId)
+            ];
         }
-        return $status;
+        return $projectsWithTime;
     }
 
     public static function monthFlags(int $id,int $month,int $year = 0):array
