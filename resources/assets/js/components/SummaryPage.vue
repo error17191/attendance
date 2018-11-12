@@ -206,9 +206,7 @@
                     return;
                 }
                 let form = this.summaryType + 'Form';
-                if(this.searchType === 'specific'){
-                    this[form].users = this.usersIds;
-                }
+                this[form].users = this.searchType === 'specific' ? this.usersIds : null;
                 let url = `/${this.summaryType}/summary/admin`;
                 makeRequest({
                     method: 'post',
@@ -220,18 +218,28 @@
                     this.summary.type = response.data.summaryType;
                     this.formReady = this.summaryType;
                 });
+            },
+            clearSummary(){
+                this.summary.data = null;
+                this.summary.type = 'none';
+                this.summary.show = 'none';
             }
         },
         watch: {
             searchType(){
-                if(this.searchType === 'all'){
+                if(this.searchType === 'all') {
                     this.users = null;
                     this.usersIds = null;
                 }
                 this.validate();
+                this.clearSummary();
             },
             usersIds(){
-                this.validate();
+                if(this.validate() && this.summary.data != null){
+                    this.getSummary();
+                }else{
+                    this.clearSummary();
+                }
             },
             summaryType(){
                 this.validate();
