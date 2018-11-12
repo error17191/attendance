@@ -35,7 +35,7 @@ class Statistics
         $absence = static::monthAttendanceDays($id,$month,$year);
         $regularTime = static::monthRegularTime($id,$month,$year);
         $workEfficiency = static::monthWorkEfficiency($id,$month,$year);
-        return compact('actualTime','idealTime','diffType','diff','status','flags','projectsWithTime','absence','regularTime','workEfficiency');
+        return compact('actualTime','idealTime','diffType','diff','status','flags','projectsWithTime','absence','regularTime','workEfficiency','work_status');
     }
 
     /**
