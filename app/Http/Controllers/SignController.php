@@ -72,7 +72,7 @@ class SignController extends Controller
             // TODO: Try to eliminate this unnecessary additional query
             'task_id' => $workTime->task->id,
             'today_time' => [
-                'seconds' => ($daySeconds = WorkTime::daySeconds($workTime->id,now()->toDateString())),
+                'seconds' => ($daySeconds = WorkTime::daySeconds($workTime->id,$workTime->day)),
                 'partitions' => partition_seconds($daySeconds)
             ]
         ]);
@@ -166,7 +166,6 @@ class SignController extends Controller
         $user->flag = 'off';
         $user->status = 'off';
         $user->save();
-
 
         return response()->json([
             'workTimeSign' => WorKTime::sign($workTime),
