@@ -21,8 +21,9 @@
                 </tr>
             </tbody>
         </table>
-        <table class="table table-hover table-responsive">
-            <thead>
+        <template v-if="hasWork">
+            <table class="table table-hover table-responsive">
+                <thead>
                 <tr>
                     <th colspan="5" class="text-center">Full Day Work Time Info For The Attended Employees</th>
                 </tr>
@@ -33,8 +34,8 @@
                     <th>work efficiency</th>
                     <th>started work at regular hours</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 <tr v-for="employee,name in summary" v-if="employee.work_status">
                     <td>{{name}}</td>
                     <td>{{partitionSeconds(employee.timeAtWork).hours | zeroPrefix}}:
@@ -48,10 +49,10 @@
                     <td>{{employee.workEfficiency}} %</td>
                     <td>{{employee.regularTime | info}}</td>
                 </tr>
-            </tbody>
-        </table>
-        <table class="table table-responsive table-hover">
-            <thead>
+                </tbody>
+            </table>
+            <table class="table table-responsive table-hover">
+                <thead>
                 <tr>
                     <th colspan="3" class="text-center">Day Log For The Attended Emloyees</th>
                 </tr>
@@ -60,8 +61,8 @@
                     <th>signs</th>
                     <th>flags</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 <tr v-for="employee,name in summary" v-if="employee.work_status">
                     <td>{{name}}</td>
                     <td>
@@ -96,20 +97,21 @@
                         </template>
                     </td>
                 </tr>
-            </tbody>
-        </table>
-        <div v-for="value,name in usedFlags" class="card col-md-6">
-            <div class="card-header text-center">{{name | capitalize}}</div>
-            <div class="card-body"><bar-chart :data="getFlagBarData(name)"></bar-chart></div>
-        </div>
-        <div class="card col-md-8">
-            <div class="card-header text-center">Total Flags Usage</div>
-            <div class="card-body"><bar-chart :data="getTotalFlagsBarData()"></bar-chart></div>
-        </div>
-        <div class="card col-md-6">
-            <div class="card-header text-center">Work Efficiency</div>
-            <div class="card-body"><bar-chart :data="getWorkEfficiencyBarData()"></bar-chart></div>
-        </div>
+                </tbody>
+            </table>
+            <div v-for="value,name in usedFlags" class="card col-md-6">
+                <div class="card-header text-center">{{name | capitalize}}</div>
+                <div class="card-body"><bar-chart :data="getFlagBarData(name)"></bar-chart></div>
+            </div>
+            <div class="card col-md-8">
+                <div class="card-header text-center">Total Flags Usage</div>
+                <div class="card-body"><bar-chart :data="getTotalFlagsBarData()"></bar-chart></div>
+            </div>
+            <div class="card col-md-6">
+                <div class="card-header text-center">Work Efficiency</div>
+                <div class="card-body"><bar-chart :data="getWorkEfficiencyBarData()"></bar-chart></div>
+            </div>
+        </template>
     </div>
 </template>
 
@@ -156,6 +158,14 @@
                     }
                 }
                 return flags;
+            },
+            hasWork: function () {
+                for(let employee in this.summary){
+                    if(this.summary[employee].work_status){
+                        return true;
+                    }
+                }
+                return false;
             }
         },
         methods: {

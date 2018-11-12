@@ -129,7 +129,8 @@ class Statistics
             $yearWork[$month['index']] =[
                 'name' => $month['name'],
                 'ideal' => static::monthIdeal($id,$month['index'],$year),
-                'actual' => static::monthWork($id,$month['index'],$year)
+                'actual' => static::monthWork($id,$month['index'],$year),
+                'work_status' => !static::monthHasNoWork($id,$month['index'],$year)
             ];
             $yearWork[$month['index']]['diff'] = $yearWork[$month['index']]['actual'] - $yearWork[$month['index']]['ideal'];
             $yearWork[$month['index']]['diffType'] = $yearWork[$month['index']]['actual']['diff'] > 0 ? 'more' : 'less';
@@ -164,6 +165,7 @@ class Statistics
             $monthFlags = static::monthFlags($id,$month['index'],$year);
             $yearFlags[$month['index']] = $monthFlags;
             $yearFlags[$month['index']]['name'] = $month['name'];
+            $yearFlags[$month['index']]['work_status'] = !static::monthHasNoWork($id,$month['index'],$year);
             foreach ($monthFlags as $key => $value) {
                 if(!isset($total[$key])){
                     $total[$key] = 0;
@@ -192,6 +194,7 @@ class Statistics
         foreach ($months as $month) {
             $yearAbsence[$month['index']] = static::monthAttendanceDays($id,$month['index'],$year);
             $yearAbsence[$month['index']]['name'] = $month['name'];
+            $yearAbsence[$month['index']]['work_status'] = !static::monthHasNoWork($id,$month['index'],$year);
             $total['workDaysAbsence'] += count($yearAbsence[$month['index']]['workDaysAbsence']);
             $total['vacationsAttended'] += count($yearAbsence[$month['index']]['vacationsAttended']);
         }
@@ -217,6 +220,7 @@ class Statistics
         foreach ($months as $month) {
             $yearRegularTime[$month['index']] = static::monthRegularTime($id,$month['index'],$year);
             $yearRegularTime[$month['index']]['name'] = $month['name'];
+            $yearRegularTime[$month['index']]['work_status'] = !static::monthHasNoWork($id,$month['index'],$year);
             $total['all'] += $yearRegularTime[$month['index']]['all'];
             $total['offTimes'] += $yearRegularTime[$month['index']]['offTimes'];
         }
@@ -243,6 +247,7 @@ class Statistics
         foreach ($months as $month) {
             $yearWorkEfficiency[$month['index']] = static::monthWorkEfficiency($id,$month['index'],$year);
             $yearWorkEfficiency[$month['index']]['name'] = $month['name'];
+            $yearWorkEfficiency[$month['index']]['work_status'] = !static::monthHasNoWork($id,$month['index'],$year);
             $total['attendedTime'] += $yearWorkEfficiency[$month['index']]['attendedTime'];
             $total['actualWork'] += $yearWorkEfficiency[$month['index']]['actualWork'];
         }
