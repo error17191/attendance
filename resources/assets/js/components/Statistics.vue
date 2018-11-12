@@ -15,7 +15,7 @@
                     <year></year>
                 </b-tab>
                 <b-tab no-body title="Summary">
-
+                    <summary-page></summary-page>
                 </b-tab>
             </b-tabs>
         </b-card>
@@ -24,17 +24,19 @@
 
 <script>
     import Profile from './Profile';
-    import Month from './Month';
     import Day from './Day';
+    import Month from './Month';
     import Year from './Year';
+    import SummaryPage from './SummaryPage';
 
     export default {
         name: "Statistics",
         components : {
             Profile,
-            Month,
             Day,
-            Year
+            Month,
+            Year,
+            SummaryPage
         }
     }
 

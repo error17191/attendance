@@ -1,13 +1,68 @@
+// First of All hide the loader
+document.querySelector('#loader-container').style.display = 'none';
+document.querySelector('html').classList.remove('loader');
+
+// AXIOS and AUTH Stuff
+window.axios = require('axios');
+
+window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+<<<<<<< HEAD
+// Fetching and setting token if it exists
+if (window.token = localStorage.getItem('token')) {
+    window.axios.defaults.headers.common['Authorization'] = 'Bearer ' + window.token;
+}
+// Fetching and setting CSRF token
+let token = document.head.querySelector('meta[name="csrf-token"]');
+=======
 window.Vue = require('vue');
 
-import BootstrapVue from 'bootstrap-vue';
+window.bus = new Vue();
+
+window.moment = require('moment');
+
 Vue.use(BootstrapVue);
 
 import VueElementLoading from 'vue-element-loading';
+
 Vue.component('VueElementLoading', VueElementLoading);
 
-import 'vue-snotify/styles/material.css';
+
+/**
+ * Next, we will create a fresh Vue application instance and attach it to
+ * the page. Then, you may begin adding components to this application
+ * or customize the JavaScript scaffolding to fit your unique needs.
+ */
+
+import MainBoard from './components/MainBoard';
+import CPanel from './components/CPanel';
+import ChangePassword from './components/ChangePassword';
+import Statistics from './components/Statistics';
+
+const routes = [
+    {
+        path: '/home',
+        component: MainBoard,
+        name: 'main_board'
+    },
+    {
+        path: '/cpanel',
+        component: CPanel,
+        name: 'c_panel'
+    },
+    {
+        path: '/change_password',
+        component: ChangePassword,
+        name: 'change_password'
+    },
+];
+
+import VueRouter from 'vue-router';
+
+Vue.use(VueRouter);
+
 import Snotify from 'vue-snotify';
+
 Vue.use(Snotify, {
     toast: {
         showProgressBar: false,
@@ -15,18 +70,24 @@ Vue.use(Snotify, {
     }
 });
 
+import vSelect from 'vue-select';
+
+Vue.component('v-select', vSelect);
+
 import Multiselect from 'vue-multiselect';
+
 Vue.component('multiselect', Multiselect)
 
 
-window.bus = new Vue();
+import 'vue-snotify/styles/material.css';
+
+window.router = new VueRouter({
+    mode: 'history',
+    routes
+});
 
 Vue.mixin({
     methods: {
-        goToRoute: name => router.push({name: name}),
-        currentRouteIs: name => router.currentRoute.name == name,
-        auth_user: () => window.auth_user,
-
         goToRoute: name => router.push({name: name}),
         currentRouteIs : name => router.currentRoute.name == name,
         auth_user : () => window.auth_user,
@@ -73,8 +134,8 @@ Vue.mixin({
     }
 });
 
-require('./routes');
-window.app = new Vue({
+
+const app = new Vue({
     router,
     data: {
         email: null,
@@ -93,7 +154,7 @@ window.app = new Vue({
                 localStorage.setItem('token', response.data.access_token);
                 window.location.href = response.data.url;
             }).catch(error => {
-                if (!error.response || !error.response.data || error.response.status != 422) {
+                if(!error.response ||! error.response.data ||  error.response.status != 422){
                     this.$snotify.error('Something went worng');
                     return;
                 }
@@ -117,18 +178,27 @@ window.app = new Vue({
                     }
                 }
 
-                if (error.response.data.status == 'invalid_login') {
+                if(error.response.data.status == 'invalid_login'){
                     this.errors.password = 'The password you entered is incorrect';
                 }
+>>>>>>> master
 
-            });
-        },
-        logout() {
-            axios.post('/logout').then(response => {
-                localStorage.removeItem('token');
-                localStorage.removeItem('auth_user');
-                window.location.href = response.data.url;
-            });
-        }
-    }
-}).$mount('#app');
+if (token) {
+    window.axios.defaults.headers.common['X-CSRF-TOKEN'] = token.content;
+} else {
+    console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
+}
+// Fetching and setting User Object
+let userMetaTag = document.head.querySelector('meta[name=user]');
+
+if (userMetaTag) {
+    window.auth_user = JSON.parse(userMetaTag.content);
+}
+
+window.moment = require('moment');
+
+require('./helpers');
+require('./echo_stuff');
+require('./vue_stuff');
+
+

@@ -25,14 +25,13 @@
                 Get Statistics
             </button>
         </div>
-        <div v-if="showData === 'not ready'" class="alert alert-info">
+        <div v-if="showAlert === 'choose'" class="alert alert-info">
             Please select an employee a month and a year
         </div>
-        <div v-if="showData === 'no work'"  class="alert alert-info">
+        <div v-if="showAlert === 'no_work'"  class="alert alert-info">
             No work in {{form.month < 10 ? `0${form.month}` : form.month}}-{{form.year}} for {{user.username}}
         </div>
-        <div v-if="showData === 'show statistics'">
-            <b-card no-body>
+        <div v-if="!showAlert">
                 <b-tabs card>
                     <b-tab no-body title="Time" active>
                         <div class="card">
@@ -171,7 +170,7 @@
                                         <span>Absence In Work Days</span>
                                     </div>
                                     <div class="card-body">
-                                        <calendar class="m-2" :year="form.year" :month="month" :days="getDays(statistics.absence.workDaysAbsence)"></calendar>
+                                        <calendar class="m-2" :year="selected.year" :month="month" :days="getDays(statistics.absence.workDaysAbsence)"></calendar>
                                     </div>
                                 </div>
                                 <div class="card">
@@ -179,7 +178,7 @@
                                         <span>Attending In Vacations</span>
                                     </div>
                                     <div class="card-body">
-                                        <calendar class="m-2" :year="form.year" :month="month" :days="getDays(statistics.absence.vacationsAttended)"></calendar>
+                                        <calendar class="m-2" :year="selected.year" :month="month" :days="getDays(statistics.absence.vacationsAttended)"></calendar>
                                     </div>
                                 </div>
                             </div>
@@ -197,7 +196,7 @@
                                         Days Of Work Off The Regular Time
                                     </div>
                                     <div class="card-body">
-                                        <calendar :year="form.year" :month="month" :days="getDays(statistics.regularTime.offDays)"></calendar>
+                                        <calendar :year="selected.year" :month="month" :days="getDays(statistics.regularTime.offDays)"></calendar>
                                     </div>
                                 </div>
                             </div>
@@ -307,19 +306,7 @@
             return {
                 statistics: null,
                 months: [
-                    {value: null,text: 'Month',selected: true,disabled: true},
-                    {value: 1,text: 'January'},
-                    {value: 2,text: 'february'},
-                    {value: 3,text: 'March'},
-                    {value: 4,text: 'April'},
-                    {value: 5,text: 'May'},
-                    {value: 6,text: 'June'},
-                    {value: 7,text: 'July'},
-                    {value: 8,text: 'August'},
-                    {value: 9,text: 'September'},
-                    {value: 10,text: 'October'},
-                    {value: 11,text: 'November'},
-                    {value: 12,text: 'December'}
+                    {value: null,text: 'Month',selected: true,disabled: true}
                 ],
                 years: [
                     {value: null,text: 'Year',selected: true,disabled:true}
@@ -329,15 +316,19 @@
                     month: null,
                     year: null
                 },
+                selected: {
+                    month: null,
+                    year: null
+                },
                 user: null,
                 formReady: false,
-                showData: 'not ready'
+                showAlert: 'choose'
             }
         },
         computed: {
             month: function () {
                 for(let i in this.months){
-                    if(this.months[i].value === this.form.month){
+                    if(this.months[i].value === this.selected.month){
                         return {name: this.months[i].text,number: this.months[i].value -1};
                     }
                 }
@@ -350,6 +341,7 @@
         },
         mounted(){
            this.setYears();
+           this.months = this.months.concat(this.setMonths());
         },
         methods: {
             userSelected(user){
@@ -373,16 +365,15 @@
                     method: 'get',
                     url: url
                 }).then((response) => {
-                    if(response.data.monthStatistics == null){
-                        this.showData = 'no work';
+                    if(!response.data.monthStatistics.work_status){
+                        this.showAlert = 'no_work';
                     }else{
-                        this.showData = 'show statistics';
+                        this.selected.year = this.form.year;
+                        this.selected.month = this.form.month;
+                        this.showAlert = false;
                     }
                     this.statistics = response.data.monthStatistics;
                 });
-            },
-            partitionSeconds(seconds){
-                return partitionSeconds(seconds);
             },
             getDays(datesArray){
                 let days = [];
@@ -416,7 +407,7 @@
                         continue;
                     }
                     labels.push(flag);
-                    data.push(partitionSeconds(this.statistics.flags[flag]).hours);
+                    data.push(this.partitionSeconds(this.statistics.flags[flag]).hours);
                 }
                 return {
                     labels: labels,
@@ -439,8 +430,8 @@
                                 '#00D8FF'
                             ],
                             data: [
-                                partitionSeconds(this.statistics.workEfficiency.attendedTime -  this.statistics.workEfficiency.actualWork).hours,
-                                partitionSeconds(this.statistics.workEfficiency.actualWork).hours
+                                this.partitionSeconds(this.statistics.workEfficiency.attendedTime -  this.statistics.workEfficiency.actualWork).hours,
+                                this.partitionSeconds(this.statistics.workEfficiency.actualWork).hours
                             ]
                         }
                     ]

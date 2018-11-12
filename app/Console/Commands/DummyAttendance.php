@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Project;
 use App\Task;
+use App\Utilities\WorkDay;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -20,7 +21,13 @@ class DummyAttendance extends Command
      *
      * @var string
      */
-    protected $signature = 'test:attendance {id=1} {month=10} {--remove}';
+    protected $signature = 'test:attendance 
+                                {id=1} 
+                                {month=10} 
+                                {year?}
+                                {--all} 
+                                {--remove}
+                                {--remove_all}';
 
     /**
      * The console command description.
@@ -50,24 +57,60 @@ class DummyAttendance extends Command
             $this->removeAttendance($this->argument('id'));
             return;
         }
-        $this->createAttendance($this->argument('id'),$this->argument('month'));
+        if($this->option('remove_all')){
+            $this->removeAll();
+            return;
+        }
+        if($this->option('all')){
+            for ($user = 1; $user <= 10; $user++) {
+                $this->info($user);
+                for($year = 2017; $year <= 2018; $year++){
+                    $this->info($year);
+                    for($month = 1; $month <= 12; $month++){
+                        $this->info($month);
+                        $this->createAttendance($user,$month,$year);
+                    }
+                }
+            }
+            return;
+        }
+        if($this->argument('year')){
+            for($month = 1;$month <= 12; $month++){
+                $this->info($month);
+                $this->createAttendance($this->argument('id'),$month,$this->argument('year'));
+            }
+            return;
+        }
+        $this->createAttendance($this->argument('id'),$this->argument('month'),$this->argument('year'));
         return;
+    }
+
+    public function removeAll()
+    {
+        DB::table('work_times')->truncate();
+        DB::table('flags')->truncate();
+        DB::table('users')->orderBy('id')->each(function($user){
+            $user->flag = 'off';
+            $user->status = 'off';
+        });
     }
 
     public function removeAttendance(int $id)
     {
         DB::table('work_times')->where('user_id',$id)->delete();
         DB::table('flags')->where('user_id',$id)->delete();
+        DB::table('users')->where('id',$id)->update(['flag' => 'off','status' => 'off']);
     }
 
-    public function createAttendance(int $id,int $month)
+    public function createAttendance(int $id,int $month,int $year)
     {
-        $day = (new Carbon())->day(1)->month($month)->firstOfMonth();
-        $monthLength = $day->diffInDays($day->copy()->lastOfMonth()) + 1;
+        $day = (new Carbon())->day(1)->month($month)->year($year)->firstOfMonth();
+        $endDay = (new Carbon())->day(1)->month($month)->year($year)->lastOfMonth();
+        $length = $endDay->diffInDays($day);
         $v = 0;
-        for($i = 0; $i < $monthLength; $i++){
-            $day = (new Carbon())->day($i + 1)->month($month);
-            if(Statistics::isWeekend($day) || Statistics::isVacation($id,$day->toDateString())){
+        for($i = 0; $i < $length; $i++){
+            $day = (new Carbon())->day(1 + $i)->month($month)->year($year);
+            if(WorkDay::isNotAWorkDay($id,$day)){
                 if(rand(0,1) && $v < 3){
                     $this->createDayAttendance($id,$day);
                     $v++;
@@ -84,7 +127,6 @@ class DummyAttendance extends Command
 
     public function createDayAttendance(int $id,Carbon $day)
     {
-        echo $day->toDateString() . "\n";
         /** @var \App\User $user */
         $user = User::find($id);
         $projects = Project::all();
@@ -120,6 +162,8 @@ class DummyAttendance extends Command
             $workTime->started_work_at = $day->copy()->hour($begin);
             $workTime->stopped_work_at = $day->copy()->hour($end);
             $workTime->seconds = $workTime->stopped_work_at->diffInSeconds($workTime->started_work_at);
+            $workTime->day_seconds = $daySeconds + $workTime->seconds;
+            $daySeconds = $workTime->day_seconds;
             $workTime->save();
             $workTime->refresh();
             if(rand(0,1)){

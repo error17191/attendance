@@ -74,6 +74,9 @@ Route::get('check/user/work/{user_id}','UserSettingsController@checkIfUserCanWor
 Route::get('month/report/admin','StatisticsController@monthReportAdmin');
 Route::get('day/report/admin','StatisticsController@dayReportAdmin');
 Route::get('year/report/admin','StatisticsController@yearReportAdmin');
+Route::post('day/summary/admin','StatisticsController@daySummary');
+Route::post('month/summary/admin','StatisticsController@monthSummary');
+Route::post('year/summary/admin','StatisticsController@yearSummary');
 
 Route::post('me', 'HybridAuthController@me');
 

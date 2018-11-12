@@ -9,13 +9,20 @@ use App\Project;
 
 class Statistics
 {
-
-    public static function monthReport(int $id,int $month,int $year = 0)
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array
+     */
+    public static function monthReport(int $id,int $month,int $year):array
     {
-        //TODO: better handling for month without work
-        if(static::monthData($id,'work_times',$month,$year)->count() <= 0){
-            return null;
+        if(static::monthHasNoWork($id,$month,$year)){
+            return [
+                'work_status' => false
+            ];
         }
+        $work_status = true;
         $idealTime = static::monthIdeal($id,$month,$year);
         $actualTime = static::monthWork($id,$month,$year);
         $diffType = $actualTime < $idealTime ? 'less' : 'more';
@@ -31,18 +38,25 @@ class Statistics
         return compact('actualTime','idealTime','diffType','diff','status','flags','projectsWithTime','absence','regularTime','workEfficiency');
     }
 
+    /**
+     * @param int $id
+     * @param string $date
+     * @return array
+     */
     public static function dayReport(int $id,string $date)
     {
         $dayWorkTimes = static::dayData($id,'work_times',$date)->sortBy('started_work_at');
         if($dayWorkTimes->count() <= 0){
+            $work_status = false;
             $attended = false;
-            $weekend = static::isWeekend(new Carbon($date));
-            $vacation = static::isVacation($id,$date);
-            return compact('attended','weekend','vacation');
+            $weekend = WorkDay::isWeekend(new Carbon($date));
+            $vacation = WorkDay::isVacation($id,$date);
+            return compact('attended','weekend','vacation','work_status');
         }
+        $work_status = true;
         $attended = true;
-        $weekend = static::isWeekend(new Carbon($date));
-        $vacation = static::isVacation($id,$date);
+        $weekend = WorkDay::isWeekend(new Carbon($date));
+        $vacation = WorkDay::isVacation($id,$date);
         $actualWork = $dayWorkTimes->sum('seconds');
         $timeAtWork = (new Carbon($dayWorkTimes->first()->started_work_at))->diffInSeconds($dayWorkTimes->last()->stopped_work_at);
         $workTimeLog = [];
@@ -72,61 +86,87 @@ class Statistics
             (new Carbon($dayWorkTimes->first()->started_work_at)) <= (new Carbon($dayWorkTimes->first()->day))->hour($regularTimeTo['hours'])->minute($regularTimeTo['minutes']);
         $regularHours = $actualWork >= app('settings')->getRegularTime()['regularHours'] * 60 * 60;
         $workEfficiency = round($actualWork / $timeAtWork * 100,2);
-        return compact('attended','weekend','vacation','actualWork','timeAtWork','workTimeLog','flags','workEfficiency','regularTime','regularHours');
+        return compact('attended','weekend','vacation','actualWork','timeAtWork','workTimeLog','flags','workEfficiency','regularTime','regularHours','work_status');
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearReport(int $id,int $year):array
     {
-        //TODO: handle months without work and year without work
+        //TODO: better handle for a month in year without work
+        if(static::yearHasNoWork($id,$year)){
+            return [
+                'work_status' => false
+            ];
+        }
+        $work_status = true;
         $workTime = static::yearWorkTime($id,$year);
         $flags = static::yearFlags($id,$year);
         $absence = static::yearAbsence($id,$year);
         $regularTime = static::yearRegularTime($id,$year);
         $workEfficiency = static::yearWorkEfficiency($id,$year);
-        return compact('workTime','flags','absence','regularTime','workEfficiency');
+        return compact('workTime','flags','absence','regularTime','workEfficiency','work_status');
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearWorkTime(int $id,int $year):array
     {
         $yearWork = [];
         $total = [
+            'name' => 'Total',
             'ideal' => 0,
             'actual' => 0,
             'diff' => 0
         ];
         $months = months();
         foreach ($months as $month) {
-            $yearWork[$month['name']] =[
+            $yearWork[$month['index']] =[
+                'name' => $month['name'],
                 'ideal' => static::monthIdeal($id,$month['index'],$year),
-                'actual' => static::monthWork($id,$month['index'],$year)
+                'actual' => static::monthWork($id,$month['index'],$year),
+                'work_status' => !static::monthHasNoWork($id,$month['index'],$year)
             ];
-            $yearWork[$month['name']]['diff'] = $yearWork[$month['name']]['actual'] - $yearWork[$month['name']]['ideal'];
-            $yearWork[$month['name']]['diffType'] = $yearWork[$month['name']]['actual']['diff'] > 0 ? 'more' : 'less';
-            if($yearWork[$month['name']]['diff'] === 0){
-                $yearWork[$month['name']]['diffType'] = 'exact';
+            $yearWork[$month['index']]['diff'] = $yearWork[$month['index']]['actual'] - $yearWork[$month['index']]['ideal'];
+            $yearWork[$month['index']]['diffType'] = $yearWork[$month['index']]['actual']['diff'] > 0 ? 'more' : 'less';
+            if($yearWork[$month['index']]['diff'] === 0){
+                $yearWork[$month['index']]['diffType'] = 'exact';
             }
-            $total['ideal'] += $yearWork[$month['name']]['ideal'];
-            $total['actual'] += $yearWork[$month['name']]['actual'];
-            $total['diff'] += $yearWork[$month['name']]['diff'];
-            $yearWork[$month['name']]['diff'] = abs($yearWork[$month['name']]['diff']);
+            $total['ideal'] += $yearWork[$month['index']]['ideal'];
+            $total['actual'] += $yearWork[$month['index']]['actual'];
+            $total['diff'] += $yearWork[$month['index']]['diff'];
+            $yearWork[$month['index']]['diff'] = abs($yearWork[$month['index']]['diff']);
         }
         $total['diffType'] = $total['diff'] > 0 ? 'more' : 'less';
         if($total['diff'] === 0){
             $total['diffType'] = 'exact';
         }
         $total['diff'] = abs($total['diff']);
-        $yearWork['total'] = $total;
+        $yearWork[] = $total;
         return $yearWork;
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearFlags(int $id,int $year):array
     {
         $yearFlags = [];
         $months = months();
-        $total = [];
+        $total = ['name' => 'Total'];
         foreach ($months as $month) {
             $monthFlags = static::monthFlags($id,$month['index'],$year);
-            $yearFlags[$month['name']] = $monthFlags;
+            $yearFlags[$month['index']] = $monthFlags;
+            $yearFlags[$month['index']]['name'] = $month['name'];
+            $yearFlags[$month['index']]['work_status'] = !static::monthHasNoWork($id,$month['index'],$year);
             foreach ($monthFlags as $key => $value) {
                 if(!isset($total[$key])){
                     $total[$key] = 0;
@@ -134,65 +174,95 @@ class Statistics
                 $total[$key] += $value;
             }
         }
-        $yearFlags['total'] = $total;
+        $yearFlags[] = $total;
         return $yearFlags;
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearAbsence(int $id,int $year):array
     {
         $yearAbsence = [];
         $months = months();
         $total = [
+            'name' => 'Total',
             'workDaysAbsence' => 0,
             'vacationsAttended' => 0
         ];
         foreach ($months as $month) {
-            $yearAbsence[$month['name']] = static::monthAttendanceDays($id,$month['index'],$year);
-            $total['workDaysAbsence'] += count($yearAbsence[$month['name']]['workDaysAbsence']);
-            $total['vacationsAttended'] += count($yearAbsence[$month['name']]['vacationsAttended']);
+            $yearAbsence[$month['index']] = static::monthAttendanceDays($id,$month['index'],$year);
+            $yearAbsence[$month['index']]['name'] = $month['name'];
+            $yearAbsence[$month['index']]['work_status'] = !static::monthHasNoWork($id,$month['index'],$year);
+            $total['workDaysAbsence'] += count($yearAbsence[$month['index']]['workDaysAbsence']);
+            $total['vacationsAttended'] += count($yearAbsence[$month['index']]['vacationsAttended']);
         }
-        $yearAbsence['total'] = $total;
+        $yearAbsence[] = $total;
         return $yearAbsence;
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearRegularTime(int $id,int $year):array
     {
         $yearRegularTime = [];
         $total = [
+            'name' => 'Total',
             'all' => 0,
             'offTimes' => 0,
             'percentage' => 0
         ];
         $months = months();
         foreach ($months as $month) {
-            $yearRegularTime[$month['name']] = static::monthRegularTime($id,$month['index'],$year);
-            $total['all'] += $yearRegularTime[$month['name']]['all'];
-            $total['offTimes'] += $yearRegularTime[$month['name']]['offTimes'];
+            $yearRegularTime[$month['index']] = static::monthRegularTime($id,$month['index'],$year);
+            $yearRegularTime[$month['index']]['name'] = $month['name'];
+            $yearRegularTime[$month['index']]['work_status'] = !static::monthHasNoWork($id,$month['index'],$year);
+            $total['all'] += $yearRegularTime[$month['index']]['all'];
+            $total['offTimes'] += $yearRegularTime[$month['index']]['offTimes'];
         }
-        $total['percentage'] = round(($total['all'] - $total['offTimes']) / $total['all'] * 100 ,2);
-        $yearRegularTime['total'] = $total;
+        $total['percentage'] = $total['all'] <= 0 ? 0 : round(($total['all'] - $total['offTimes']) / $total['all'] * 100 ,2);
+        $yearRegularTime[] = $total;
         return $yearRegularTime;
     }
 
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
     public static function yearWorkEfficiency(int $id,int $year)
     {
         $yearWorkEfficiency = [];
         $total = [
+            'name' => 'Total',
             'attendedTime' => 0,
             'actualWork' => 0,
             'percentage' => 0
         ];
         $months = months();
         foreach ($months as $month) {
-            $yearWorkEfficiency[$month['name']] = static::monthWorkEfficiency($id,$month['index'],$year);
-            $total['attendedTime'] += $yearWorkEfficiency[$month['name']]['attendedTime'];
-            $total['actualWork'] += $yearWorkEfficiency[$month['name']]['actualWork'];
+            $yearWorkEfficiency[$month['index']] = static::monthWorkEfficiency($id,$month['index'],$year);
+            $yearWorkEfficiency[$month['index']]['name'] = $month['name'];
+            $yearWorkEfficiency[$month['index']]['work_status'] = !static::monthHasNoWork($id,$month['index'],$year);
+            $total['attendedTime'] += $yearWorkEfficiency[$month['index']]['attendedTime'];
+            $total['actualWork'] += $yearWorkEfficiency[$month['index']]['actualWork'];
         }
-        $total['percentage'] = round($total['actualWork'] / $total['attendedTime'] * 100 , 2);
-        $yearWorkEfficiency['total'] = $total;
+        $total['percentage'] = $total['attendedTime'] <= 0 ? 0 : round($total['actualWork'] / $total['attendedTime'] * 100 , 2);
+        $yearWorkEfficiency[] = $total;
         return $yearWorkEfficiency;
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return int
+     */
     public static function monthIdeal(int $id,int $month,int $year = 0):int
     {
         if(!$year){
@@ -204,7 +274,7 @@ class Statistics
         $ideal = 0;
         for($i = 0; $i < $monthLength; $i++){
             $day = (new Carbon())->year($year)->month($month)->firstOfMonth()->addDays($i);
-            if(static::isWeekend($day) || static::isVacation($id,$day->toDateString())){
+            if(WorkDay::isNotAWorkDay($id,$day)){
                 continue;
             }
             $ideal += $regularHours;
@@ -212,6 +282,12 @@ class Statistics
         return $ideal * 60 * 60;
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return int
+     */
     public static function monthWork(int $id,int $month,int $year = 0):int
     {
         return static::monthData($id,'work_times',$month,$year)->sum('seconds');
@@ -233,6 +309,12 @@ class Statistics
         return $projectsWithTime;
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array
+     */
     public static function monthFlags(int $id,int $month,int $year = 0):array
     {
         $flags = [];
@@ -249,6 +331,12 @@ class Statistics
         return $flags;
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array
+     */
     public static function monthAttendanceDays(int $id,int $month,int $year = 0):array
     {
         $days = static::monthData($id,'work_times',$month,$year)->groupBy('day')->keys()->toArray();
@@ -256,7 +344,7 @@ class Statistics
         $workDaysAbsence = [];
         $monthDays = static::monthDays($month);
         foreach ($monthDays as $monthDay) {
-            if(static::isWeekend(new Carbon($monthDay))|| static::isVacation($id,$monthDay)){
+            if(WorkDay::isNotAWorkDay($id,(new Carbon($monthDay)))){
                 if(in_array($monthDay,$days)){
                     $vacationsAttended[] = $monthDay;
                 }
@@ -269,6 +357,12 @@ class Statistics
         return compact('vacationsAttended','workDaysAbsence');
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array
+     */
     public static function monthRegularTime(int $id,int $month,int $year = 0):array
     {
         $regularTimeFrom = app('settings')->getRegularTime()['from'] * 60 * 60;
@@ -290,13 +384,26 @@ class Statistics
             $offDays[] = $first->day;
             $offTimes++;
         }
-        $percentage = round($offTimes / $all * 100 ,2);
+        $percentage = $all <= 0 ? 0 : round($offTimes / $all * 100 ,2);
         return compact('all','offDays','offTimes','percentage');
     }
 
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array
+     */
     public static function monthWorkEfficiency(int $id,int $month,int $year = 0):array
     {
         $workTimes = static::monthData($id,'work_times',$month,$year)->groupBy('day');
+        if($workTimes->count() <= 0){
+            return [
+                'attendedTime' => 0,
+                'actualWork' => 0,
+                'percentage' => 0
+            ];
+        }
         $actualWork = 0;
         $attendedTime = 0;
         foreach ($workTimes as $workTime) {
@@ -309,6 +416,10 @@ class Statistics
         return compact('attendedTime','actualWork','percentage');
     }
 
+    /**
+     * @param int $month
+     * @return array
+     */
     public static function monthDays(int $month):array
     {
         $monthLength = (new Carbon())->month($month)->firstOfMonth()->diffInDays((new Carbon())->month($month)->lastOfMonth()) + 1;
@@ -319,6 +430,12 @@ class Statistics
         return $days;
     }
 
+    /**
+     * @param int $id
+     * @param string $table
+     * @param string $date
+     * @return Collection
+     */
     public static function dayData(int $id,string $table,string $date):Collection
     {
         return DB::table($table)->where('user_id',$id)
@@ -326,6 +443,13 @@ class Statistics
             ->get();
     }
 
+    /**
+     * @param int $id
+     * @param string $table
+     * @param int $month
+     * @param int $year
+     * @return Collection
+     */
     public static function monthData(int $id,string $table,int $month,int $year = 0):Collection
     {
         if(!$year){
@@ -340,6 +464,12 @@ class Statistics
             ->get();
     }
 
+    /**
+     * @param int $id
+     * @param string $table
+     * @param int $year
+     * @return Collection
+     */
     public static function yearData(int $id,string $table,int $year):Collection
     {
         return DB::table($table)->where('user_id',$id)
@@ -351,32 +481,79 @@ class Statistics
             ->get();
     }
 
-    public static function isWeekend(Carbon $date):bool
+    /**
+     * @param string $day
+     * @param array|null $ids
+     * @return array
+     */
+    public static function daySummary(string $day,array $ids = null):array
     {
-        Carbon::setWeekStartsAt(0);
-        Carbon::setWeekendDays(app('settings')->getWeekends());
-        return $date->isWeekend();
+        $report = [];
+        if(!$ids){
+            $ids = DB::table('users')->select('id')->get()->pluck('id');
+        }
+        foreach ($ids as $id) {
+            $name = DB::table('users')->find($id)->name;
+            $report[$name] = static::dayReport($id,$day);
+        }
+        return $report;
     }
 
-    public static function isVacation(int $id,string $date):bool
+    /**
+     * @param int $month
+     * @param int $year
+     * @param array|null $ids
+     * @return array
+     */
+    public static function monthSummary(int $month,int $year,array $ids = null):array
     {
-        return static::isGlobalVacation($date) || static::isUserVacation($id,$date);
+        $report = [];
+        if(!$ids){
+            $ids = DB::table('users')->select('id')->get()->pluck('id');
+        }
+        foreach ($ids as $id) {
+            $name = DB::table('users')->find($id)->name;
+            $report[$name] = static::monthReport($id,$month,$year);
+        }
+        return $report;
     }
 
-    public static function isGlobalVacation(string $date):bool
+    public static function yearSummary(int $year,array $ids = null):array
     {
-        return DB::table('custom_vacations')->where('date',$date)->first() != null;
+        $report = [];
+        if(!$ids){
+            $ids = DB::table('users')->select('id')->get()->pluck('id');
+        }
+        foreach ($ids as $id) {
+            $name = DB::table('users')->find($id)->name;
+            $report[$name] = static::yearReport($id,$year);
+        }
+        return $report;
     }
 
-    public static function isUserVacation(int $id,string $date):bool
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return bool
+     */
+    public static function monthHasNoWork(int $id,int $month,int $year):bool
     {
-        return DB::table('users')
-                ->leftJoin('users_custom_vacations','users.id','users_custom_vacations.user_id')
-                ->leftJoin('custom_vacations','users_custom_vacations.vacation_id','custom_vacations.id')
-                ->select('custom_vacations.*')
-                ->where('users.id',$id)
-                ->where('custom_vacations.global',0)
-                ->where('custom_vacations.date',$date)
-                ->first() != null;
+        return static::monthData($id,'work_times',$month,$year)->count() <= 0;
+    }
+
+    /**
+     * @param int $id
+     * @param int $year
+     * @return bool
+     */
+    public static function yearHasNoWork(int $id,int $year):bool
+    {
+        return DB::table('work_times')
+            ->where('user_id',$id)
+            ->whereBetween('day',[
+                (new Carbon())->year($year)->startOfYear(),
+                (new Carbon())->year($year)->lastOfYear()])
+            ->get()->count() <= 0;
     }
 }

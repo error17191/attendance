@@ -205,9 +205,6 @@
                     this.formReady = true;
                     this.showAlert = response.data.status !== 'success';
                 });
-            },
-            partitionSeconds(seconds){
-                return partitionSeconds(seconds);
             }
         },
         watch: {
