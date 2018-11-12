@@ -60,9 +60,6 @@ class SignController extends Controller
                 'errors' => $v->errors()->toArray()
             ],422);
         }
-        if(isset($task['id'])){
-
-        }
         //start new work time
         $workTime = WorKTime::start($id, json_decode(json_encode($request->task)),$request->project_id);
         $workTime->save();
@@ -75,8 +72,8 @@ class SignController extends Controller
             // TODO: Try to eliminate this unnecessary additional query
             'task_id' => $workTime->task->id,
             'today_time' => [
-                'seconds' => $workTime->day_seconds,
-                'partitions' => partition_seconds($workTime->day_seconds)
+                'seconds' => ($daySeconds = WorkTime::daySeconds($workTime->id,now()->toDateString())),
+                'partitions' => partition_seconds($daySeconds)
             ]
         ]);
     }
@@ -140,11 +137,12 @@ class SignController extends Controller
                 'workTimeSign' => !empty($secondWorkTime) ?
                     WorKTime::sign($secondWorkTime) : WorKTime::sign($workTime),
                 'today_time' => [
-                    'seconds' => !empty($secondWorkTime) ?
-                        $secondWorkTime->day_seconds : $workTime->day_seconds,
+                    'seconds' => ($daySeconds = (!empty($secondWorkTime) ?
+                        WorKTime::daySeconds($secondWorkTime->id,$secondWorkTime->day)
+                        : WorKTime::daySeconds($workTime->id,$workTime->day ) ) ) ,
                     'partitions' => !empty($secondWorkTime) ?
-                        partition_seconds($secondWorkTime->day_seconds) :
-                        partition_seconds($workTime->day_seconds)
+                        partition_seconds($daySeconds) :
+                        partition_seconds($daySeconds)
                 ]
             ]);
         }
@@ -173,8 +171,8 @@ class SignController extends Controller
         return response()->json([
             'workTimeSign' => WorKTime::sign($workTime),
             'today_time' => [
-                'seconds' => $workTime->day_seconds,
-                'partitions' => partition_seconds($workTime->day_seconds)
+                'seconds' => $daySeconds = WorKTime::daySeconds($workTime->id,$workTime->day),
+                'partitions' => partition_seconds($daySeconds)
             ]
         ]);
     }

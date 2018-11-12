@@ -194,7 +194,6 @@ class WorKTime
         }
         $workTime->day = now()->toDateString();
         $workTime->started_work_at = $start ?: now();
-        $workTime->day_seconds = static::daySeconds($id,$workTime->day);
         return $workTime;
     }
 
@@ -210,7 +209,6 @@ class WorKTime
     {
         $workTime->stopped_work_at = $stop ?: now();
         $workTime->seconds = $seconds ?: $workTime->stopped_work_at->diffInSeconds($workTime->started_work_at);
-        $workTime->day_seconds += $workTime->seconds;
         return $workTime;
     }
 }

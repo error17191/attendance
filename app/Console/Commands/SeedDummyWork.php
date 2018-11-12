@@ -75,7 +75,6 @@ class SeedDummyWork extends Command
                         'started_work_at' => $startedAt,
                         'stopped_work_at' => $stoppedAt,
                         'seconds' => 8 * 60 * 60,
-                        'day_seconds' => 8 * 60 * 60,
                     ];
                 }
             }
