@@ -26,10 +26,6 @@ Vue.mixin({
         goToRoute: name => router.push({name: name}),
         currentRouteIs: name => router.currentRoute.name == name,
         auth_user: () => window.auth_user,
-
-        goToRoute: name => router.push({name: name}),
-        currentRouteIs : name => router.currentRoute.name == name,
-        auth_user : () => window.auth_user,
         //TODO: remove all functions that i added here from the components
         partitionSeconds: (seconds) => {
             let hours = Math.floor(seconds / 60 / 60);
