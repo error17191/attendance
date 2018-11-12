@@ -53,6 +53,7 @@ class DummyAttendance extends Command
      */
     public function handle()
     {
+        $year = $this->argument('year') ?: now()->year;
         if($this->option('remove')){
             $this->removeAttendance($this->argument('id'));
             return;
@@ -81,7 +82,7 @@ class DummyAttendance extends Command
             }
             return;
         }
-        $this->createAttendance($this->argument('id'),$this->argument('month'),$this->argument('year'));
+        $this->createAttendance($this->argument('id'),$this->argument('month'),$year);
         return;
     }
 
@@ -162,8 +163,7 @@ class DummyAttendance extends Command
             $workTime->started_work_at = $day->copy()->hour($begin);
             $workTime->stopped_work_at = $day->copy()->hour($end);
             $workTime->seconds = $workTime->stopped_work_at->diffInSeconds($workTime->started_work_at);
-            $workTime->day_seconds = $daySeconds + $workTime->seconds;
-            $daySeconds = $workTime->day_seconds;
+            $daySeconds += $workTime->seconds;
             $workTime->save();
             $workTime->refresh();
             if(rand(0,1)){
