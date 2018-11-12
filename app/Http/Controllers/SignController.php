@@ -72,7 +72,7 @@ class SignController extends Controller
             // TODO: Try to eliminate this unnecessary additional query
             'task_id' => $workTime->task->id,
             'today_time' => [
-                'seconds' => ($daySeconds = WorkTime::daySeconds($workTime->id,$workTime->day)),
+                'seconds' => ($daySeconds = WorkTime::daySeconds($id,$workTime->day)),
                 'partitions' => partition_seconds($daySeconds)
             ]
         ]);
@@ -138,8 +138,8 @@ class SignController extends Controller
                     WorKTime::sign($secondWorkTime) : WorKTime::sign($workTime),
                 'today_time' => [
                     'seconds' => ($daySeconds = (!empty($secondWorkTime) ?
-                        WorKTime::daySeconds($secondWorkTime->id,$secondWorkTime->day)
-                        : WorKTime::daySeconds($workTime->id,$workTime->day ) ) ) ,
+                        WorKTime::daySeconds($id,$secondWorkTime->day)
+                        : WorKTime::daySeconds($id,$workTime->day ) ) ) ,
                     'partitions' => !empty($secondWorkTime) ?
                         partition_seconds($daySeconds) :
                         partition_seconds($daySeconds)
@@ -170,7 +170,7 @@ class SignController extends Controller
         return response()->json([
             'workTimeSign' => WorKTime::sign($workTime),
             'today_time' => [
-                'seconds' => $daySeconds = WorKTime::daySeconds($workTime->id,$workTime->day),
+                'seconds' => $daySeconds = WorKTime::daySeconds($id,$workTime->day),
                 'partitions' => partition_seconds($daySeconds)
             ]
         ]);
