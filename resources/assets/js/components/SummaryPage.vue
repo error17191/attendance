@@ -96,8 +96,7 @@
             </button>
         </div>
         <hr>
-        <day :summary="summary.data"
-             v-if="summary.type === 'day' && summary.show === 'day'"
+        <day v-if="summary.type === 'day' && summary.show === 'day'"
         ></day>
         <month :summary="summary.data"
              v-if="summary.type === 'month' && summary.show === 'month'"
@@ -217,6 +216,7 @@
                     this.summary.show = this.summaryType;
                     this.summary.type = response.data.summaryType;
                     this.formReady = this.summaryType;
+                    bus.$emit('summary:updated',this.summary);
                 });
             },
             clearSummary(){

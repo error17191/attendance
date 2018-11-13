@@ -99,17 +99,17 @@
                 </tr>
                 </tbody>
             </table>
-            <div v-for="value,name in usedFlags" class="card col-md-6">
-                <div class="card-header text-center">{{name | capitalize}}</div>
-                <div class="card-body"><bar-chart :data="getFlagBarData(name)"></bar-chart></div>
+            <div v-for="flag in flagsBarData" class="card col-md-6">
+                <div class="card-header text-center">{{flag.name | capitalize}}</div>
+                <div class="card-body"><bar-chart :data="flag.data"></bar-chart></div>
             </div>
             <div class="card col-md-8">
                 <div class="card-header text-center">Total Flags Usage</div>
-                <div class="card-body"><bar-chart :data="getTotalFlagsBarData()"></bar-chart></div>
+                <div class="card-body"><bar-chart :data="totalFlagsBarData"></bar-chart></div>
             </div>
             <div class="card col-md-6">
                 <div class="card-header text-center">Work Efficiency</div>
-                <div class="card-body"><bar-chart :data="getWorkEfficiencyBarData()"></bar-chart></div>
+                <div class="card-body"><bar-chart :data="workEfficiencyBarData"></bar-chart></div>
             </div>
         </template>
     </div>
@@ -120,12 +120,6 @@
 
     export default {
         name: "Day",
-        props: {
-            summary:{
-                type: Object,
-                required: true
-            }
-        },
         components: {
             BarChart
         },
@@ -141,6 +135,11 @@
             },
             zeroPrefix: function (value) {
                 return value < 10 ? `0${value}` : value.toString();
+            }
+        },
+        data(){
+            return {
+                summary: {}
             }
         },
         computed: {
@@ -166,33 +165,38 @@
                     }
                 }
                 return false;
-            }
-        },
-        methods: {
-            getFlagBarData(flag){
-                let labels = [];
-                let data = [];
-                for(let employee in this.summary){
-                    if(!this.summary[employee].work_status){
-                        continue;
-                    }
-                    labels.push(employee);
-                    let value = this.summary[employee].flags[flag] || 0;
-                    value = Math.floor(value / 60);
-                    data.push(value);
-                }
-                return {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: capitalize(flag),
-                            backgroundColor: '#f87979',
-                            data: data
-                        }
-                    ]
-                };
             },
-            getTotalFlagsBarData(){
+            flagsBarData: function() {
+                let flags = [];
+                for(let flag in this.usedFlags){
+                    let labels = [];
+                    let data = [];
+                    for(let employee in this.summary) {
+                        if(!this.summary[employee].work_status) {
+                            continue;
+                        }
+                        labels.push(employee);
+                        let value = this.summary[employee].flags[flag] || 0;
+                        value = Math.floor(value / 60);
+                        data.push(value);
+                    }
+                    flags.push({
+                        name: flag,
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: capitalize(flag),
+                                    backgroundColor: '#f87979',
+                                    data: data
+                                }
+                            ]
+                        }
+                    });
+                }
+                return flags;
+            },
+            totalFlagsBarData: function(){
                 let labels = [];
                 let data = [];
                 for(let flag in this.usedFlags){
@@ -210,7 +214,7 @@
                     ]
                 };
             },
-            getWorkEfficiencyBarData(){
+            workEfficiencyBarData: function(){
                 let labels = [];
                 let data = [];
                 for(let employee in this.summary){
@@ -231,6 +235,16 @@
                     ]
                 };
             }
+        },
+        mounted(){
+            bus.$on('summary:updated',(summary) =>{
+                if(summary.type === 'day'){
+                    this.summary = summary.data;
+                }
+            });
+        },
+        methods: {
+
         }
     }
 </script>

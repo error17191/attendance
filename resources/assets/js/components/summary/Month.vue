@@ -249,6 +249,11 @@
                 return false;
             }
         },
+        mounted(){
+            bus.$on('summary:updated',(summary)=>{
+                // console.log(summary.data);
+            });
+        },
         methods: {
             getActualWorkTimeBarData(){
                 let labels = [];
