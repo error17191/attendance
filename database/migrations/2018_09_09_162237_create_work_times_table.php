@@ -22,6 +22,7 @@ class CreateWorkTimesTable extends Migration
             $table->timestamp('started_work_at')->nullable();
             $table->timestamp('stopped_work_at')->nullable();
             $table->integer('seconds')->default(0);
+            $table->unsignedInteger('day_seconds')->default(0);
         });
     }
 
