@@ -184,9 +184,6 @@
                 return value < 10 ? `0${value}` : value.toString();
             }
         },
-        mounted(){
-
-        },
         methods: {
             updateSelectedUser(user){
                 this.form.userId = user.id;

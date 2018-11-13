@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
 use App\Project;
+use App\Task;
 
 class Statistics
 {
@@ -307,6 +308,23 @@ class Statistics
             ];
         }
         return $projectsWithTime;
+    }
+
+
+    public static function monthTasksTimes(int $id,int $month,int $year = 0)
+    {
+        $workTimes = static::monthData($id,'work_times',$month,$year);
+        $tasksIds = $workTimes->pluck('task_id');
+        $groups = $workTimes->groupBy('task_id');
+        $tasks = Task::whereIn('id',$tasksIds)->get()->keyBy('id');
+        $tasksWithTime = [];
+        foreach ($groups as $taskId => $group){
+            $tasksWithTime[] = [
+                'time' => $group->sum('seconds'),
+                'task' => $tasks->get($taskId)
+            ];
+        }
+        return $tasksWithTime;
     }
 
     /**

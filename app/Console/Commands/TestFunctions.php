@@ -38,6 +38,6 @@ class TestFunctions extends Command
      */
     public function handle()
     {
-        Statistics::workTimeSummary([1,2],'all');
+        dd(Statistics::monthTasksTimes(1,10,2018));
     }
 }

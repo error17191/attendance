@@ -3,6 +3,7 @@
 namespace App;
 
 use function foo\func;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -82,5 +83,9 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
 
 }

@@ -11,6 +11,8 @@ class Project extends Model
         return $builder->where('hidden', 0);
     }
 
+
+
     public function tasks()
     {
         return $this->hasMany(Task::class);

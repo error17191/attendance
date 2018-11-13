@@ -128,24 +128,7 @@ class DummyAttendance extends Command
 
     public function createDayAttendance(int $id,Carbon $day)
     {
-        /** @var \App\User $user */
-        $user = User::find($id);
         $projects = Project::all();
-        $faker = Factory::create();
-        foreach ($projects as $project){
-            $projectTasks = [];
-            $tasksCount = rand(2,7);
-            for ($i = 0; $i <= $tasksCount; $i++){
-                $projectTasks[] = [
-                    'content' => $faker->sentence,
-                    'user_id' => $id,
-                    'project_id' => $project->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-            Task::query()->insert($projectTasks);
-        }
         $start = 8;
         $stop = 23;
         $begin = rand($start,$start + 5);

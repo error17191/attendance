@@ -260,7 +260,7 @@
                                     Regular Time
                                 </div>
                                 <div class="card-body">
-                                    <pie-chart :data="getRegularTimeChartData()"></pie-chart>
+                                    <pie-chart :data="regularTimeChartData"></pie-chart>
                                 </div>
                             </div>
                             <div class="card col-md-6">
@@ -268,7 +268,7 @@
                                     Flags
                                 </div>
                                 <div class="card-body">
-                                    <bar-chart :data="getFlagsChartData()"></bar-chart>
+                                    <bar-chart :data="flagsChartData"></bar-chart>
                                 </div>
                             </div>
                             <div class="card col-md-6">
@@ -276,7 +276,7 @@
                                     Work Efficiency
                                 </div>
                                 <div class="card-body">
-                                    <pie-chart :data="getWorkEfficiencyChartData()"></pie-chart>
+                                    <pie-chart :data="workEfficiencyChartData"></pie-chart>
                                 </div>
                             </div>
 
@@ -332,7 +332,63 @@
                         return {name: this.months[i].text,number: this.months[i].value -1};
                     }
                 }
+            },
+            regularTimeChartData(){
+                return {
+                    labels: ['on time','off time'],
+                    datasets: [
+                        {
+                            backgroundColor: [
+                                '#00D8FF',
+                                '#DD1B16'
+                            ],
+                            data: [
+                                this.statistics.regularTime.all - this.statistics.regularTime.offTimes,
+                                this.statistics.regularTime.offTimes
+                            ]
+                        }
+                    ]
+                };
+            },
+            flagsChartData(){
+                let labels = [];
+                let data = [];
+                for(let flag in this.statistics.flags){
+                    if(flag === 'total'){
+                        continue;
+                    }
+                    labels.push(flag);
+                    data.push(this.partitionSeconds(this.statistics.flags[flag]).hours);
+                }
+                return {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Flags',
+                            backgroundColor: '#f87979',
+                            data: data
+                        }
+                    ]
+                };
+            },
+            workEfficiencyChartData(){
+                return {
+                    labels: ['wasted time','real work time'],
+                    datasets: [
+                        {
+                            backgroundColor: [
+                                '#DD1B16',
+                                '#00D8FF'
+                            ],
+                            data: [
+                                this.partitionSeconds(this.statistics.workEfficiency.attendedTime -  this.statistics.workEfficiency.actualWork).hours,
+                                this.partitionSeconds(this.statistics.workEfficiency.actualWork).hours
+                            ]
+                        }
+                    ]
+                };
             }
+
         },
         filters: {
             capitalize: function (value) {
@@ -381,63 +437,7 @@
                     days.push(datesArray[i].split('-')[2]);
                 }
                 return days;
-            },
-            getRegularTimeChartData(){
-                return {
-                    labels: ['on time','off time'],
-                    datasets: [
-                        {
-                            backgroundColor: [
-                                '#00D8FF',
-                                '#DD1B16'
-                            ],
-                            data: [
-                                this.statistics.regularTime.all - this.statistics.regularTime.offTimes,
-                                this.statistics.regularTime.offTimes
-                            ]
-                        }
-                    ]
-                };
-            },
-            getFlagsChartData(){
-                let labels = [];
-                let data = [];
-                for(let flag in this.statistics.flags){
-                    if(flag === 'total'){
-                        continue;
-                    }
-                    labels.push(flag);
-                    data.push(this.partitionSeconds(this.statistics.flags[flag]).hours);
-                }
-                return {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Flags',
-                            backgroundColor: '#f87979',
-                            data: data
-                        }
-                    ]
-                };
-            },
-            getWorkEfficiencyChartData(){
-                return {
-                    labels: ['wasted time','real work time'],
-                    datasets: [
-                        {
-                            backgroundColor: [
-                                '#DD1B16',
-                                '#00D8FF'
-                            ],
-                            data: [
-                                this.partitionSeconds(this.statistics.workEfficiency.attendedTime -  this.statistics.workEfficiency.actualWork).hours,
-                                this.partitionSeconds(this.statistics.workEfficiency.actualWork).hours
-                            ]
-                        }
-                    ]
-                };
             }
-
         }
     }
 </script>
