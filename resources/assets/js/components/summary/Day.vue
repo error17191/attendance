@@ -120,6 +120,12 @@
 
     export default {
         name: "Day",
+        props: {
+            summary: {
+                type: Object,
+                required: true
+            }
+        },
         components: {
             BarChart
         },
@@ -135,11 +141,6 @@
             },
             zeroPrefix: function (value) {
                 return value < 10 ? `0${value}` : value.toString();
-            }
-        },
-        data(){
-            return {
-                summary: {}
             }
         },
         computed: {
@@ -235,16 +236,6 @@
                     ]
                 };
             }
-        },
-        mounted(){
-            bus.$on('summary:updated',(summary) =>{
-                if(summary.type === 'day'){
-                    this.summary = summary.data;
-                }
-            });
-        },
-        methods: {
-
         }
     }
 </script>

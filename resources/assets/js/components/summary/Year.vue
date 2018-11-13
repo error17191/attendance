@@ -29,12 +29,7 @@
             zeroPrefix: function (value) {
                 return value < 10 ? `0${value}` : value.toString();
             }
-        },
-        mounted(){
-            bus.$on('summary:updated',(summary)=>{
-                // console.log(summary.data);
-            });
-        },
+        }
     }
 </script>
 
