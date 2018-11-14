@@ -11,7 +11,10 @@ class Project extends Model
         return $builder->where('hidden', 0);
     }
 
-
+    public function workTimes()
+    {
+        return $this->hasMany(WorkTime::class);
+    }
 
     public function tasks()
     {

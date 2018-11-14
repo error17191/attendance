@@ -38,6 +38,6 @@ class TestFunctions extends Command
      */
     public function handle()
     {
-        dd(Statistics::monthTasksTimes(1,10,2018));
+        dd(Statistics::projectUsersSummary());
     }
 }

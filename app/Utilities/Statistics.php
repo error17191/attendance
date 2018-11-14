@@ -32,11 +32,12 @@ class Statistics
         }
         $diff = abs($actualTime - $idealTime);
         $projectsWithTime = static::monthProjectTimes($id,$month,$year);
+        $tasksWithTime = static::monthTasksTimes($id,$month,$year);
         $flags = static::monthFlags($id,$month,$year);
         $absence = static::monthAttendanceDays($id,$month,$year);
         $regularTime = static::monthRegularTime($id,$month,$year);
         $workEfficiency = static::monthWorkEfficiency($id,$month,$year);
-        return compact('actualTime','idealTime','diffType','diff','status','flags','projectsWithTime','absence','regularTime','workEfficiency','work_status');
+        return compact('actualTime','idealTime','diffType','diff','tasksWithTime','flags','projectsWithTime','absence','regularTime','workEfficiency','work_status');
     }
 
     /**
@@ -87,7 +88,27 @@ class Statistics
             (new Carbon($dayWorkTimes->first()->started_work_at)) <= (new Carbon($dayWorkTimes->first()->day))->hour($regularTimeTo['hours'])->minute($regularTimeTo['minutes']);
         $regularHours = $actualWork >= app('settings')->getRegularTime()['regularHours'] * 60 * 60;
         $workEfficiency = round($actualWork / $timeAtWork * 100,2);
-        return compact('attended','weekend','vacation','actualWork','timeAtWork','workTimeLog','flags','workEfficiency','regularTime','regularHours','work_status');
+        $projectsIds = $dayWorkTimes->pluck('project_id')->unique()->values();
+        $projectsGroups = $dayWorkTimes->groupBy('project_id');
+        $projects = Project::whereIn('id',$projectsIds)->get()->keyBy('id');
+        $projectsWithTime = [];
+        foreach ($projectsGroups as $projectId => $group) {
+            $projectsWithTime[] = [
+                'time' => $group->sum('seconds'),
+                'project' => $projects->get($projectId)
+            ];
+        }
+        $tasksIds = $dayWorkTimes->pluck('task_id')->unique()->values();
+        $tasksGroups = $dayWorkTimes->groupBy('task_id');
+        $tasks = Task::whereIn('id',$tasksIds)->get()->keyBy('id');
+        $tasksWithTime = [];
+        foreach ($tasksGroups as $taskId => $group) {
+            $tasksWithTime[] = [
+                'time' => $group->sum('seconds'),
+                'task' => $tasks->get($taskId)
+            ];
+        }
+        return compact('attended','tasksWithTime','projectsWithTime','weekend','vacation','actualWork','timeAtWork','workTimeLog','flags','workEfficiency','regularTime','regularHours','work_status');
     }
 
     /**
@@ -105,11 +126,13 @@ class Statistics
         }
         $work_status = true;
         $workTime = static::yearWorkTime($id,$year);
+        $projects = static::yearProjects($id,$year);
+        $tasks = static::yearTasks($id,$year);
         $flags = static::yearFlags($id,$year);
         $absence = static::yearAbsence($id,$year);
         $regularTime = static::yearRegularTime($id,$year);
         $workEfficiency = static::yearWorkEfficiency($id,$year);
-        return compact('workTime','flags','absence','regularTime','workEfficiency','work_status');
+        return compact('workTime','projects','tasks','flags','absence','regularTime','workEfficiency','work_status');
     }
 
     /**
@@ -151,6 +174,62 @@ class Statistics
         $total['diff'] = abs($total['diff']);
         $yearWork[] = $total;
         return $yearWork;
+    }
+
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
+    public static function yearProjects(int $id,int $year):array
+    {
+        $yearProjects = [];
+        $total = [
+            'name' => 'total'
+        ];
+        $months = months();
+        foreach ($months as $month) {
+            $monthProjects = static::monthProjectTimes($id,$month['index'],$year);
+            $yearProjects[$month['index']] = $monthProjects;
+            $yearProjects[$month['index']]['name'] = $month['name'];
+            $yearProjects[$month['index']]['work_status'] = !static::monthHasNoWork($id,$month['index'],$year);
+            foreach ($monthProjects as $project) {
+                if(!isset($total[$project['project']->title])){
+                    $total[$project['project']->title] = 0;
+                }
+                $total[$project['project']->title] += $project['time'];
+            }
+        }
+        $yearProjects[] = $total;
+        return $yearProjects;
+    }
+
+    /**
+     * @param int $id
+     * @param int $year
+     * @return array
+     */
+    public static function yearTasks(int $id,int $year):array
+    {
+        $yearTasks = [];
+        $total = [
+            'name' => 'total'
+        ];
+        $months = months();
+        foreach ($months as $month) {
+            $monthTasks = static::monthTasksTimes($id,$month['index'],$year);
+            $yearTasks[$month['index']] = $monthTasks;
+            $yearTasks[$month['index']]['name'] = $month['name'];
+            $yearTasks[$month['index']]['work_status'] = !static::monthHasNoWork($id,$month['index'],$year);
+            foreach ($monthTasks as $task) {
+                if(!isset($total[$task['task']->content])){
+                    $total[$task['task']->content] = 0;
+                }
+                $total[$task['task']->content] += $task['time'];
+            }
+        }
+        $yearTasks[] = $total;
+        return $yearTasks;
     }
 
     /**
@@ -297,7 +376,7 @@ class Statistics
     public static function monthProjectTimes(int $id,int $month,int $year = 0):array
     {
         $workTimes = static::monthData($id,'work_times',$month,$year);
-        $projectIds = $workTimes->pluck('project_id');
+        $projectIds = $workTimes->pluck('project_id')->unique()->values();
         $groups = $workTimes->groupBy('project_id');
         $projects = Project::whereIn('id',$projectIds)->get()->keyBy('id');
         $projectsWithTime = [];
@@ -311,10 +390,16 @@ class Statistics
     }
 
 
-    public static function monthTasksTimes(int $id,int $month,int $year = 0)
+    /**
+     * @param int $id
+     * @param int $month
+     * @param int $year
+     * @return array
+     */
+    public static function monthTasksTimes(int $id,int $month,int $year = 0):array
     {
         $workTimes = static::monthData($id,'work_times',$month,$year);
-        $tasksIds = $workTimes->pluck('task_id');
+        $tasksIds = $workTimes->pluck('task_id')->unique()->values();
         $groups = $workTimes->groupBy('task_id');
         $tasks = Task::whereIn('id',$tasksIds)->get()->keyBy('id');
         $tasksWithTime = [];
@@ -508,11 +593,12 @@ class Statistics
     {
         $report = [];
         if(!$ids){
-            $ids = DB::table('users')->select('id')->get()->pluck('id');
+            $users = DB::table('users')->get();
+        }else{
+            $users = DB::table('users')->whereIn('id',$ids)->get();
         }
-        foreach ($ids as $id) {
-            $name = DB::table('users')->find($id)->name;
-            $report[$name] = static::dayReport($id,$day);
+        foreach ($users as $user) {
+            $report[$user->name] = static::dayReport($user->id,$day);
         }
         return $report;
     }
@@ -527,24 +613,67 @@ class Statistics
     {
         $report = [];
         if(!$ids){
-            $ids = DB::table('users')->select('id')->get()->pluck('id');
+            $users = DB::table('users')->get();
+        }else{
+            $users = DB::table('users')->whereIn('id',$ids)->get();
         }
-        foreach ($ids as $id) {
-            $name = DB::table('users')->find($id)->name;
-            $report[$name] = static::monthReport($id,$month,$year);
+        foreach ($users as $user) {
+            $report[$user->name] = static::monthReport($user->id,$month,$year);
         }
         return $report;
     }
 
+    /**
+     * @param int $year
+     * @param array|null $ids
+     * @return array
+     */
     public static function yearSummary(int $year,array $ids = null):array
     {
         $report = [];
         if(!$ids){
-            $ids = DB::table('users')->select('id')->get()->pluck('id');
+            $users = DB::table('users')->get();
+        }else{
+            $users = DB::table('users')->whereIn('id',$ids)->get();
         }
-        foreach ($ids as $id) {
-            $name = DB::table('users')->find($id)->name;
-            $report[$name] = static::yearReport($id,$year);
+        foreach ($users as $user) {
+            $report[$user->name] = static::yearReport($user->id,$year);
+        }
+        return $report;
+    }
+
+    /**
+     * @param array|null $projectsIds
+     * @param array|null $usersIds
+     * @return array
+     */
+    public static function projectUsersSummary(array $usersIds = null,array $projectsIds = null):array
+    {
+        $report = [];
+        if(!$usersIds){
+            $users = DB::table('users')->get();
+        }else{
+            $users = DB::table('users')->whereIn('id',$usersIds)->get();
+        }
+        if(!$projectsIds){
+            $projects = Project::all();
+        }else{
+            $projects = Project::whereIn('id',$projectsIds)->get();
+        }
+        foreach ($projects as $project) {
+            $report[$project->title] = [];
+            $report[$project->title]['totalForSelectedUsers'] = 0;
+            $usersProjectWorkTimes = $project->workTimes()->get();
+            $report[$project->title]['total'] = $usersProjectWorkTimes->sum('seconds');
+            $usersProjectWorkTimes = $usersProjectWorkTimes->groupBy('user_id');
+            foreach ($usersProjectWorkTimes as $id => $group) {
+                $user = $users->where('id',$id)->first();
+                $seconds = $group->sum('seconds');
+                if($user != null){
+                   $report[$project->title][$user->name] = $seconds;
+                   $report[$project->title]['totalForSelectedUsers'] += $seconds;
+                }
+            }
         }
         return $report;
     }
