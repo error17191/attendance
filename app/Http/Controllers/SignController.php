@@ -36,7 +36,7 @@ class SignController extends Controller
 
         //TODO: see if this check is necessary
         //check if the status is wrong
-        WorKTime::fixStatus($user);
+//        WorKTime::fixStatus($user);
 
         //reject the request to start a new work time when the user is already in a work time
         if($user->isWorking()){
@@ -47,10 +47,8 @@ class SignController extends Controller
         }
 
         //validate request data
-        $v = Validator::make($request->only('task', 'project_id'),[
-            'task' => 'required',
-            'task.content' => 'required|string',
-            'task.id' => 'exists:tasks,id',
+        $v = Validator::make($request->only('task_id', 'project_id'),[
+            'task_id' => 'required|exists:tasks,id',
             'project_id' => 'required|exists:projects,id'
         ]);
 
@@ -61,20 +59,14 @@ class SignController extends Controller
             ],422);
         }
         //start new work time
-        $workTime = WorKTime::start($id, json_decode(json_encode($request->task)),$request->project_id);
+        $workTime = WorKTime::start($id, $request->task_id,$request->project_id);
         $workTime->save();
 
         $user->status = 'on';
         $user->save();
 
         return response()->json([
-            'workTimeSign' => WorKTime::sign($workTime),
-            // TODO: Try to eliminate this unnecessary additional query
-            'task_id' => $workTime->task->id,
-            'today_time' => [
-                'seconds' => ($daySeconds = WorkTime::daySeconds($id,$workTime->day)),
-                'partitions' => partition_seconds($daySeconds)
-            ]
+            'success' => true
         ]);
     }
 

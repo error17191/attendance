@@ -40,4 +40,22 @@ class TasksController extends Controller
                 ->where('project_id', $request->project)->get()
         ]);
     }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'content' => 'required|string|max:200',
+            'project_id' => 'required|integer|exists:projects,id'
+        ]);
+
+        $task = new Task();
+        $task->project_id = $request->project_id;
+        $task->content = $request->get('content');
+        $task->user_id = auth()->id();
+        $task->save();
+
+        return response()->json([
+            'task' => $task
+        ]);
+    }
 }

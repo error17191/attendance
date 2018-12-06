@@ -9,6 +9,10 @@ class Flag extends Model
     protected $fillable = [
         'user_id','work_time_id','type','day','started_at','stopped_at','seconds'
     ];
+    protected $dates = [
+        'started_at',
+        'stopped_at'
+    ];
 
     public function workTime()
     {

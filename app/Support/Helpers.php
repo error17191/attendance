@@ -1,10 +1,9 @@
 <?php
 
 
-
 function json_encodei($mixed)
 {
-    return json_encode($mixed,JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    return json_encode($mixed, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 }
 
 function partition_seconds($seconds)
@@ -134,4 +133,20 @@ function months()
             'days' => 31
         ],
     ];
+}
+
+function user_working($id = null)
+{
+    $id = $id ?: auth()->id();
+    return (bool)\App\WorkTime::where('user_id', $id)
+        ->whereNull('stopped_work_at')
+        ->count();
+}
+
+function user_using_flag($id = null)
+{
+    $id = $id ?: auth()->id();
+    return (bool) \App\Flag::where('user_id', $id)
+        ->whereNull('stopped_at')
+        ->count();
 }

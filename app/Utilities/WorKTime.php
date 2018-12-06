@@ -177,21 +177,12 @@ class WorKTime
      * @param \Carbon\Carbon|null $start
      * @return \App\WorkTime
      */
-    public static function start(int $id,$task,$project_id ,Carbon $start = null):WorkTimeModel
+    public static function start(int $id,$task_id,$project_id ,Carbon $start = null):WorkTimeModel
     {
         $workTime = new WorkTimeModel();
         $workTime->user_id = $id;
         $workTime->project_id = $project_id;
-        if(isset($task->id)){
-            $workTime->task_id = $task->id;
-        }else{
-            $newTask = new Task();
-            $newTask->content = $task->content;
-            $newTask->project_id = $project_id;
-            $newTask->user_id = $id;
-            $newTask->save();
-            $workTime->task_id = $newTask->id;
-        }
+        $workTime->task_id = $task_id;
         $workTime->day = now()->toDateString();
         $workTime->started_work_at = $start ?: now();
         return $workTime;

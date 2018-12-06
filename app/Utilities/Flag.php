@@ -14,12 +14,12 @@ class Flag
      * @param \App\User $user
      * @return void
      */
-    public static function fixUserFlag(User $user):void
+    public static function fixUserFlag(User $user): void
     {
-        if($user->isUsingFlag() && !static::hasActive($user->id)){
+        if ($user->isUsingFlag() && !static::hasActive($user->id)) {
             $user->flag = 'off';
             $user->save();
-        }elseif(!$user->isUsingFlag() && static::hasActive($user->id)){
+        } elseif (!$user->isUsingFlag() && static::hasActive($user->id)) {
             $user->flag = 'on';
             $user->save();
         }
@@ -31,11 +31,11 @@ class Flag
      * @param int $id
      * @return \App\Flag
      */
-    public static function current(int $id):FlagModel
+    public static function current(int $id): FlagModel
     {
-        return FlagModel::where('user_id',$id)
+        return FlagModel::where('user_id', $id)
             ->whereNull('stopped_at')
-            ->orderBy('started_at','desc')
+            ->orderBy('started_at', 'desc')
             ->first();
     }
 
@@ -48,12 +48,12 @@ class Flag
      * @param \Carbon\Carbon $stop
      * @return int
      */
-    public static function secondsTillNow(int $id,string $type,string $day,Carbon $stop):int
+    public static function secondsTillNow(int $id, string $type, string $day, Carbon $stop): int
     {
-       if(static::hasActive($id,$day)){
-           return static::daySeconds($id,$type,$day) + $stop->diffInSeconds(static::current($id)->started_at);
-       }
-       return static::daySeconds($id,$type,$day);
+        if (static::hasActive($id, $day)) {
+            return static::daySeconds($id, $type, $day) + $stop->diffInSeconds(static::current($id)->started_at);
+        }
+        return static::daySeconds($id, $type, $day);
     }
 
     /**
@@ -64,11 +64,11 @@ class Flag
      * @param string $day
      * @return int
      */
-    public static function daySeconds(int $id,string $type,string $day):int
+    public static function daySeconds(int $id, string $type, string $day): int
     {
-        return FlagModel::where('user_id',$id)
-            ->where('day',$day)
-            ->where('type',$type)
+        return FlagModel::where('user_id', $id)
+            ->where('day', $day)
+            ->where('type', $type)
             ->sum('seconds');
     }
 
@@ -78,7 +78,7 @@ class Flag
      * @param string $type
      * @return bool
      */
-    public static function exists(string $type):bool
+    public static function exists(string $type): bool
     {
         return !empty(app('settings')->getFlags()[$type]);
     }
@@ -89,7 +89,7 @@ class Flag
      * @param string $type
      * @return bool
      */
-    public static function hasTimeLimit(string $type):bool
+    public static function hasTimeLimit(string $type): bool
     {
         return gettype(app('settings')->getFlags()[$type]) == 'integer';
     }
@@ -101,15 +101,15 @@ class Flag
      * @param string|null $day
      * @return bool
      */
-    public static function hasActive(int $id,string $day = null):bool
+    public static function hasActive(int $id, string $day = null): bool
     {
-        $builder = FlagModel::where('user_id',$id)
-            ->where('stopped_at',null)
-            ->where('seconds',0);
-        if($day){
-            $builder->where('day',$day);
+        $builder = FlagModel::where('user_id', $id)
+            ->where('stopped_at', null)
+            ->where('seconds', 0);
+        if ($day) {
+            $builder->where('day', $day);
         }
-        return  $builder->first() != null;
+        return $builder->first() != null;
     }
 
     /**
@@ -118,7 +118,7 @@ class Flag
      * @param string $type
      * @return int
      */
-    public static function timeLimit(string $type):int
+    public static function timeLimit(string $type): int
     {
         return app('settings')->getFlags()[$type];
     }
@@ -132,9 +132,9 @@ class Flag
      * @param \Carbon\Carbon $stop
      * @return bool
      */
-    public static function passedTimeLimit(int $id,string $type,string $day,Carbon $stop):bool
+    public static function passedTimeLimit(int $id, string $type, string $day, Carbon $stop): bool
     {
-        return static::secondsTillNow($id,$type,$day,$stop) > static::timeLimit($type);
+        return static::secondsTillNow($id, $type, $day, $stop) > static::timeLimit($type);
     }
 
     /**
@@ -144,13 +144,13 @@ class Flag
      * @param string $type
      * @return bool
      */
-    public static function inUse(int $id,string $type):bool
+    public static function inUse(int $id, string $type): bool
     {
-        return FlagModel::where('user_id',$id)
-            ->where('type',$type)
-            ->where('stopped_at',null)
-            ->where('seconds',0)
-            ->get()->count() == 1;
+        return FlagModel::where('user_id', $id)
+                ->where('type', $type)
+                ->where('stopped_at', null)
+                ->where('seconds', 0)
+                ->get()->count() == 1;
     }
 
     /**
@@ -159,12 +159,12 @@ class Flag
      * @param int $id
      * @return array
      */
-    public static function today(int $id):array
+    public static function today(int $id): array
     {
         $all = [];
         foreach (app('settings')->getFlags() as $type => $limit) {
-            if(static::hasTimeLimit($type)){
-                $usedSeconds = static::daySeconds($id,$type,now()->toDateString());
+            if (static::hasTimeLimit($type)) {
+                $usedSeconds = static::daySeconds($id, $type, now()->toDateString());
             }
             $all[] = [
                 'type' => $type,
@@ -175,7 +175,7 @@ class Flag
                     $limit - $usedSeconds : $limit,
                 'remainingTime' => static::hasTimeLimit($type) ?
                     partition_seconds($limit - $usedSeconds) : $limit,
-                'inUse' => static::inUse($id,$type)
+                'inUse' => static::inUse($id, $type)
             ];
         }
         return $all;
@@ -186,7 +186,7 @@ class Flag
      *
      * @return array
      */
-    public static function editable():array
+    public static function editable(): array
     {
         $flags = app('settings')->getFlags();
         unset($flags['lost_time']);
@@ -209,7 +209,7 @@ class Flag
      * @param int $workTimeId
      * @return \App\Flag
      */
-    public static function start(int $id,string $type,int $workTimeId):FlagModel
+    public static function start(int $id, string $type, int $workTimeId): FlagModel
     {
         $flag = new FlagModel();
         $flag->user_id = $id;
@@ -227,20 +227,45 @@ class Flag
      * @param \Carbon\Carbon|null $stop
      * @return \App\Flag
      */
-    public static function stop(FlagModel $flag,Carbon $stop = null):FlagModel
+    public static function stop(FlagModel $flag, Carbon $stop = null): FlagModel
     {
+        // TODO : Simplifiy This Logic
+        // TODO : Stop when time passed and stopped at null but seconds has some value
+        $newDay = !$flag->started_at->isSameDay(now());
+        $hasTimeLimit = static::hasTimeLimit($flag->type);
+        if ($hasTimeLimit) {
+            $timeLimit = static::timeLimit($flag->type);
+        }
+        if ($hasTimeLimit && $newDay) {
+            $secondsTillNowOrEndOfDay = static::secondsTillNow($flag->user_id, $flag->type,
+                $flag->started_at->toDateString(),
+                $flag->started_at->endOfDay());
+        } else if ($hasTimeLimit) {
+            $secondsTillNowOrEndOfDay = static::secondsTillNow($flag->user_id, $flag->type,
+                $flag->started_at->toDateString(),
+                now());
+        }
+
+        if ($hasTimeLimit) {
+            $timePassed = $secondsTillNowOrEndOfDay > $timeLimit;
+        }
+
+        if($newDay && ! $timePassed){
+            $flag->stopped_at = $flag->started_at->addSeconds($secondsTillNowOrEndOfDay);
+            $flag->seconds = $secondsTillNowOrEndOfDay;
+            return $flag;
+        }
         $flag->stopped_at = $stop ?: now();
-        if(static::hasTimeLimit($flag->type) && static::passedTimeLimit($flag->user_id,$flag->type,$flag->day,$flag->stopped_at)){
-            $flag->seconds = static::timeLimit($flag->type) - static::daySeconds($flag->user_id,$flag->type,$flag->day);
-        }else{
+        if (static::hasTimeLimit($flag->type) && static::passedTimeLimit($flag->user_id, $flag->type, $flag->day, $flag->stopped_at)) {
+            $flag->seconds = static::timeLimit($flag->type) - static::daySeconds($flag->user_id, $flag->type, $flag->day);
+        } else {
             $flag->seconds = $flag->stopped_at->diffInSeconds($flag->started_at);
         }
-        if($stop){
+        if ($stop) {
             $flag->seconds++;
         }
         return $flag;
     }
-
 
 
 }

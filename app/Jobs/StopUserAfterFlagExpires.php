@@ -37,12 +37,9 @@ class StopUserAfterFlagExpires implements ShouldQueue
     {
         $user = User::find($this->userId);
 
-        if($user->flag == 'off'){
+        if($user->isUsingFlag()){
             return;
         }
-        $user->flag = 'off';
-        $user->status = 'off';
-        $user->save();
 
         Flag::stop(Flag::current($user->id))->save();
         WorKTime::stop(WorKTime::last($user->id))->save();

@@ -21,9 +21,9 @@ Route::post('update_password','ChangePasswordController@update');
 Route::post('api/login','HybridAuthController@login')->name('login');
 Route::post('api/logout','HybridAuthController@logout');
 
-Route::post('start_work', 'SignController@startWork')->name('start_work');
-Route::post('stop_work', 'SignController@stopWork')->name('stop_work');
-Route::get('init_state', 'StatsController@init')->name('init_state');
+Route::post('start_work', 'StartWorkController@startWork')->name('start_work');
+Route::post('stop_work', 'StopWorkController@stopWork')->name('stop_work');
+Route::get('refresh_state', 'StateController@refresh')->name('refresh_state');
 
 Route::get('vacations/weekends', 'WeekendsController@index')->name('get_all_vacations');
 Route::post('vacations/weekends', 'WeekendsController@update')->name('update_vacations');
@@ -46,6 +46,7 @@ Route::post('regular/time','RegularTimeController@store')
 
 Route::get('tasks','SearchTaskController@index')
     ->name('status.index');
+Route::post('task','TasksController@store');
 
 Route::post('flag/start','FlagsController@startFlag');
 Route::post('flag/end','FlagsController@endFlag');

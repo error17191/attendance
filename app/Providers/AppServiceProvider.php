@@ -19,7 +19,6 @@ class AppServiceProvider extends ServiceProvider
     {
         if(!app()->runningInConsole() && config('app.enable_fake_login')){
             $userId = config('app.fake_logged_user');
-            auth()->guard('web')->loginUsingId($userId);
             $token = auth()->guard('api')->fromUser(\App\User::find($userId));
             auth()->guard('api')->setToken($token);
             auth()->guard('api')->authenticate();

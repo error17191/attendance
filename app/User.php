@@ -34,9 +34,14 @@ class User extends Authenticatable implements JWTSubject
         'is_admin' => 'boolean',
     ];
 
+    /**
+     * @return bool
+     */
     public function isUsingFlag()
     {
-        return $this->flag == 'on';
+        return (bool) Flag::where('user_id', $this->id)
+            ->whereNull('stopped_at')
+            ->count();
     }
 
     public function workTimes()
@@ -44,14 +49,19 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(WorkTime::class);
     }
 
+    /**
+     * @return bool
+     */
     public function isWorking()
     {
-        return $this->status == 'on';
+        return (bool)WorkTime::where('user_id', $this->id)
+            ->whereNull('stopped_work_at')
+            ->count();
     }
 
     public function isStopped()
     {
-        return $this->status == 'off';
+        return ! $this->isWorking();
     }
 
     public function browsers()
