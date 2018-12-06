@@ -18,12 +18,11 @@
                                                  :multiple="false"
                                                  :searchable="false"
                                                  :trackBy="'id'"
-                                                  :disabled="!!flagInUse"
                                     ></multiselect>
                                     <multiselect tag-placeholder="Task you are working on"
                                                  placeholder="Task you are working on"
                                                  :value="task"
-                                                 :disabled="!!flagInUse || project == null"
+                                                 :disabled="project == null"
                                                  @tag="addTask"
                                                  label="content"
                                                  @search-change="filterTasks"
@@ -41,15 +40,15 @@
                                             <span v-html="props.option.content ? mark(props.option.content) : props.search ">{props}</span>
                                         </template>
                                     </multiselect>
-                                    <button v-if="status == 'on'"
-                                            @click="stopWork"
-                                            :disabled="!!flagInUse || stopping"
+                                    <button v-if="working"
+                                            @click="stopWorkClicked"
+                                            :disabled="disableActions"
                                             class="btn btn-lg btn-block btn-danger"
                                     >Stop Work
                                     </button>
                                     <button v-else
-                                            @click="startWork"
-                                            :disabled="starting || task == null || project == null"
+                                            @click="startWorkClicked"
+                                            :disabled="disableActions || task == null || project == null"
                                             class="btn btn-lg btn-block btn-success"
                                     >Start Work
                                     </button>
@@ -57,12 +56,12 @@
                             </div>
                             <br>
 
-                            <div class="row justify-content-center" v-if="status === 'on'">
+                            <div class="row justify-content-center" v-if="working">
                                 <button v-for="flag in flags"
                                         class="btn mr-2 mb-2"
                                         :class="{'btn-default': !flagInUse,'btn-dark': flagInUse == flag.type}"
-                                        @click.prevent="toggleFlag(flag.type)"
-                                        :disabled="togglingFlag || (flagInUse != null && flag.type != flagInUse)|| flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit'"
+                                        @click.prevent="flagClicked(flag.type)"
+                                        :disabled="disableActions || flag.remainingSeconds === 0 && flag.timelimit !== 'no time limit'"
                                 >
                                     {{flag.type | capitalize}}
                                 </button>
@@ -136,7 +135,7 @@
             return {
                 flags: [],
                 show: false,
-                status: null,
+                working: null,
                 workTime: null,
                 signs: null,
                 monthStats: null,
@@ -151,17 +150,15 @@
                 canWorkAnywhere: true,
                 projectInitialized: false,
                 taskInitialized: false,
-                starting: false,
-                stopping: false,
-                togglingFlag: false,
+                disableActions: false
             }
         },
         mounted() {
-            this.getStats();
+            this.refreshState();
 
             window.Echo.private(`App.User.${auth_user.id}`)
                 .listen('FlagTimeExpired', (e) => {
-                    this.getStats();
+                    this.refreshState();
                 });
 
         },
@@ -174,21 +171,19 @@
             }
         },
         methods: {
-            getStats() {
+            refreshState() {
                 this.projectInitialized = false;
                 this.taskInitialized = false;
-                let url = '/init_state?t=' + new Date().getTime();
                 makeRequest({
                     method: 'get',
-                    url: url
+                    url: urls.refreshState()
                 }).then((response) => {
-                    this.status = response.data.status;
+                    this.working = response.data.working;
                     this.workTime = response.data.today_time;
                     this.task = this.workTime.task;
                     this.projects = response.data.projects;
                     this.project = this.workTime.project;
                     this.tasks = this.projectTasks = this.workTime.project_tasks;
-                    this.signs = response.data.workTimeSigns;
                     this.monthStats = response.data.month_report;
                     this.flags = response.data.flags;
                     this.flagInUse = null;
@@ -198,68 +193,75 @@
                             break;
                         }
                     }
-                    if (this.status == 'on') {
+                    if (this.working) {
                         this.startCounter(this.workTime.partitions);
                         this.startCounter(this.monthStats.actual.partitions);
                         this.startDiffCounter();
                     }
                     this.show = true;
+                    this.disableActions = false;
                 });
             },
+            startWorkClicked(){
+                this.disableActions = true;
+                this.startWork().then(() => this.refreshState());
+            },
             startWork() {
-                this.starting = true;
-                let data = {task: this.task, project_id: this.project.id};
+                if(this.task.id){
+                    return this.makeStartWorkRequest({task_id : this.task.id,project_id : this.project.id})
+                }
                 return makeRequest({
                     method: 'post',
-                    url: '/start_work',
+                    url: urls.storeTask(),
+                    data: {content: this.task.content, project_id: this.project.id}
+                }).then((response => {
+                    return this.makeStartWorkRequest({task_id : response.data.task.id, project_id : this.project.id});
+                }))
+            },
+            makeStartWorkRequest(data){
+                return makeRequest({
+                    method: 'post',
+                    url: urls.startWork(),
                     data: data
                 }).then((response) => {
-                    this.status = 'on';
-                    this.signs.push(response.data.workTimeSign);
-                    this.startCounter(this.workTime.partitions);
-                    this.startCounter(this.monthStats.actual.partitions);
-                    this.startDiffCounter();
-                    this.addIdToTask(response.data.task_id);
                     this.starting = false;
                 });
+            },
+            stopWorkClicked(){
+                this.disableActions = true;
+                this.stopWork().then(() => this.refreshState())
             },
             stopWork() {
                 this.stopping = true;
                 return makeRequest({
                     method: 'post',
-                    url: '/stop_work'
+                    url: urls.stopWork()
                 }).then((response) => {
-                    if (this.flagInUse !== null) {
-                        this.getStats();
-                    }
-                    this.status = 'off';
-                    this.flagInUse = null;
-                    // this.updateSign(response.data.workTimeSign);
-                    this.signs[this.signs.length - 1].stopped_at = response.data.workTimeSign.stopped_at;
-                    this.workTime = response.data.today_time;
-                    this.stopCounter(this.workTime.partitions.counterInterval);
-                    this.stopCounter(this.monthStats.actual.partitions.counterInterval);
-                    this.stopCounter(this.monthStats.diff.partitions.counterInterval);
                     this.stopping = false;
                 });
             },
+            flagClicked(type){
+                this.toggleFlag(type).then(() => this.refreshState());
+            },
             toggleFlag(type) {
-                this.togglingFlag = true;
-                if (this.flagInUse) {
-                    this.endFlag();
-                }else{
-                    this.startFlag(type);
+                this.disableActions = true;
+                if(this.flagInUse && type != this.flagInUse){
+                    return this.endFlag().then(this.startFlag(type));
                 }
+                if(this.flagInUse && type == this.flagInUse){
+                    return this.endFlag();
+                }
+                return this.startFlag(type);
             },
             startFlag(type) {
                 let data = {type: type};
                 return makeRequest({
                     method: 'post',
-                    url: '/flag/start',
+                    url: urls.startFlag(),
                     data: data
                 }).then((response) => {
+                    console.log('START');
                     this.flagInUse = type;
-                    this.togglingFlag = false;
                 });
             },
             endFlag() {
@@ -267,8 +269,8 @@
                     method: 'post',
                     url: '/flag/end'
                 }).then((response) => {
+                    console.log('END');
                     this.flagInUse = null;
-                    this.togglingFlag = false;
                 });
             },
             timePartitionsFormatted(partitions) {

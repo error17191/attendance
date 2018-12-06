@@ -28,11 +28,7 @@ Vue.mixin({
         auth_user: () => window.auth_user,
         //TODO: remove all functions that i added here from the components
         partitionSeconds: (seconds) => {
-            let hours = Math.floor(seconds / 60 / 60);
-            seconds -= hours * 60 * 60;
-            let minutes = Math.floor(seconds / 60);
-            seconds -= minutes * 60;
-            return {hours,minutes,seconds};
+            return window.partitionSeconds(seconds);
         },
         setYears: () => {
             let years = [

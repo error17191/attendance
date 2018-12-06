@@ -38,19 +38,11 @@ window.capitalize = function(inputString){
     return outputWords.join(' ');
 };
 
-window.capitalize = function(inputString){
-    if (!inputString) {
-        return '';
-    }
-    inputString = inputString.toString();
-    let wordsArray = inputString.split('_');
-    let outputWords = [];
-    for (let i in wordsArray) {
-        let words = wordsArray[i].split(' ');
-        for (let word in words){
-            words[word] = words[word].charAt(0).toUpperCase() + words[word].slice(1);
-            outputWords.push(words[word]);
-        }
-    }
-    return outputWords.join(' ');
+window.urls = {
+    refreshState : () => '/refresh_state?t' + new Date().getTime(),
+    startWork : () => '/start_work',
+    stopWork : () => '/stop_work',
+    startFlag : () => '/flag/start',
+    endFlag : () => '/flag/end',
+    storeTask : () => '/task',
 };
