@@ -124,7 +124,7 @@ class Flag
     }
 
     /**
-     * Calculate the used seconds of a flag in a given day till a given moment
+     * Check whether the used seconds of a flag in a given day till a given moment exceeds the limit
      *
      * @param int $id
      * @param string $type
@@ -229,41 +229,19 @@ class Flag
      */
     public static function stop(FlagModel $flag, Carbon $stop = null): FlagModel
     {
-        // TODO : Simplifiy This Logic
-        // TODO : Stop when time passed and stopped at null but seconds has some value
-        $newDay = !$flag->started_at->isSameDay(now());
-        $hasTimeLimit = static::hasTimeLimit($flag->type);
-        if ($hasTimeLimit) {
-            $timeLimit = static::timeLimit($flag->type);
-        }
-        if ($hasTimeLimit && $newDay) {
-            $secondsTillNowOrEndOfDay = static::secondsTillNow($flag->user_id, $flag->type,
-                $flag->started_at->toDateString(),
-                $flag->started_at->endOfDay());
-        } else if ($hasTimeLimit) {
-            $secondsTillNowOrEndOfDay = static::secondsTillNow($flag->user_id, $flag->type,
-                $flag->started_at->toDateString(),
-                now());
+        if(now()->isSameDay($flag->started_at)){
+            $stop = now();
+        }else{
+            $stop = $flag->started_at->endOfDay();
         }
 
-        if ($hasTimeLimit) {
-            $timePassed = $secondsTillNowOrEndOfDay > $timeLimit;
+        if(static::hasTimeLimit($flag->type) && static::passedTimeLimit($flag->user_id,$flag->type,$flag->day,$stop)){
+            $flag->seconds = static::timeLimit($flag->type) - static::daySeconds($flag->user_id,$flag->type,$flag->day);
+        }else{
+            $flag->seconds = $stop->diffInSeconds($flag->started_at);
         }
+        $flag->stopped_at = $flag->started_at->addSeconds($flag->seconds);
 
-        if($newDay && ! $timePassed){
-            $flag->stopped_at = $flag->started_at->addSeconds($secondsTillNowOrEndOfDay);
-            $flag->seconds = $secondsTillNowOrEndOfDay;
-            return $flag;
-        }
-        $flag->stopped_at = $stop ?: now();
-        if (static::hasTimeLimit($flag->type) && static::passedTimeLimit($flag->user_id, $flag->type, $flag->day, $flag->stopped_at)) {
-            $flag->seconds = static::timeLimit($flag->type) - static::daySeconds($flag->user_id, $flag->type, $flag->day);
-        } else {
-            $flag->seconds = $flag->stopped_at->diffInSeconds($flag->started_at);
-        }
-        if ($stop) {
-            $flag->seconds++;
-        }
         return $flag;
     }
 
