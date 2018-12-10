@@ -18,10 +18,10 @@ window.partitionSeconds = function (seconds) {
     seconds -= hours * 60 * 60;
     let minutes = Math.floor(seconds / 60);
     seconds -= minutes * 60;
-    return {hours,minutes,seconds};
+    return {hours, minutes, seconds};
 };
 
-window.capitalize = function(inputString){
+window.capitalize = function (inputString) {
     if (!inputString) {
         return '';
     }
@@ -30,7 +30,7 @@ window.capitalize = function(inputString){
     let outputWords = [];
     for (let i in wordsArray) {
         let words = wordsArray[i].split(' ');
-        for (let word in words){
+        for (let word in words) {
             words[word] = words[word].charAt(0).toUpperCase() + words[word].slice(1);
             outputWords.push(words[word]);
         }
@@ -39,10 +39,17 @@ window.capitalize = function(inputString){
 };
 
 window.urls = {
-    refreshState : () => '/refresh_state?t' + new Date().getTime(),
-    startWork : () => '/start_work',
-    stopWork : () => '/stop_work',
-    startFlag : () => '/flag/start',
-    endFlag : () => '/flag/end',
-    storeTask : () => '/task',
+    refreshState: () => bustCache('/refresh_state'),
+    startWork: () => '/start_work',
+    stopWork: () => '/stop_work',
+    startFlag: () => '/flag/start',
+    endFlag: () => '/flag/end',
+    storeTask: () => '/task',
 };
+
+window.bustCache = function (url) {
+    if (url.includes("?")) {
+        return url + '&t=' + new Date().getTime();
+    }
+    return url + '?t=' + new Date().getTime();
+}
