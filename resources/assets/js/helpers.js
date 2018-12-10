@@ -1,7 +1,4 @@
 window.makeRequest = (params) => {
-    if (params.method == 'get' && !params.cache) {
-        // params.url = params.url + '?t=' + new Date().getTime();
-    }
     return new Promise((resolve) => {
         let promise = axios.request(params)
             .then(resolve)

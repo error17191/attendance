@@ -241,12 +241,12 @@
                 });
             },
             flagClicked(type){
-                this.toggleFlag(type).then(() => this.refreshState());
+                this.toggleFlag(type).then(this.refreshState);
             },
             toggleFlag(type) {
                 this.disableActions = true;
                 if(this.flagInUse && type != this.flagInUse){
-                    return this.endFlag().then(this.startFlag(type));
+                    return this.endFlag().then(() => this.startFlag(type));
                 }
                 if(this.flagInUse && type == this.flagInUse){
                     return this.endFlag();
