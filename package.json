@@ -23,7 +23,7 @@
         "laravel-echo": "^1.4.0",
         "loaders.css": "^0.1.2",
         "moment": "^2.22.2",
-        "npm": "6.10.1",
+        "npm": "6.13.4",
         "socket.io-client": "^2.1.1",
         "vue-chartjs": "^3.4.0",
         "vue-element-loading": "^1.0.4",
